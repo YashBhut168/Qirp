@@ -926,13 +926,6 @@ class _PlaylistSongsScreenState extends State<PlaylistSongsScreen> {
                                           .is_queue ==
                                       true
                                   ? Icons.check_box
-                                  // containerIcon(
-                                  //             height: 30,
-                                  //             width: 30,
-                                  //             icon: Icons.check,
-                                  //             containerColor: Colors.green,
-                                  //             iconColor: Colors.white,
-                                  //           )
                                   : Icons.playlist_add_outlined,
                               iconSize: playlistScreenController
                                           .allSongsListModel!
