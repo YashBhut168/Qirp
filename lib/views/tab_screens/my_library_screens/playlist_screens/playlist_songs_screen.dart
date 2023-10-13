@@ -912,7 +912,7 @@ class _PlaylistSongsScreenState extends State<PlaylistSongsScreen> {
                                 // final response = await playlistScreenController.queueSongsList(
                                 //   playlistId: (widget.myPlaylistData.id)!);
                                 //   response['']
-                              // Get.back();
+                              Get.back();
                             });
                             log((playlistScreenController
                                     .allSongsListModel!.data![index].is_queue)!
