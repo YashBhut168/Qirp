@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
@@ -31,35 +32,77 @@ class ApiHelper {
   static const String favoriteSongList = "$baseUrl/like_songlist";
   static const String addRecentlySong = "$baseUrl/add_recentlysong";
   static const String recentSongList = "$baseUrl/recently_songlist";
+  static const String queueSongListWithoutPlaylist = "$baseUrl/queue_songlist_without_playlist";
 
 
 
   // API Paths with no auth
   static const String noAuthAddSongList = "$baseUrl/noauthallSongsList";
 
-  Future<Map<String, dynamic>> fetchHomeCategoryData(String endpoint) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('token') ?? '';
-      final headers = {
-        'Authorization': 'Bearer $authToken',
-        'Content-Type': 'application/json',
-      };
-      final response = await http.get(
-        Uri.parse('$baseUrl/$endpoint'),
-        headers: headers,
-      );
+    Future<Map<String, dynamic>> fetchHomeCategoryData(String endpoint) async {
+        // Future.delayed(const Duration(seconds: 5));
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final authToken = prefs.getString('token');
+        
+        log("$authToken",name: 'authToken home data');
+        final headers = {
+          'Authorization': 'Bearer $authToken',
+          'Content-Type': 'application/json',
+        };
+        final response = await http.get(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: headers,
+        );
+        
 
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return jsonData;
-      } else {
-        throw Exception('Failed to load data');
+        if (response.statusCode == 200) {
+          final jsonData = json.decode(response.body);
+          return jsonData;
+        } else {
+          throw Exception('Failed to load data');
+        }
+      } catch (e) {
+        throw Exception('Error: $e');
       }
-    } catch (e) {
-      throw Exception('Error: $e');
     }
-  }
+
+  // fetchHomeCategoryData(String endpoint) async {
+  //   final client = http.Client();
+  //   int maxRetryCount = 3; // Set the maximum number of retries
+  //   int currentRetry = 0;
+  //   Duration initialTimeout = const Duration(seconds: 5);
+  //   while (currentRetry < maxRetryCount) {
+  //     try {
+  //       final prefs = await SharedPreferences.getInstance();
+  //       final authToken = prefs.getString('token') ?? '';
+  //       final headers = {
+  //         'Authorization': 'Bearer $authToken',
+  //         'Content-Type': 'application/json',
+  //       };
+  //       final response = await http
+  //           .get(
+  //             Uri.parse('$baseUrl/$endpoint'),
+  //             headers: headers,
+  //           )
+  //           .timeout(initialTimeout + Duration(seconds: currentRetry * 5));
+
+  //       if (response.statusCode == 200) {
+  //         final jsonData = json.decode(response.body);
+  //         return jsonData;
+  //       } else {
+  //         throw Exception('Failed to load data');
+  //       }
+  //     } on TimeoutException catch (_) {
+  //       print('Timeout error: Request took too long to complete.');
+  //     } catch (e) {
+  //       client.close();
+  //       throw Exception('Error: $e');
+  //     }
+  //   }
+  //   currentRetry++;
+  // }
+
 
   Future<Map<String, dynamic>> noAuthFetchHomeCategoryData(
       String endpoint) async {
@@ -163,8 +206,11 @@ class ApiHelper {
     }
   }
 
-  fetchProfile(String authToken) async {
+  fetchProfile() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('token') ?? '';
+      log(authToken,name: 'fetch profile authtoken');
       final response = await http.post(
         Uri.parse(editPofile),
         headers: <String, String>{
@@ -371,7 +417,7 @@ class ApiHelper {
       final authToken = prefs.getString('token') ?? '';
       final headers = {
         'Authorization': 'Bearer $authToken',
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=UTF-8',
       };
       final response = await http.get(
         Uri.parse(addSongList),
@@ -511,7 +557,11 @@ class ApiHelper {
         throw Exception('Failed to fetch download song list');
       }
     } catch (e) {
+       if (e is SocketException) {
+      throw Exception('Network error: Unable to connect to the server.');
+    } else {
       throw Exception('Error: $e');
+    }
     }
   }
 
@@ -665,7 +715,7 @@ class ApiHelper {
   Future<Map<String, dynamic>> recentSongsList() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('token') ?? '';
+      final authToken = prefs.getString('token');
       final headers = {
         'Authorization': 'Bearer $authToken',
         'Content-Type': 'application/json',
@@ -681,6 +731,32 @@ class ApiHelper {
         return jsonData;
       } else {
         throw Exception('Failed to fetch recent song list');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+
+  Future<Map<String, dynamic>> queueSongsListWithoutPlaylist() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('token') ?? '';
+      final headers = {
+        'Authorization': 'Bearer $authToken',
+        'Content-Type': 'application/json',
+      };
+
+      final response = await http.post(
+        Uri.parse(queueSongListWithoutPlaylist),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to fetch queue song list');
       }
     } catch (e) {
       throw Exception('Error: $e');

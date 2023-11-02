@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:edpal_music_app_ui/controllers/auth_controller.dart';
@@ -9,6 +8,7 @@ import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
+import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/mobile%20auth/mobile_login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,6 +16,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pinput/pinput.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpMobileAuthScreen extends StatefulWidget {
   final String varify;
@@ -36,6 +37,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
   AuthController authController = Get.put(AuthController());
   final MainScreenController controller =
       Get.put(MainScreenController(initialIndex: 0));
+  // ProfileController profileController = Get.put(ProfileController());
 
   var code = '';
   bool isLoding = false;
@@ -86,7 +88,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
               size: 26,
             ),
             onPressed: () {
-              Get.offAll(const MobileLoginScreen());
+              Get.offAll(const InitialLoginScreen());
             },
           ),
         ),
@@ -216,12 +218,19 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                   '${widget.selectedCountry.dialCode}${widget.phoneNumber.text}')
           .then(
             (value) => snackBar(AppStrings.loginSuccessfully),
-          );
-      log("${GlobVar.login}", name: 'library login');
+          )
+          .then((value) =>
+          
+              Get.offAll(MainScreen(), transition: Transition.upToDown));
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isLoggedIn', true);
       controller.currentIndex.value = 0;
-      GlobVar.login == true;
-
-      Get.offAll(MainScreen(), transition: Transition.upToDown);
+      GlobVar.login = true;
+      // log("${GlobVar.login}", name: 'library login');
+      // profileController.fetchProfile();
+      // controller.fetchData();
+      // Future.delayed(const Duration(seconds: 5)).then((value) =>
+      // );
 
       setState(() {
         isLoding = false;

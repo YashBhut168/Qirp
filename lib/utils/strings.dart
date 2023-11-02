@@ -133,4 +133,7 @@ class AppStrings {
   // favorite song screen
   static const String favoriteSongs = "Favorite Songs";
 
+  // queue song screen
+  static const String queueSongs = "Queue Songs";
+
 }

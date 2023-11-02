@@ -6,16 +6,16 @@ import 'package:edpal_music_app_ui/controllers/detail_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/download_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/playlist_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/queue_songs_screen_controller.dart';
 import 'package:edpal_music_app_ui/models/category_data_model.dart';
-import 'package:edpal_music_app_ui/models/my_playlist_data_model.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/common_method.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/validation.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/home_screen/detail_screen/detail_screen.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/playlist_screens/looking_for_songs_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/playlist_screens/playlist_songs_screen.dart';
 import 'package:flutter/foundation.dart';
@@ -43,24 +43,29 @@ class _PlylistScreenState extends State<PlylistScreen> {
       Get.put(PlaylistScreenController());
   AllSongsScreenController allSongsScreenController =
       Get.put(AllSongsScreenController());
+  QueueSongsScreenController queueSongsScreenController =
+      Get.put(QueueSongsScreenController());
 
   TextEditingController searchController = TextEditingController();
   TextEditingController playlistNameController = TextEditingController();
   GlobalKey<FormState> myKey7 = GlobalKey<FormState>();
 
-  List<String> playlistTitles = [];
-  List<String> filteredPlaylistTitles = [];
+  // List<String> playlistTitles = [];
+  // List<String> filteredPlaylistTitles = [];
 
   @override
   void initState() {
     super.initState();
     detailScreenController.fetchMyPlaylistData();
-    fetchMyPlaylistData();
+    // fetchMyPlaylistData();
     fetchData();
 
     sharedPref();
     setState(() {
-      controller.isMiniPlayerOpenDownloadSongs.value == true ||
+      log("${controller.isMiniPlayerOpenQueueSongs.value}",
+          name: "isMiniPlayerOpenQueueSongs");
+      controller.isMiniPlayerOpenQueueSongs.value == true ||
+              controller.isMiniPlayerOpenDownloadSongs.value == true ||
               controller.isMiniPlayerOpen.value == true ||
               controller.isMiniPlayerOpenHome1.value == true ||
               controller.isMiniPlayerOpenHome2.value == true ||
@@ -68,6 +73,22 @@ class _PlylistScreenState extends State<PlylistScreen> {
               controller.isMiniPlayerOpenAllSongs.value == true
           ? controller.audioPlayer.play()
           : null;
+      log("${controller.isMiniPlayerOpenQueueSongs.value}",
+          name: "isMiniPlayerOpenQueueSongs");
+      log("${controller.isMiniPlayerOpenDownloadSongs.value}",
+          name: "isMiniPlayerOpenDownloadSongs");
+      log("${controller.isMiniPlayerOpen.value}", name: "isMiniPlayerOpen");
+      log("${controller.isMiniPlayerOpenHome1.value}",
+          name: "isMiniPlayerOpenHome1");
+      log("${controller.isMiniPlayerOpenHome2.value}",
+          name: "isMiniPlayerOpenHome2");
+      log("${controller.isMiniPlayerOpenHome3.value}",
+          name: "isMiniPlayerOpenHome3");
+
+      log("${controller.queueSongsUrl}", name: "queueSongsUrl");
+      log("${controller.isMiniPlayerOpenDownloadSongs.value}",
+          name: "isMiniPlayerOpenDownloadSongs");
+      controller.currentListTileIndexQueueSongs.value;
       controller.currentListTileIndexDownloadSongs.value;
       controller.currentListTileIndex.value;
       controller.currentListTileIndexAllSongs.value;
@@ -78,46 +99,47 @@ class _PlylistScreenState extends State<PlylistScreen> {
     allSongsScreenController.allSongsList();
     playlistScreenController.songsInPlaylist(playlistId: '');
     downloadSongScreenController.downloadSongsList();
+    queueSongsScreenController.queueSongsListWithoutPlaylist();
   }
 
   final apiHelper = ApiHelper();
 
   bool isLoading = false;
-  MyPlaylistDataModel? myPlaylistDataModel;
+  // MyPlaylistDataModel? myPlaylistDataModel;
 
-  Future<void> fetchMyPlaylistData() async {
-    setState(() {
-      isLoading = true;
-    });
+  // Future<void> fetchMyPlaylistData() async {
+  //   setState(() {
+  //     isLoading = true;
+  //   });
 
-    try {
-      final myPlaylistDataModelJson = await apiHelper.fetchMyPlaylistData();
+  //   try {
+  //     final myPlaylistDataModelJson = await apiHelper.fetchMyPlaylistData();
 
-      myPlaylistDataModel =
-          MyPlaylistDataModel.fromJson(myPlaylistDataModelJson);
+  //     myPlaylistDataModel =
+  //         MyPlaylistDataModel.fromJson(myPlaylistDataModelJson);
 
-      playlistTitles =
-          myPlaylistDataModel!.data!.map((item) => item.plTitle!).toList();
+  //     playlistTitles =
+  //         myPlaylistDataModel!.data!.map((item) => item.plTitle!).toList();
 
-      filteredPlaylistTitles = playlistTitles;
+  //     filteredPlaylistTitles = playlistTitles;
 
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-        isLoading = false;
-      }
-    }
-  }
+  //     setState(() {
+  //       isLoading = false;
+  //     });
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print(e);
+  //       isLoading = false;
+  //     }
+  //   }
+  // }
 
   void filterPlaylistTitles(String query) {
     setState(() {
       if (query.isEmpty) {
-        filteredPlaylistTitles = playlistTitles;
+        detailScreenController.filteredPlaylistTitles = detailScreenController.playlistTitles;
       } else {
-        filteredPlaylistTitles = playlistTitles
+        detailScreenController.filteredPlaylistTitles = detailScreenController.playlistTitles
             .where((title) => title.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
@@ -128,7 +150,7 @@ class _PlylistScreenState extends State<PlylistScreen> {
     final prefs = await SharedPreferences.getInstance();
     bool isMiniPlayerOpen = prefs.getBool('isMiniPlayerOpen')!;
     log("$isMiniPlayerOpen");
-    int currentListTileIndex = prefs.getInt('currentListTileIndex')!;
+    int currentListTileIndex = prefs.getInt('currentListTileIndex') ?? 0;
     log("$currentListTileIndex");
     controller.toggleMiniPlayer(isMiniPlayerOpen);
     controller.updateCurrentListTileIndex(currentListTileIndex);
@@ -174,6 +196,20 @@ class _PlylistScreenState extends State<PlylistScreen> {
   }
 
   @override
+  void dispose() {
+    controller.isMiniPlayerOpenQueueSongs.value == true ||
+            controller.isMiniPlayerOpenDownloadSongs.value == true ||
+            controller.isMiniPlayerOpen.value == true ||
+            controller.isMiniPlayerOpenHome1.value == true ||
+            controller.isMiniPlayerOpenHome2.value == true ||
+            controller.isMiniPlayerOpenHome3.value == true ||
+            controller.isMiniPlayerOpenAllSongs.value == true
+        ? controller.audioPlayer.play()
+        : null;
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
@@ -181,7 +217,19 @@ class _PlylistScreenState extends State<PlylistScreen> {
       },
       child: WillPopScope(
         onWillPop: () async {
-          Get.offAll(MainScreen());
+          //   controller.isMiniPlayerOpenQueueSongs.value == true ||
+          //           controller.isMiniPlayerOpenDownloadSongs.value == true ||
+          //           controller.isMiniPlayerOpen.value == true ||
+          //           controller.isMiniPlayerOpenHome1.value == true ||
+          //           controller.isMiniPlayerOpenHome2.value == true ||
+          //           controller.isMiniPlayerOpenHome3.value == true ||
+          //           controller.isMiniPlayerOpenAllSongs.value == true
+          //       ? controller.initAudioPlayer()
+          //       : null;
+          //   miniplayer();
+          // Get.off(MainScreen(),opaque: true);
+          Get.back();
+          // Get.to(MainScreen(),);
           return true;
         },
         child: Scaffold(
@@ -196,152 +244,178 @@ class _PlylistScreenState extends State<PlylistScreen> {
             ),
             automaticallyImplyLeading: false,
           ),
-          body: myPlaylistDataModel == null || isLoading == true
-              ? Center(
-                  child: CircularProgressIndicator(
-                  color: AppColors.white,
-                ))
-              : Stack(
-                  children: [
-                    SingleChildScrollView(
-                      child: Column(
+          body: Obx(
+            () => playlistScreenController.isLoading.value == true
+                ? Center(
+                    child: CircularProgressIndicator(
+                    color: AppColors.white,
+                  ))
+                // ignore: unnecessary_null_comparison
+                : detailScreenController.myPlaylistDataModel.value == null
+                    ? Center(
+                        child: lable(text: 'Load playlist...'),
+                      )
+                    : Stack(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: commonTextField(
-                              borderRadius: 15,
-                              backgroundColor: Colors.white,
-                              cursorColor: Colors.grey,
-                              prefix: const Padding(
-                                padding: EdgeInsets.only(left: 10, right: 10),
-                                child: Icon(
-                                  Icons.search,
-                                  color: Colors.grey,
-                                  size: 15,
-                                ),
-                              ),
-                              borderColor: Colors.transparent,
-                              hintText: AppStrings.search,
-                              textColor: Colors.grey,
-                              lableColor: Colors.grey,
-                              controller: searchController,
-                              onChanged: (query) {
-                                filterPlaylistTitles(query);
-                              },
-                            ),
-                          ),
-                          sizeBoxHeight(18),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: GestureDetector(
-                              onTap: () {
-                                createPlaylist();
-                              },
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                    Icons.add,
-                                    color: Colors.grey,
-                                  ),
-                                  sizeBoxWidth(16),
-                                  lable(
-                                    text: AppStrings.createPlaylist,
-                                    color: Colors.grey,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          sizeBoxHeight(10),
-                          myPlaylistDataModel!.data!.isEmpty
-                              ? Center(
-                                  heightFactor: 20,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      lable(text: AppStrings.makeYourPlaylist),
-                                      sizeBoxWidth(5),
-                                      const Icon(
-                                        Icons.create,
+                          SingleChildScrollView(
+                            child: Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 16),
+                                  child: commonTextField(
+                                    borderRadius: 15,
+                                    backgroundColor: Colors.white,
+                                    cursorColor: Colors.grey,
+                                    prefix: const Padding(
+                                      padding:
+                                          EdgeInsets.only(left: 10, right: 10),
+                                      child: Icon(
+                                        Icons.search,
                                         color: Colors.grey,
+                                        size: 15,
                                       ),
-                                    ],
+                                    ),
+                                    borderColor: Colors.transparent,
+                                    hintText: AppStrings.search,
+                                    textColor: Colors.grey,
+                                    lableColor: Colors.grey,
+                                    controller: searchController,
+                                    onChanged: (query) {
+                                      filterPlaylistTitles(query);
+                                    },
                                   ),
-                                )
-                              : ListView.builder(
-                                  scrollDirection: Axis.vertical,
-                                  physics: const BouncingScrollPhysics(),
-                                  shrinkWrap: true,
-                                  itemCount: filteredPlaylistTitles.length,
-                                  itemBuilder: ((context, index) {
-                                    var playlistTitle =
-                                        filteredPlaylistTitles[index];
-                                    var myPlaylistData =
-                                        myPlaylistDataModel!.data![index];
-
-                                    //  print(playlistTitles);
-                                    return ListTile(
-                                      visualDensity: const VisualDensity(
-                                          horizontal: 0, vertical: -3.610),
-                                      leading: ClipRRect(
-                                        borderRadius: BorderRadius.circular(7),
-                                        child: Container(
-                                          padding: const EdgeInsets.all(10),
+                                ),
+                                sizeBoxHeight(18),
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 24),
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      createPlaylist();
+                                    },
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.add,
                                           color: Colors.grey,
-                                          child: Icon(
-                                            Icons.music_note,
-                                            color: AppColors.white,
-                                          ),
                                         ),
-                                      ),
-                                      title: lable(
-                                        text: playlistTitle,
-                                        fontSize: 12,
-                                      ),
-                                      subtitle: lable(
-                                        text:
-                                            "${(myPlaylistData.tracks)!}  songs",
-                                        // "${(myPlaylistDataModel!.data![index].tracks)!} • ${AppStrings.tracks}",
-                                        fontSize: 10,
-                                        color: Colors.grey,
-                                      ),
-                                      trailing: IconButton(
-                                        icon: const Icon(
-                                          Icons.more_vert_outlined,
+                                        sizeBoxWidth(16),
+                                        lable(
+                                          text: AppStrings.createPlaylist,
+                                          color: Colors.grey,
                                         ),
-                                        onPressed: () {
-                                          bottomSheet(context, index,
-                                              playlistTitle, myPlaylistData);
-                                        },
-                                      ),
-                                      onTap: () {
-                                        (myPlaylistData.tracks)! == '0'
-                                            ? Get.to(
-                                                LookingForSongsScreen(
-                                                  playlistTitle: playlistTitle,
-                                                  myPlaylistData:
-                                                      myPlaylistData,
-                                                ),
-                                              )
-                                            : Get.to(
-                                                PlaylistSongsScreen(
-                                                  playlistTitle: playlistTitle,
-                                                  myPlaylistData:
-                                                      myPlaylistData,
-                                                ),
-                                              );
-                                      },
-                                    );
-                                  }),
+                                      ],
+                                    ),
+                                  ),
                                 ),
+                                sizeBoxHeight(10),
+                                detailScreenController.myPlaylistDataModel.value.data!.isEmpty
+                                    ? Center(
+                                        heightFactor: 20,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            lable(
+                                                text: AppStrings
+                                                    .makeYourPlaylist),
+                                            sizeBoxWidth(5),
+                                            const Icon(
+                                              Icons.create,
+                                              color: Colors.grey,
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : ListView.builder(
+                                        scrollDirection: Axis.vertical,
+                                        physics: const BouncingScrollPhysics(),
+                                        shrinkWrap: true,
+                                        itemCount:
+                                            detailScreenController.filteredPlaylistTitles.length,
+                                        itemBuilder: ((context, index) {
+                                          var playlistTitle =
+                                              detailScreenController.filteredPlaylistTitles[index];
+                                          var myPlaylistData =
+                                              detailScreenController.myPlaylistDataModel.value.data![index];
+
+                                          //  print(playlistTitles);
+                                          return ListTile(
+                                            visualDensity: const VisualDensity(
+                                                horizontal: 0,
+                                                vertical: -3.610),
+                                            leading: ClipRRect(
+                                              borderRadius:
+                                                  BorderRadius.circular(7),
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.all(10),
+                                                color: Colors.grey,
+                                                child: Icon(
+                                                  Icons.music_note,
+                                                  color: AppColors.white,
+                                                ),
+                                              ),
+                                            ),
+                                            title: lable(
+                                              text: playlistTitle,
+                                              fontSize: 12,
+                                            ),
+                                            subtitle: lable(
+                                                text:
+                                                    "${(myPlaylistData.tracks)!}  songs",
+                                                    // "${detailScreenController.myPlaylistDataModel!.data![index].tracks}  songs",
+                                                // "${(myPlaylistDataModel!.data![index].tracks)!} • ${AppStrings.tracks}",
+                                                fontSize: 10,
+                                                color: Colors.grey,
+                                              
+                                            ),
+                                            trailing: IconButton(
+                                              icon: const Icon(
+                                                Icons.more_vert_outlined,
+                                              ),
+                                              onPressed: () {
+                                                bottomSheet(
+                                                    context,
+                                                    index,
+                                                    playlistTitle,
+                                                    myPlaylistData);
+                                              },
+                                            ),
+                                            onTap: () {
+                                              (myPlaylistData.tracks)! == '0'
+                                                  ? Get.to(
+                                                      LookingForSongsScreen(
+                                                        playlistTitle:
+                                                            playlistTitle,
+                                                        myPlaylistData:
+                                                            myPlaylistData,
+                                                      ),
+                                                    )
+                                                  : Get.to(
+                                                      PlaylistSongsScreen(
+                                                        playlistTitle:
+                                                            playlistTitle,
+                                                        myPlaylistData:
+                                                            myPlaylistData,
+                                                      ),
+                                                    );
+                                                GlobVar.playlistId = myPlaylistData.id!;
+                                                log(GlobVar.playlistId,name: "GlobVar.playlistId");
+                                            },
+                                          );
+                                        }),
+                                      ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
+          ),
           bottomNavigationBar: Obx(
-            () => (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
-                    downloadSongScreenController.allSongsListModel != null
+            () => (controller.isMiniPlayerOpenQueueSongs.value) == true &&
+                    queueSongsScreenController.allSongsListModel != null
                 // &&
                 // (controller.isMiniPlayerOpenHome1.value) == false
                 ? BottomAppBar(
@@ -351,8 +425,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                     clipBehavior: Clip.none,
                     color: AppColors.backgroundColor,
                     child: miniplayer())
-                : (controller.isMiniPlayerOpen.value) == true &&
-                        playlistScreenController.allSongsListModel != null
+                : (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
+                        downloadSongScreenController.allSongsListModel != null
                     // &&
                     // (controller.isMiniPlayerOpenHome1.value) == false
                     ? BottomAppBar(
@@ -362,8 +436,10 @@ class _PlylistScreenState extends State<PlylistScreen> {
                         clipBehavior: Clip.none,
                         color: AppColors.backgroundColor,
                         child: miniplayer())
-                    : (controller.isMiniPlayerOpenHome1.value) == true &&
-                            categoryData1 != null
+                    : (controller.isMiniPlayerOpen.value) == true &&
+                            playlistScreenController.allSongsListModel != null
+                        // &&
+                        // (controller.isMiniPlayerOpenHome1.value) == false
                         ? BottomAppBar(
                             elevation: 0,
                             height: 60,
@@ -371,8 +447,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                             clipBehavior: Clip.none,
                             color: AppColors.backgroundColor,
                             child: miniplayer())
-                        : (controller.isMiniPlayerOpenHome2.value) == true &&
-                                categoryData2 != null
+                        : (controller.isMiniPlayerOpenHome1.value) == true &&
+                                categoryData1 != null
                             ? BottomAppBar(
                                 elevation: 0,
                                 height: 60,
@@ -380,9 +456,9 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                 clipBehavior: Clip.none,
                                 color: AppColors.backgroundColor,
                                 child: miniplayer())
-                            : (controller.isMiniPlayerOpenHome3.value) ==
+                            : (controller.isMiniPlayerOpenHome2.value) ==
                                         true &&
-                                    categoryData3 != null
+                                    categoryData2 != null
                                 ? BottomAppBar(
                                     elevation: 0,
                                     height: 60,
@@ -390,11 +466,9 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                     clipBehavior: Clip.none,
                                     color: AppColors.backgroundColor,
                                     child: miniplayer())
-                                : (controller.isMiniPlayerOpenAllSongs.value) ==
+                                : (controller.isMiniPlayerOpenHome3.value) ==
                                             true &&
-                                        allSongsScreenController
-                                                .allSongsListModel!.data !=
-                                            null
+                                        categoryData3 != null
                                     ? BottomAppBar(
                                         elevation: 0,
                                         height: 60,
@@ -402,7 +476,20 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                         clipBehavior: Clip.none,
                                         color: AppColors.backgroundColor,
                                         child: miniplayer())
-                                    : const SizedBox(),
+                                    : (controller.isMiniPlayerOpenAllSongs
+                                                    .value) ==
+                                                true &&
+                                            allSongsScreenController
+                                                    .allSongsListModel!.data !=
+                                                null
+                                        ? BottomAppBar(
+                                            elevation: 0,
+                                            height: 60,
+                                            padding: EdgeInsets.zero,
+                                            clipBehavior: Clip.none,
+                                            color: AppColors.backgroundColor,
+                                            child: miniplayer())
+                                        : const SizedBox(),
           ),
         ),
       ),
@@ -417,13 +504,13 @@ class _PlylistScreenState extends State<PlylistScreen> {
       builder: (context) {
         return SizedBox(
           height:
-              (myPlaylistDataModel!.data![index].tracks)! == '0' ? 280 : 330,
+              (detailScreenController.myPlaylistDataModel.value.data![index].tracks)! == '0' ? 280 : 330,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
             child: Scaffold(
               backgroundColor: const Color(0xFF30343d),
               body: SingleChildScrollView(
-                child: (myPlaylistDataModel!.data![index].tracks)! == '0'
+                child: (detailScreenController.myPlaylistDataModel.value.data![index].tracks)! == '0'
                     ? Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
@@ -641,7 +728,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                       playlistTitle:
                                           playlistNameController.text)
                                   .then((value) {
-                                fetchMyPlaylistData();
+                                // fetchMyPlaylistData();
+                                detailScreenController.fetchMyPlaylistData();
                                 FocusScope.of(context).unfocus();
                                 Navigator.of(context).pop();
                               });
@@ -676,7 +764,7 @@ class _PlylistScreenState extends State<PlylistScreen> {
     );
   }
 
- Miniplayer miniplayer() {
+  Miniplayer miniplayer() {
     return Miniplayer(
       minHeight: 60,
       maxHeight: 60,
@@ -705,27 +793,33 @@ class _PlylistScreenState extends State<PlylistScreen> {
             }
             Get.to(
                 DetailScreen(
-                  index: controller.isMiniPlayerOpenDownloadSongs.value == true
-                      ? controller.currentListTileIndexDownloadSongs.value
-                      : controller.isMiniPlayerOpen.value == true
-                          ? controller.currentListTileIndex.value
-                          : controller.isMiniPlayerOpenHome1.value == true
-                              ? controller.currentListTileIndexCategory1.value
-                              : controller.isMiniPlayerOpenHome2.value == true
+                  index: controller.isMiniPlayerOpenQueueSongs.value == true
+                      ? controller.currentListTileIndexQueueSongs.value
+                      : controller.isMiniPlayerOpenDownloadSongs.value == true
+                          ? controller.currentListTileIndexDownloadSongs.value
+                          : controller.isMiniPlayerOpen.value == true
+                              ? controller.currentListTileIndex.value
+                              : controller.isMiniPlayerOpenHome1.value == true
                                   ? controller
-                                      .currentListTileIndexCategory2.value
-                                  : controller.isMiniPlayerOpenHome3.value ==
+                                      .currentListTileIndexCategory1.value
+                                  : controller.isMiniPlayerOpenHome2.value ==
                                           true
                                       ? controller
-                                          .currentListTileIndexCategory3.value
-                                      : controller.isMiniPlayerOpenAllSongs
+                                          .currentListTileIndexCategory2.value
+                                      : controller.isMiniPlayerOpenHome3
                                                   .value ==
                                               true
                                           ? controller
-                                              .currentListTileIndexAllSongs
+                                              .currentListTileIndexCategory3
                                               .value
-                                          : controller
-                                              .currentListTileIndex.value,
+                                          : controller.isMiniPlayerOpenAllSongs
+                                                      .value ==
+                                                  true
+                                              ? controller
+                                                  .currentListTileIndexAllSongs
+                                                  .value
+                                              : controller
+                                                  .currentListTileIndex.value,
                   type: controller.isMiniPlayerOpenHome1.value == true ||
                           controller.isMiniPlayerOpenHome2.value == true ||
                           controller.isMiniPlayerOpenHome3.value == true
@@ -738,7 +832,11 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                           .value ==
                                       true
                                   ? 'download song'
-                                  : '',
+                                  : controller.isMiniPlayerOpenQueueSongs
+                                              .value ==
+                                          true
+                                      ? 'queue song'
+                                      : '',
                   duration: duration,
                   position: position,
                   bufferedPosition: bufferedPosition,
@@ -750,9 +848,14 @@ class _PlylistScreenState extends State<PlylistScreen> {
                           controller.isMiniPlayerOpenHome3.value == true ||
                           controller.isMiniPlayerOpenAllSongs.value == true ||
                           controller.isMiniPlayerOpen.value == true ||
-                          controller.isMiniPlayerOpenDownloadSongs.value == true
+                          controller.isMiniPlayerOpenDownloadSongs.value ==
+                              true ||
+                          controller.isMiniPlayerOpenQueueSongs.value == true
                       ? controller.audioPlayer
                       : controller.audioPlayer,
+                  categoryData1: categoryData1,
+                  categoryData2: categoryData2,
+                  categoryData3: categoryData3,
                 ),
                 transition: Transition.downToUp,
                 duration: const Duration(milliseconds: 600));
@@ -761,7 +864,7 @@ class _PlylistScreenState extends State<PlylistScreen> {
               //  Obx(
               //   () =>
               Container(
-            color: const Color.fromARGB(255, 7, 18, 59),
+            color: AppColors.bottomNavColor,
             height: 60,
             width: Get.width,
             child: Row(
@@ -770,9 +873,9 @@ class _PlylistScreenState extends State<PlylistScreen> {
                   () => ClipRRect(
                     borderRadius: BorderRadius.circular(5),
                     child: Image.network(
-                      downloadSongScreenController.allSongsListModel != null &&
+                      queueSongsScreenController.allSongsListModel != null &&
                               (controller.isMiniPlayerOpenDownloadSongs.value) ==
-                                  true &&
+                                  false &&
                               (controller.isMiniPlayerOpen.value) == false &&
                               (controller.isMiniPlayerOpenHome1.value) ==
                                   false &&
@@ -781,16 +884,17 @@ class _PlylistScreenState extends State<PlylistScreen> {
                               (controller.isMiniPlayerOpenHome3.value) ==
                                   false &&
                               (controller.isMiniPlayerOpenAllSongs.value) ==
-                                  false
-                          ? downloadSongScreenController
-                                  .allSongsListModel!
-                                  .data![controller
-                                      .currentListTileIndexDownloadSongs.value]
-                                  .image ??
+                                  false &&
+                              (controller.isMiniPlayerOpenQueueSongs.value) ==
+                                  true
+                          ? queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].image ??
                               'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                          : playlistScreenController.allSongsListModel != null &&
-                                  (controller.isMiniPlayerOpen.value) == true &&
+                          : downloadSongScreenController.allSongsListModel != null &&
+                                  (controller.isMiniPlayerOpenQueueSongs.value) ==
+                                      false &&
                                   (controller.isMiniPlayerOpenDownloadSongs.value) ==
+                                      true &&
+                                  (controller.isMiniPlayerOpen.value) ==
                                       false &&
                                   (controller.isMiniPlayerOpenHome1.value) ==
                                       false &&
@@ -800,39 +904,47 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                       false &&
                                   (controller.isMiniPlayerOpenAllSongs.value) ==
                                       false
-                              ? playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].image ??
+                              ? downloadSongScreenController
+                                      .allSongsListModel!
+                                      .data![controller
+                                          .currentListTileIndexDownloadSongs
+                                          .value]
+                                      .image ??
                                   'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                              : categoryData1 != null &&
-                                      (controller.isMiniPlayerOpenDownloadSongs.value) ==
+                              : playlistScreenController.allSongsListModel != null &&
+                                      (controller.isMiniPlayerOpenQueueSongs.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpen.value) ==
+                                          true &&
+                                      (controller.isMiniPlayerOpenDownloadSongs.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenHome1.value) ==
-                                          true &&
+                                          false &&
                                       (controller.isMiniPlayerOpenHome2.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenHome3.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenAllSongs.value) ==
                                           false
-                                  ? categoryData1!.data![controller.currentListTileIndexCategory1.value].image ??
+                                  ? playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].image ??
                                       'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                                  : categoryData2 != null &&
-                                          (controller
-                                                  .isMiniPlayerOpenDownloadSongs
-                                                  .value) ==
+                                  : categoryData1 != null &&
+                                          (controller.isMiniPlayerOpenQueueSongs.value) ==
                                               false &&
+                                          (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
                                           (controller.isMiniPlayerOpen.value) == false &&
-                                          (controller.isMiniPlayerOpenHome1.value) == false &&
-                                          (controller.isMiniPlayerOpenHome2.value) == true &&
+                                          (controller.isMiniPlayerOpenHome1.value) == true &&
+                                          (controller.isMiniPlayerOpenHome2.value) == false &&
                                           (controller.isMiniPlayerOpenHome3.value) == false &&
                                           (controller.isMiniPlayerOpenAllSongs.value) == false
-                                      ? categoryData2!.data![controller.currentListTileIndexCategory2.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                                      : categoryData3 != null && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
-                                          ? categoryData3!.data![controller.currentListTileIndexCategory3.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                                          : allSongsScreenController.allSongsListModel != null && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
-                                              ? allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                                              : '',
+                                      ? categoryData1!.data![controller.currentListTileIndexCategory1.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                      : categoryData2 != null && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == true && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                          ? categoryData2!.data![controller.currentListTileIndexCategory2.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                          : categoryData3 != null && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                              ? categoryData3!.data![controller.currentListTileIndexCategory3.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                              : allSongsScreenController.allSongsListModel != null && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
+                                                  ? allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].image ?? 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                                  : '',
                       height: 60,
                       width: 60,
                       filterQuality: FilterQuality.high,
@@ -848,7 +960,7 @@ class _PlylistScreenState extends State<PlylistScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         lable(
-                          text: (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
+                          text: (controller.isMiniPlayerOpenQueueSongs.value) == true &&
                                   (controller.isMiniPlayerOpen.value) ==
                                       false &&
                                   (controller.isMiniPlayerOpenHome1.value) ==
@@ -858,15 +970,19 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                   (controller.isMiniPlayerOpenHome3.value) ==
                                       false &&
                                   (controller.isMiniPlayerOpenAllSongs.value) ==
+                                      false &&
+                                  (controller.isMiniPlayerOpenDownloadSongs.value) ==
                                       false
-                              ? (downloadSongScreenController
+                              ? (queueSongsScreenController
                                   .allSongsListModel!
                                   .data![controller
-                                      .currentListTileIndexDownloadSongs.value]
+                                      .currentListTileIndexQueueSongs.value]
                                   .title)!
-                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
+                              : (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
+                                      (controller.isMiniPlayerOpenQueueSongs.value) ==
+                                          false &&
                                       (controller.isMiniPlayerOpen.value) ==
-                                          true &&
+                                          false &&
                                       (controller.isMiniPlayerOpenHome1.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenHome2.value) ==
@@ -875,33 +991,37 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                           false &&
                                       (controller.isMiniPlayerOpenAllSongs.value) ==
                                           false
-                                  ? (playlistScreenController
+                                  ? (downloadSongScreenController
                                       .allSongsListModel!
-                                      .data![
-                                          controller.currentListTileIndex.value]
+                                      .data![controller
+                                          .currentListTileIndexDownloadSongs
+                                          .value]
                                       .title)!
                                   : (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
-                                          (controller.isMiniPlayerOpenHome1.value) ==
-                                              true &&
-                                          (controller.isMiniPlayerOpen.value) ==
+                                          (controller.isMiniPlayerOpenQueueSongs.value) ==
                                               false &&
-                                          (controller.isMiniPlayerOpenHome2.value) ==
-                                              false &&
+                                          (controller.isMiniPlayerOpen.value) == true &&
+                                          (controller.isMiniPlayerOpenHome1.value) == false &&
+                                          (controller.isMiniPlayerOpenHome2.value) == false &&
                                           (controller.isMiniPlayerOpenHome3.value) == false &&
                                           (controller.isMiniPlayerOpenAllSongs.value) == false
-                                      ? (categoryData1!.data![controller.currentListTileIndexCategory1.value].title)!
-                                      : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome2.value) == true && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
-                                          ? (categoryData2!.data![controller.currentListTileIndexCategory2.value].title)!
-                                          : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
-                                              ? (categoryData3!.data![controller.currentListTileIndexCategory3.value].title)!
-                                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
-                                                  ? (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title)!
-                                                  : (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title)!,
+                                      ? (playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title)!
+                                      : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenHome1.value) == true && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                          ? (categoryData1!.data![controller.currentListTileIndexCategory1.value].title)!
+                                          : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome2.value) == true && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                              ? (categoryData2!.data![controller.currentListTileIndexCategory2.value].title)!
+                                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                                  ? (categoryData3!.data![controller.currentListTileIndexCategory3.value].title)!
+                                                  : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
+                                                      ? (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title)!
+                                                      : (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title)!,
                           fontSize: 11,
                           fontWeight: FontWeight.w500,
                         ),
                         lable(
-                          text: (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
+                          text: (controller.isMiniPlayerOpenQueueSongs.value) == true &&
+                                  (controller.isMiniPlayerOpenDownloadSongs.value) ==
+                                      false &&
                                   (controller.isMiniPlayerOpen.value) ==
                                       false &&
                                   (controller.isMiniPlayerOpenHome1.value) ==
@@ -912,14 +1032,16 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                       false &&
                                   (controller.isMiniPlayerOpenAllSongs.value) ==
                                       false
-                              ? (downloadSongScreenController
+                              ? (queueSongsScreenController
                                   .allSongsListModel!
                                   .data![controller
-                                      .currentListTileIndexDownloadSongs.value]
+                                      .currentListTileIndexQueueSongs.value]
                                   .description)!
-                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
+                              : (controller.isMiniPlayerOpenDownloadSongs.value) == true &&
+                                      (controller.isMiniPlayerOpenQueueSongs.value) ==
+                                          false &&
                                       (controller.isMiniPlayerOpen.value) ==
-                                          true &&
+                                          false &&
                                       (controller.isMiniPlayerOpenHome1.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenHome2.value) ==
@@ -928,28 +1050,31 @@ class _PlylistScreenState extends State<PlylistScreen> {
                                           false &&
                                       (controller.isMiniPlayerOpenAllSongs.value) ==
                                           false
-                                  ? (playlistScreenController
+                                  ? (downloadSongScreenController
                                       .allSongsListModel!
-                                      .data![
-                                          controller.currentListTileIndex.value]
+                                      .data![controller
+                                          .currentListTileIndexDownloadSongs
+                                          .value]
                                       .description)!
                                   : (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
-                                          (controller.isMiniPlayerOpen.value) ==
+                                          (controller.isMiniPlayerOpenQueueSongs
+                                                  .value) ==
                                               false &&
-                                          (controller.isMiniPlayerOpenHome1.value) ==
-                                              true &&
-                                          (controller.isMiniPlayerOpenHome2.value) ==
-                                              false &&
+                                          (controller.isMiniPlayerOpen.value) == true &&
+                                          (controller.isMiniPlayerOpenHome1.value) == false &&
+                                          (controller.isMiniPlayerOpenHome2.value) == false &&
                                           (controller.isMiniPlayerOpenHome3.value) == false &&
                                           (controller.isMiniPlayerOpenAllSongs.value) == false
-                                      ? (categoryData1!.data![controller.currentListTileIndexCategory1.value].description)!
-                                      : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == true && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
-                                          ? (categoryData2!.data![controller.currentListTileIndexCategory2.value].description)!
-                                          : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
-                                              ? (categoryData3!.data![controller.currentListTileIndexCategory3.value].description)!
-                                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
-                                                  ? (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].description)!
-                                                  : (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].description)!,
+                                      ? (playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].description)!
+                                      : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == true && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                          ? (categoryData1!.data![controller.currentListTileIndexCategory1.value].description)!
+                                          : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == true && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                              ? (categoryData2!.data![controller.currentListTileIndexCategory2.value].description)!
+                                              : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == true && (controller.isMiniPlayerOpenAllSongs.value) == false
+                                                  ? (categoryData3!.data![controller.currentListTileIndexCategory3.value].description)!
+                                                  : (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == true
+                                                      ? (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].description)!
+                                                      : (allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].description)!,
                           fontSize: 10,
                           color: Colors.grey,
                         ),
@@ -964,7 +1089,10 @@ class _PlylistScreenState extends State<PlylistScreen> {
                             (controller.isMiniPlayerOpenHome1.value) == true ||
                             (controller.isMiniPlayerOpenHome2.value) == true ||
                             (controller.isMiniPlayerOpenHome3.value) == true ||
-                            (controller.isMiniPlayerOpenAllSongs.value) == true
+                            (controller.isMiniPlayerOpenAllSongs.value) ==
+                                true ||
+                            (controller.isMiniPlayerOpenQueueSongs.value) ==
+                                true
                         ? controller.audioPlayer
                         : controller.audioPlayer,
                     size: 45),
@@ -992,7 +1120,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                     controller.isMiniPlayerOpenHome1.value == true ||
                     controller.isMiniPlayerOpenHome2.value == true ||
                     controller.isMiniPlayerOpenHome3.value == true ||
-                    controller.isMiniPlayerOpenAllSongs.value == true
+                    controller.isMiniPlayerOpenAllSongs.value == true ||
+                    controller.isMiniPlayerOpenQueueSongs.value == true
                 ? controller.audioPlayer.positionStream
                 : controller.audioPlayer.positionStream,
         bufferedPositionStream =
@@ -1001,7 +1130,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                     controller.isMiniPlayerOpenHome1.value == true ||
                     controller.isMiniPlayerOpenHome2.value == true ||
                     controller.isMiniPlayerOpenHome3.value == true ||
-                    controller.isMiniPlayerOpenAllSongs.value == true
+                    controller.isMiniPlayerOpenAllSongs.value == true ||
+                    controller.isMiniPlayerOpenQueueSongs.value == true
                 ? controller.audioPlayer.bufferedPositionStream
                 : controller.audioPlayer.bufferedPositionStream,
         durationStream =
@@ -1010,7 +1140,8 @@ class _PlylistScreenState extends State<PlylistScreen> {
                     controller.isMiniPlayerOpenHome1.value == true ||
                     controller.isMiniPlayerOpenHome2.value == true ||
                     controller.isMiniPlayerOpenHome3.value == true ||
-                    controller.isMiniPlayerOpenAllSongs.value == true
+                    controller.isMiniPlayerOpenAllSongs.value == true ||
+                    controller.isMiniPlayerOpenQueueSongs.value == true
                 ? controller.audioPlayer.durationStream
                 : controller.audioPlayer.durationStream,
         (position, bufferedPosition, duration) => PositionData(

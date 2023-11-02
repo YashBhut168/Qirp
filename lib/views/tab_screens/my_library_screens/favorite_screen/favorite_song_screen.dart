@@ -14,8 +14,8 @@ class FavoriteSongsScreen extends StatefulWidget {
 }
 
 class _FavoriteSongsScreenState extends State<FavoriteSongsScreen> {
-
-  FavoriteSongScreenController favoriteSongScreenController = Get.put(FavoriteSongScreenController());
+  FavoriteSongScreenController favoriteSongScreenController =
+      Get.put(FavoriteSongScreenController());
 
   @override
   void initState() {
@@ -23,11 +23,10 @@ class _FavoriteSongsScreenState extends State<FavoriteSongsScreen> {
     favoriteSongScreenController.favoriteSongsList();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       backgroundColor: AppColors.backgroundColor,
+      backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.backgroundColor,
         title: lable(
@@ -39,63 +38,74 @@ class _FavoriteSongsScreenState extends State<FavoriteSongsScreen> {
         automaticallyImplyLeading: false,
       ),
       body: Obx(
-        () => favoriteSongScreenController.isLoading.value == true 
-        // &&
-        //         downloadSongScreenController.allSongsListModel == null
+        () => favoriteSongScreenController.isLoading.value == true
+            // &&
+            //         downloadSongScreenController.allSongsListModel == null
             ? Center(
                 child: CircularProgressIndicator(
                   color: AppColors.white,
                 ),
               )
-            : favoriteSongScreenController.allSongsListModel == null ? Center(child: lable(text: 'No Favorites'),) : SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 0),
-                  child: Column(
-                    children: [
-                      sizeBoxHeight(10),
-                      ListView.builder(
-                          scrollDirection: Axis.vertical,
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: favoriteSongScreenController
-                              .allSongsListModel!.data!.length,
-                          itemBuilder: (context, index) {
-                            var favoriteSongListData =
-                                favoriteSongScreenController
-                                    .allSongsListModel!.data![index];
-                           
+            : favoriteSongScreenController.allSongsListModel == null ||
+                    favoriteSongScreenController
+                        .allSongsListModel!.data!.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.star_outline_rounded,color: AppColors.white,size: 200),
+                        sizeBoxHeight(6),
+                        lable(text: "You don't have any favorite tracks"),
+                      ],
+                    ),
+                  )
+                : SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      child: Column(
+                        children: [
+                          sizeBoxHeight(10),
+                          ListView.builder(
+                              scrollDirection: Axis.vertical,
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: favoriteSongScreenController
+                                  .allSongsListModel!.data!.length,
+                              itemBuilder: (context, index) {
+                                var favoriteSongListData =
+                                    favoriteSongScreenController
+                                        .allSongsListModel!.data![index];
 
-                            return ListTile(
-                              onTap: () async {
-                              },
-                              visualDensity: const VisualDensity(
-                                  horizontal: -4, vertical: -1),
-                              leading: ClipRRect(
-                                borderRadius: BorderRadius.circular(11),
-                                child: Image.network(
-                                  (favoriteSongListData.image) ??
-                                      'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-                                  height: 70,
-                                  width: 70,
-                                  filterQuality: FilterQuality.high,
-                                ),
-                              ),
-                              title: lable(
-                                text: (favoriteSongListData.title)!,
-                                fontSize: 12,
-                              ),
-                              subtitle: lable(
-                                text: (favoriteSongListData.description)!,
-                                fontSize: 11,
-                                color: Colors.grey,
-                              ),
-                            );
-                          }),
-                    ],
+                                return ListTile(
+                                  onTap: () async {},
+                                  visualDensity: const VisualDensity(
+                                      horizontal: -4, vertical: -1),
+                                  leading: ClipRRect(
+                                    borderRadius: BorderRadius.circular(11),
+                                    child: Image.network(
+                                      (favoriteSongListData.image) ??
+                                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
+                                      height: 70,
+                                      width: 70,
+                                      filterQuality: FilterQuality.high,
+                                    ),
+                                  ),
+                                  title: lable(
+                                    text: (favoriteSongListData.title)!,
+                                    fontSize: 12,
+                                  ),
+                                  subtitle: lable(
+                                    text: (favoriteSongListData.description)!,
+                                    fontSize: 11,
+                                    color: Colors.grey,
+                                  ),
+                                );
+                              }),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-              ),
       ),
     );
   }

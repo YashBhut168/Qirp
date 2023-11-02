@@ -24,13 +24,12 @@ class EditProfileScreen extends StatefulWidget {
 }
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
- ProfileController profileController = Get.put(ProfileController());
+  ProfileController profileController = Get.put(ProfileController());
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
   final TextEditingController genderController = TextEditingController();
-
 
   GlobalKey<FormState> myKey6 = GlobalKey<FormState>();
 
@@ -41,11 +40,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   void initState() {
-    // profileController.fetchProfile();
-
     super.initState();
     // Future.delayed(Duration.zero, () async {
-      _initializeProfileData();
+    _initializeProfileData();
     // });
   }
 
@@ -66,7 +63,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       dropdownValue = profileController.gender.value == ''
           ? 'Male'
           : profileController.gender.value;
-      await profileController.fetchProfile();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await profileController.fetchProfile();
+      });
 
       intitialImage();
     } catch (e) {
@@ -75,7 +74,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     }
   }
-   
 
   @override
   void dispose() {

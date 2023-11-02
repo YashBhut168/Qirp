@@ -20,18 +20,19 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:miniplayer/miniplayer.dart';
-import 'package:rxdart/rxdart.dart' as rxdart;
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore: depend_on_referenced_packages
+import 'package:rxdart/rxdart.dart' as rxdart;
 
-class DownloadScreen extends StatefulWidget {
-  const DownloadScreen({super.key});
+class QueueSongsScreen extends StatefulWidget {
+  const QueueSongsScreen({super.key});
 
   @override
-  State<DownloadScreen> createState() => _DownloadScreenState();
+  State<QueueSongsScreen> createState() => _QueueSongsScreenState();
 }
 
-class _DownloadScreenState extends State<DownloadScreen> {
+class _QueueSongsScreenState extends State<QueueSongsScreen> {
+  QueueSongsScreenController queueSongsScreenController =
+      Get.put(QueueSongsScreenController());
   DownloadSongScreenController downloadSongScreenController =
       Get.put(DownloadSongScreenController());
   final MainScreenController controller =
@@ -42,22 +43,21 @@ class _DownloadScreenState extends State<DownloadScreen> {
       Get.put(AllSongsScreenController());
   final HomeScreenController homeScreenController =
       Get.put(HomeScreenController());
-  QueueSongsScreenController queueSongsScreenController =
-      Get.put(QueueSongsScreenController());
 
   @override
   void initState() {
     super.initState();
+    queueSongsScreenController.queueSongsListWithoutPlaylist();
     fetchData();
 
     setState(() {
-      controller.isMiniPlayerOpenDownloadSongs.value == true ||
+      controller.isMiniPlayerOpenQueueSongs.value == true ||
+              controller.isMiniPlayerOpenDownloadSongs.value == true ||
               controller.isMiniPlayerOpen.value == true ||
               controller.isMiniPlayerOpenHome1.value == true ||
               controller.isMiniPlayerOpenHome2.value == true ||
               controller.isMiniPlayerOpenHome3.value == true ||
-              controller.isMiniPlayerOpenAllSongs.value == true ||
-              controller.isMiniPlayerOpenQueueSongs.value == true
+              controller.isMiniPlayerOpenAllSongs.value == true
           ? controller.audioPlayer.play()
           : null;
       controller.currentListTileIndexQueueSongs.value;
@@ -80,13 +80,12 @@ class _DownloadScreenState extends State<DownloadScreen> {
     log("${controller.isMiniPlayerOpenHome3.value}",
         name: "isMiniPlayerOpenHome3");
 
-    log("${controller.downloadSongsUrl}", name: "downloadSongsUrl");
+    log("${controller.queueSongsUrl}", name: "queueSongsUrl");
     log("${controller.isMiniPlayerOpenDownloadSongs.value}",
         name: "isMiniPlayerOpenDownloadSongs");
     allSongsScreenController.allSongsList();
     downloadSongScreenController.downloadSongsList();
     GlobVar.playlistId == '' ? null : playlistScreenController.songsInPlaylist(playlistId: GlobVar.playlistId);
-    queueSongsScreenController.queueSongsListWithoutPlaylist();
   }
 
   final apiHelper = ApiHelper();
@@ -135,14 +134,13 @@ class _DownloadScreenState extends State<DownloadScreen> {
   @override
   Widget build(BuildContext context) {
 
-    controller.downloadSongsUrl = [];
-
+    controller.queueSongsUrl = [];
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.backgroundColor,
         title: lable(
-          text: AppStrings.downloads,
+          text: AppStrings.queueSongs,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.5,
@@ -150,7 +148,12 @@ class _DownloadScreenState extends State<DownloadScreen> {
         automaticallyImplyLeading: false,
       ),
       body: Obx(
-        () => downloadSongScreenController.isLoading.value == true
+        () => queueSongsScreenController.isLoading.value == true
+            // &&
+            //         playlistScreenController.isLoading.value == true &&
+            //         isLoading == true &&
+            //         allSongsScreenController.isLoading.value == true &&
+            //         downloadSongScreenController.isLoading.value == true
             // &&
             //         downloadSongScreenController.allSongsListModel == null
             ? Center(
@@ -158,11 +161,11 @@ class _DownloadScreenState extends State<DownloadScreen> {
                   color: AppColors.white,
                 ),
               )
-            : downloadSongScreenController.allSongsListModel == null ||
-                    downloadSongScreenController
+            : queueSongsScreenController.allSongsListModel == null ||
+                    queueSongsScreenController
                         .allSongsListModel!.data!.isEmpty
                 ? Center(
-                    child: lable(text: 'No Downloads'),
+                    child: lable(text: 'Queue song list empty'),
                   )
                 : SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -175,32 +178,31 @@ class _DownloadScreenState extends State<DownloadScreen> {
                               scrollDirection: Axis.vertical,
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: downloadSongScreenController
+                              itemCount: queueSongsScreenController
                                   .allSongsListModel!.data!.length,
                               itemBuilder: (context, index) {
-                                var downloadSongListData =
-                                    downloadSongScreenController
+                                var queueSongListData =
+                                    queueSongsScreenController
                                         .allSongsListModel!.data![index];
+
                                 final localFilePath =
-                                    '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![index].id}.mp3';
+                                    '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![index].id}.mp3';
                                 final file = File(localFilePath);
-                                controller.addDownloadSongsAudioUrlToList(
+                                controller.addQueueSongsAudioUrlToList(
                                     file.existsSync()
                                         ? localFilePath
-                                        : (downloadSongScreenController
+                                        : (queueSongsScreenController
                                             .allSongsListModel!
                                             .data![index]
                                             .audio)!);
-                                controller.downloadSongsUrl = controller
-                                    .downloadSongsUrl
-                                    .toSet()
-                                    .toList();
-                                log("${controller.downloadSongsUrl}");
+                                controller.queueSongsUrl =
+                                    controller.queueSongsUrl.toSet().toList();
+                                log("${controller.queueSongsUrl}");
 
                                 return ListTile(
                                   onTap: () async {
                                     setState(() {
-                                      controller.isMiniPlayerOpenDownloadSongs
+                                      controller.isMiniPlayerOpenQueueSongs
                                           .value = true;
                                       log("${controller.isMiniPlayerOpenQueueSongs.value}",
                                           name: "isMiniPlayerOpenQueueSongs");
@@ -217,7 +219,7 @@ class _DownloadScreenState extends State<DownloadScreen> {
                                           name: "isMiniPlayerOpenHome3");
                                       log("${controller.isMiniPlayerOpenAllSongs.value}",
                                           name: "isMiniPlayerOpenAllSongs");
-                                      controller.isMiniPlayerOpenQueueSongs
+                                      controller.isMiniPlayerOpenDownloadSongs
                                           .value = false;
                                       controller.isMiniPlayerOpen.value = false;
                                       controller.isMiniPlayerOpenHome1.value =
@@ -228,34 +230,30 @@ class _DownloadScreenState extends State<DownloadScreen> {
                                           false;
                                       controller.isMiniPlayerOpenAllSongs
                                           .value = false;
-                                      controller
-                                          .currentListTileIndexDownloadSongs
+                                      controller.currentListTileIndexQueueSongs
                                           .value = index;
                                       controller
-                                          .updateCurrentListTileIndexDownloadSongs(
+                                          .updateCurrentListTileIndexQueueSongs(
                                               index);
-
                                       controller.initAudioPlayer();
-
                                       log(
                                           controller
-                                              .currentListTileIndexDownloadSongs
+                                              .currentListTileIndexQueueSongs
                                               .value
                                               .toString(),
                                           name:
-                                              'currentListTileIndexDownloadSongs download log');
+                                              'currentListTileIndexQueueSongs download log');
                                     });
                                     homeScreenController.addRecentSongs(
-                                        musicId: downloadSongListData.id!);
-                                          homeScreenController.recentSongsList();
-                                    
+                                        musicId: queueSongListData.id!);
+                                    homeScreenController.recentSongsList();
                                   },
                                   visualDensity: const VisualDensity(
                                       horizontal: -4, vertical: -1),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(11),
                                     child: Image.network(
-                                      (downloadSongListData.image) ??
+                                      (queueSongListData.image) ??
                                           'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
                                       height: 70,
                                       width: 70,
@@ -264,26 +262,9 @@ class _DownloadScreenState extends State<DownloadScreen> {
                                   ),
                                   title: Obx(
                                     () => lable(
-                                      text: (downloadSongListData.title)!,
+                                      text: (queueSongListData.title)!,
                                       fontSize: 12,
-                                      color: 
-                                      // (downloadSongScreenController
-                                      //                     .allSongsListModel!
-                                      //                     .data![
-                                      //                 controller
-                                      //                     .currentListTileIndexDownloadSongs
-                                      //                     .value].title ==
-                                      //             downloadSongScreenController
-                                      //                 .allSongsListModel!
-                                      //                 .data![index].title &&
-                                      //         controller
-                                      //                 .isMiniPlayerOpenDownloadSongs
-                                      //                 .value ==
-                                      //             true &&
-                                      //         downloadSongScreenController
-                                      //                 .allSongsListModel !=
-                                      //             null)
-                                          (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                      color: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
                                               controller.isMiniPlayerOpen.value ==
                                                   false &&
                                               controller.isMiniPlayerOpenHome1.value ==
@@ -297,42 +278,37 @@ class _DownloadScreenState extends State<DownloadScreen> {
                                               controller.isMiniPlayerOpenQueueSongs.value ==
                                                   false)
                                           ? Colors.white
-                                          :
-                                          (downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value] == downloadSongScreenController.allSongsListModel!.data![index] && controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null) ||
-                                                  (GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == downloadSongScreenController.allSongsListModel!.data![index].title &&
+                                          : (queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title && controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null) ||
+                                                  (GlobVar.playlistId != '' && controller.isMiniPlayerOpen.value == true &&
                                                       playlistScreenController.allSongsListModel !=
                                                           null &&
-                                                      controller.isMiniPlayerOpen.value ==
-                                                          true) ||
+                                                      playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title ==
+                                                          queueSongsScreenController
+                                                              .allSongsListModel!
+                                                              .data![index]
+                                                              .title) ||
                                                   (controller.isMiniPlayerOpenHome1.value == true &&
                                                       categoryData1 != null &&
                                                       categoryData1!.data![controller.currentListTileIndexCategory1.value].title ==
-                                                          downloadSongScreenController
+                                                          queueSongsScreenController
                                                               .allSongsListModel!
                                                               .data![index]
                                                               .title) ||
                                                   (controller.isMiniPlayerOpenHome2.value == true &&
                                                       categoryData2 != null &&
-                                                      categoryData2!.data![controller.currentListTileIndexCategory2.value].title ==
-                                                          downloadSongScreenController
-                                                              .allSongsListModel!
-                                                              .data![index]
-                                                              .title) ||
-                                                  (controller.isMiniPlayerOpenHome3.value == true &&
-                                                      categoryData3 != null &&
-                                                      categoryData3!.data![controller.currentListTileIndexCategory3.value].title == downloadSongScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == downloadSongScreenController.allSongsListModel!.data![index].title && queueSongsScreenController.allSongsListModel != null) ||
-                                                  (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == downloadSongScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == downloadSongScreenController.allSongsListModel!.data![index].title)
-                                          ? const Color(0xFF2ac5b3)
-                                          // ignore: unrelated_type_equality_checks
-                                          // : controller.isMiniPlayerOpenDownloadSongs == false
-                                          //     ? Colors.white
-                                          : Colors.white,
+                                                      categoryData2!.data![controller.currentListTileIndexCategory2.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
+                                                  (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
+                                                  (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
+                                                  (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title)
+                                              ? const Color(0xFF2ac5b3)
+                                              // ignore: unrelated_type_equality_checks
+                                              // : controller.isMiniPlayerOpenQueueSongs == false
+                                              //     ? Colors.white
+                                              : Colors.white,
                                     ),
                                   ),
                                   subtitle: lable(
-                                    text: (downloadSongListData.description)!,
+                                    text: (queueSongListData.description)!,
                                     fontSize: 11,
                                     color: Colors.grey,
                                   ),

@@ -14,17 +14,20 @@ import 'package:edpal_music_app_ui/controllers/home_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/playlist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/profile_controller.dart';
+import 'package:edpal_music_app_ui/controllers/queue_songs_screen_controller.dart';
 import 'package:edpal_music_app_ui/models/category_data_model.dart';
 import 'package:edpal_music_app_ui/models/my_playlist_data_model.dart';
 import 'package:edpal_music_app_ui/utils/assets.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/common_method.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/validation.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/email%20auth/login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/mobile%20auth/mobile_login_screen.dart';
+import 'package:edpal_music_app_ui/views/auth_screens/without_login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +59,9 @@ class DetailScreen extends StatefulWidget {
   // ignore: prefer_typing_uninitialized_variables
   var durationStream;
   AudioPlayer? audioPlayer;
-
+  CategoryData? categoryData1;
+  CategoryData? categoryData2;
+  CategoryData? categoryData3;
   DetailScreen(
       {required this.index,
       required this.type,
@@ -67,6 +72,9 @@ class DetailScreen extends StatefulWidget {
       this.bufferedPositionStream,
       this.durationStream,
       this.audioPlayer,
+      this.categoryData1,
+      this.categoryData2,
+      this.categoryData3,
       super.key});
 
   @override
@@ -88,12 +96,14 @@ class _DetailScreenState extends State<DetailScreen>
       Get.put(DownloadSongScreenController());
   final MainScreenController controller =
       Get.put(MainScreenController(initialIndex: 0));
+  QueueSongsScreenController queueSongsScreenController =
+      Get.put(QueueSongsScreenController());
 
   final TextEditingController playlistNameController = TextEditingController();
 
   GlobalKey<FormState> myKey4 = GlobalKey<FormState>();
 
-  final AudioPlayer audioPlayer = AudioPlayer();
+  late AudioPlayer audioPlayer = AudioPlayer();
 
   bool isPlaying = true;
   Duration duration = Duration.zero;
@@ -115,6 +125,7 @@ class _DetailScreenState extends State<DetailScreen>
     fetchMyPlaylistData();
     cheackInMyPlaylistSongAvailable();
     downloadSongScreenController.downloadSongsList();
+    queueSongsScreenController.queueSongsListWithoutPlaylist();
     audioPlayer.play();
     if (widget.position != null) {
       audioPlayer.seek(position);
@@ -138,17 +149,20 @@ class _DetailScreenState extends State<DetailScreen>
   // }
 
   void _initAudioPlayer() async {
-    final url = widget.type == 'download song'
-        ? downloadSongScreenController
+    final url = widget.type == 'queue song'
+        ? queueSongsScreenController
             .allSongsListModel!.data![widget.index].audio
-        : widget.type == 'playlist'
-            ? playlistScreenController
+        : widget.type == 'download song'
+            ? downloadSongScreenController
                 .allSongsListModel!.data![widget.index].audio
-            : widget.type == 'allSongs'
-                ? allSongsScreenController
+            : widget.type == 'playlist'
+                ? playlistScreenController
                     .allSongsListModel!.data![widget.index].audio
-                : homeScreenController
-                    .categoryData.value.data![widget.index].audio;
+                : widget.type == 'allSongs'
+                    ? allSongsScreenController
+                        .allSongsListModel!.data![widget.index].audio
+                    : homeScreenController
+                        .categoryData.value.data![widget.index].audio;
 
     if (url != null) {
       final session = await AudioSession.instance;
@@ -219,32 +233,39 @@ class _DetailScreenState extends State<DetailScreen>
         // audioPlayer.dispose();
         log('plying with internet.');
         MediaItem mediaItem = MediaItem(
-          id: widget.type == 'download song'
-              ? '${downloadSongScreenController.allSongsListModel!.data![widget.index].id}'
-              : widget.type == 'playlist'
-                  ? '${playlistScreenController.allSongsListModel!.data![widget.index].id}'
-                  : widget.type == 'allSongs'
-                      ? '${allSongsScreenController.allSongsListModel!.data![widget.index].id}'
-                      : '${homeScreenController.categoryData.value.data![widget.index].id}',
+          id: widget.type == 'queue song'
+              ? '${queueSongsScreenController.allSongsListModel!.data![widget.index].id}'
+              : widget.type == 'download song'
+                  ? '${downloadSongScreenController.allSongsListModel!.data![widget.index].id}'
+                  : widget.type == 'playlist'
+                      ? '${playlistScreenController.allSongsListModel!.data![widget.index].id}'
+                      : widget.type == 'allSongs'
+                          ? '${allSongsScreenController.allSongsListModel!.data![widget.index].id}'
+                          : '${homeScreenController.categoryData.value.data![widget.index].id}',
           album: "Album name",
-          title: widget.type == 'download song'
-              ? "${downloadSongScreenController.allSongsListModel!.data![widget.index].title}"
-              : widget.type == 'playlist'
-                  ? "${playlistScreenController.allSongsListModel!.data![widget.index].title}"
-                  : widget.type == 'allSongs'
-                      ? '${allSongsScreenController.allSongsListModel!.data![widget.index].title}'
-                      : "${homeScreenController.categoryData.value.data![widget.index].title}",
-          artUri: widget.type == 'download song'
+          title: widget.type == 'queue song'
+              ? "${queueSongsScreenController.allSongsListModel!.data![widget.index].title}"
+              : widget.type == 'download song'
+                  ? "${downloadSongScreenController.allSongsListModel!.data![widget.index].title}"
+                  : widget.type == 'playlist'
+                      ? "${playlistScreenController.allSongsListModel!.data![widget.index].title}"
+                      : widget.type == 'allSongs'
+                          ? '${allSongsScreenController.allSongsListModel!.data![widget.index].title}'
+                          : "${homeScreenController.categoryData.value.data![widget.index].title}",
+          artUri: widget.type == 'queue song'
               ? Uri.parse(
-                  "${downloadSongScreenController.allSongsListModel!.data![widget.index].image}")
-              : widget.type == 'playlist'
+                  "${queueSongsScreenController.allSongsListModel!.data![widget.index].image}")
+              : widget.type == 'download song'
                   ? Uri.parse(
-                      "${playlistScreenController.allSongsListModel!.data![widget.index].image}")
-                  : widget.type == 'allSongs'
+                      "${downloadSongScreenController.allSongsListModel!.data![widget.index].image}")
+                  : widget.type == 'playlist'
                       ? Uri.parse(
-                          "${allSongsScreenController.allSongsListModel!.data![widget.index].image}")
-                      : Uri.parse(
-                          "${homeScreenController.categoryData.value.data![widget.index].image}"),
+                          "${playlistScreenController.allSongsListModel!.data![widget.index].image}")
+                      : widget.type == 'allSongs'
+                          ? Uri.parse(
+                              "${allSongsScreenController.allSongsListModel!.data![widget.index].image}")
+                          : Uri.parse(
+                              "${homeScreenController.categoryData.value.data![widget.index].image}"),
         );
         await audioPlayer.setAudioSource(
           AudioSource.uri(
@@ -255,11 +276,11 @@ class _DetailScreenState extends State<DetailScreen>
 
         if (widget.position != null) {
           audioPlayer.positionStream.listen((position) {
-            setState(() {
-              // if (mounted) {
-              widget.position = position;
-              // }
-            });
+            // setState(() {
+            //   if (mounted) {
+            widget.position = position;
+            //   }
+            // });
           });
         }
       } catch (e) {
@@ -306,18 +327,21 @@ class _DetailScreenState extends State<DetailScreen>
 
     try {
       final myPlaylistDataModel1Json = await apiHelper
-          .cheackInMyPlaylistSongAvailable(widget.type == 'download song'
-              ? (downloadSongScreenController
+          .cheackInMyPlaylistSongAvailable(widget.type == 'queue song'
+              ? (queueSongsScreenController
                   .allSongsListModel!.data![widget.index].id)!
-              : widget.type == 'playlist'
-                  ? (playlistScreenController
+              : widget.type == 'download song'
+                  ? (downloadSongScreenController
                       .allSongsListModel!.data![widget.index].id)!
-                  : widget.type == 'allSongs'
-                      ? (allSongsScreenController
+                  : widget.type == 'playlist'
+                      ? (playlistScreenController
                           .allSongsListModel!.data![widget.index].id)!
-                      : (homeScreenController
-                              .categoryData.value.data![widget.index].id) ??
-                          '');
+                      : widget.type == 'allSongs'
+                          ? (allSongsScreenController
+                              .allSongsListModel!.data![widget.index].id)!
+                          : (homeScreenController
+                                  .categoryData.value.data![widget.index].id) ??
+                              '');
 
       myPlaylistDataModel1 =
           MyPlaylistDataModel.fromJson(myPlaylistDataModel1Json);
@@ -342,26 +366,53 @@ class _DetailScreenState extends State<DetailScreen>
   }
 
   Future<void> downloadAudio() async {
-    final url = widget.type == 'download song'
-        ? downloadSongScreenController
+    final url = widget.type == 'queue song'
+        ? queueSongsScreenController
             .allSongsListModel!.data![widget.index].audio
-        : widget.type == 'playlist'
-            ? playlistScreenController
+        : widget.type == 'download song'
+            ? downloadSongScreenController
                 .allSongsListModel!.data![widget.index].audio
-            : widget.type == 'allSongs'
-                ? allSongsScreenController
+            : widget.type == 'playlist'
+                ? playlistScreenController
                     .allSongsListModel!.data![widget.index].audio
-                : homeScreenController
-                    .categoryData.value.data![widget.index].audio;
-    final id = widget.type == 'download song'
-        ? downloadSongScreenController.allSongsListModel!.data![widget.index].id
-        : widget.type == 'playlist'
-            ? playlistScreenController.allSongsListModel!.data![widget.index].id
-            : widget.type == 'allSongs'
-                ? allSongsScreenController
+                : widget.type == 'allSongs'
+                    ? allSongsScreenController
+                        .allSongsListModel!.data![widget.index].audio
+                    : widget.type == 'home' &&
+                            controller.category1AudioUrl.isNotEmpty
+                        ? (categoryData1!.data![widget.index].audio)
+                        : widget.type == 'home' &&
+                                controller.category2AudioUrl.isNotEmpty
+                            ? (categoryData2!.data![widget.index].audio)
+                            : widget.type == 'home' &&
+                                    controller.category3AudioUrl.isNotEmpty
+                                ? (categoryData3!.data![widget.index].audio)
+                                : null;
+    // homeScreenController
+    // .categoryData.value.data![widget.index].audio;
+    final id = widget.type == 'queue song'
+        ? queueSongsScreenController.allSongsListModel!.data![widget.index].id
+        : widget.type == 'download song'
+            ? downloadSongScreenController
+                .allSongsListModel!.data![widget.index].id
+            : widget.type == 'playlist'
+                ? playlistScreenController
                     .allSongsListModel!.data![widget.index].id
-                : homeScreenController
-                    .categoryData.value.data![widget.index].id;
+                : widget.type == 'allSongs'
+                    ? allSongsScreenController
+                        .allSongsListModel!.data![widget.index].id
+                    : widget.type == 'home' &&
+                            controller.category1AudioUrl.isNotEmpty
+                        ? (categoryData1!.data![widget.index].id)
+                        : widget.type == 'home' &&
+                                controller.category2AudioUrl.isNotEmpty
+                            ? (categoryData2!.data![widget.index].id)
+                            : widget.type == 'home' &&
+                                    controller.category3AudioUrl.isNotEmpty
+                                ? (categoryData3!.data![widget.index].id)
+                                : null;
+    // homeScreenController
+    //     .categoryData.value.data![widget.index].id;
 
     final directory = await getExternalStorageDirectory();
 
@@ -378,9 +429,11 @@ class _DetailScreenState extends State<DetailScreen>
           url!,
           filePath,
           onReceiveProgress: (received, total) {
-            setState(() {
-              downloadProgress = received / total;
-            });
+            if (mounted) {
+              setState(() {
+                downloadProgress = received / total;
+              });
+            }
           },
         );
 
@@ -389,17 +442,62 @@ class _DetailScreenState extends State<DetailScreen>
             downloading = false;
           });
           detailScreenController.addSongInDownloadlist(
-              musicId: widget.type == 'download song'
-                  ? downloadSongScreenController
+              musicId: widget.type == 'queue song'
+                  ? queueSongsScreenController
                       .allSongsListModel!.data![widget.index].id
-                  : widget.type == 'playlist'
-                      ? playlistScreenController
+                  : widget.type == 'download song'
+                      ? downloadSongScreenController
                           .allSongsListModel!.data![widget.index].id
-                      : widget.type == 'allSongs'
-                          ? allSongsScreenController
+                      : widget.type == 'playlist'
+                          ? playlistScreenController
                               .allSongsListModel!.data![widget.index].id
-                          : homeScreenController
-                              .categoryData.value.data![widget.index].id);
+                          : widget.type == 'allSongs'
+                              ? allSongsScreenController
+                                  .allSongsListModel!.data![widget.index].id
+                              : homeScreenController
+                                  .categoryData.value.data![widget.index].id);
+
+          // allSongsScreenController.allSongsList();
+          // playlistScreenController.songsInPlaylist(playlistId: '');
+          // fetchData();
+          // downloadSongScreenController.downloadSongsList();
+          // queueSongsScreenController.queueSongsListWithoutPlaylist();
+
+          widget.type == 'home' &&
+                  controller.isMiniPlayerOpenHome1.value == true
+              ? controller.category1AudioUrl[widget.index] =
+                  '${AppStrings.localPathMusic}/${categoryData1!.data![widget.index].id}.mp3'
+              : widget.type == 'home' &&
+                      controller.isMiniPlayerOpenHome2.value == true
+                  ? controller.category2AudioUrl[widget.index] =
+                      '${AppStrings.localPathMusic}/${categoryData2!.data![widget.index].id}.mp3'
+                  : widget.type == 'home' &&
+                          controller.isMiniPlayerOpenHome3.value == true
+                      ? controller.category3AudioUrl[widget.index] =
+                          '${AppStrings.localPathMusic}/${categoryData3!.data![widget.index].id}.mp3'
+                      // : null;
+                      : widget.type == 'playlist' &&
+                              controller.isMiniPlayerOpen.value == true
+                          ? controller.playlisSongAudioUrl[widget.index] =
+                              '${AppStrings.localPathMusic}/${playlistScreenController.allSongsListModel!.data![widget.index].id}.mp3'
+                          : widget.type == 'allSongs' &&
+                                  controller.isMiniPlayerOpenAllSongs.value ==
+                                      true
+                              ? controller.allSongsUrl[widget.index] =
+                                  '${AppStrings.localPathMusic}/${allSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3'
+                              : widget.type == 'download song' &&
+                                      controller.isMiniPlayerOpenDownloadSongs
+                                              .value ==
+                                          true
+                                  ? controller.downloadSongsUrl[widget.index] =
+                                      '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3'
+                                  : widget.type == 'queue song' &&
+                                          controller.isMiniPlayerOpenQueueSongs
+                                                  .value ==
+                                              true
+                                      ? controller.queueSongsUrl[widget.index] =
+                                          '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3'
+                                      : '';
           detailScreenController.songExistsLocally.value = true;
           snackBar(AppStrings.audioDownloadSuccessfully);
         } else {
@@ -504,391 +602,584 @@ class _DetailScreenState extends State<DetailScreen>
           ),
         ),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(
-            height: h * 0.03,
-          ),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Image.network(
-              widget.type == 'download song'
-                  ? downloadSongScreenController
-                          .allSongsListModel!.data![widget.index].image ??
-                      'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                  : widget.type == 'playlist'
-                      ? playlistScreenController
-                              .allSongsListModel!.data![widget.index].image ??
-                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                      : widget.type == 'allSongs'
-                          ? allSongsScreenController.allSongsListModel!
+      body:
+       (categoryData1 == null ||
+              categoryData2 == null ||
+              categoryData3 == null)
+          ? Center(
+              child: SizedBox(
+                height: 15,
+                width: 14,
+                child: CircularProgressIndicator(
+                  color: AppColors.white,
+                  strokeWidth: 2,
+                ),
+              ),
+            )
+          : 
+          SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: h * 0.03,
+                  ),
+                  ClipRRect(
+                    // borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      widget.type == 'queue song'
+                          ? queueSongsScreenController.allSongsListModel!
                                   .data![widget.index].image ??
                               'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
-                          : homeScreenController.categoryData.value
-                                  .data![widget.index].image ??
-                              'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-              height: h * 0.3,
-              width: w,
-              fit: BoxFit.fill,
-              filterQuality: FilterQuality.high,
-            ),
-          ),
-          SizedBox(
-            height: h * 0.03,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 60),
-            child: Align(
-              alignment: Alignment.center,
-              child: lable(
-                  text: widget.type == 'download song'
-                      ? (downloadSongScreenController
-                          .allSongsListModel!.data![widget.index].title)!
-                      : widget.type == 'playlist'
-                          ? (playlistScreenController
-                              .allSongsListModel!.data![widget.index].title)!
-                          : widget.type == 'allSongs'
-                              ? (allSongsScreenController.allSongsListModel!
+                          : widget.type == 'download song'
+                              ? downloadSongScreenController.allSongsListModel!
+                                      .data![widget.index].image ??
+                                  'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                              : widget.type == 'playlist'
+                                  ? playlistScreenController.allSongsListModel!
+                                          .data![widget.index].image ??
+                                      'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                  : widget.type == 'allSongs'
+                                      ? allSongsScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .image ??
+                                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                      : homeScreenController.categoryData.value
+                                              .data![widget.index].image ??
+                                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
+                      height: h * 0.3,
+                      width: w * 0.75,
+                      fit: BoxFit.fill,
+                      filterQuality: FilterQuality.high,
+                    ),
+                  ),
+                  SizedBox(
+                    height: h * 0.03,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 60),
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: lable(
+                          text: widget.type == 'queue song'
+                              ? (queueSongsScreenController.allSongsListModel!
                                   .data![widget.index].title)!
-                              : homeScreenController.categoryData.value
-                                      .data![widget.index].title ??
-                                  AppStrings.noTitle,
-                  fontWeight: FontWeight.w600,
-                  maxLines: 2,
-                  textAlign: TextAlign.center,
-                  fontSize: 17),
-            ),
-          ),
-          SizedBox(
-            height: h * 0.01,
-          ),
-          // lable(text: AppStrings.unknown),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: lable(
-                text: widget.type == 'download song'
-                    ? (downloadSongScreenController
-                        .allSongsListModel!.data![widget.index].description)!
-                    : widget.type == 'playlist'
-                        ? (playlistScreenController.allSongsListModel!
-                            .data![widget.index].description)!
-                        : widget.type == 'allSongs'
-                            ? (allSongsScreenController.allSongsListModel!
+                              : widget.type == 'download song'
+                                  ? (downloadSongScreenController
+                                      .allSongsListModel!
+                                      .data![widget.index]
+                                      .title)!
+                                  : widget.type == 'playlist'
+                                      ? (playlistScreenController
+                                          .allSongsListModel!
+                                          .data![widget.index]
+                                          .title)!
+                                      : widget.type == 'allSongs'
+                                          ? (allSongsScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .title)!
+                                          : homeScreenController
+                                                  .categoryData
+                                                  .value
+                                                  .data![widget.index]
+                                                  .title ??
+                                              AppStrings.noTitle,
+                          fontWeight: FontWeight.w600,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          fontSize: 17),
+                    ),
+                  ),
+                  SizedBox(
+                    height: h * 0.01,
+                  ),
+                  // lable(text: AppStrings.unknown),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: lable(
+                        text: widget.type == 'queue song'
+                            ? (queueSongsScreenController.allSongsListModel!
                                 .data![widget.index].description)!
-                            : homeScreenController.categoryData.value
-                                    .data![widget.index].description ??
-                                AppStrings.unknown,
-                maxLines: 2,
-                textAlign: TextAlign.center),
-          ),
-          SizedBox(
-            height: h * 0.055,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 25),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                (categoryData1 == null ||
-                        categoryData2 == null ||
-                        categoryData3 == null)
-                    ? Center(
-                        child: SizedBox(
-                          height: 15,
-                          width: 14,
-                          child: CircularProgressIndicator(
-                            color: AppColors.white,
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      )
-                    : GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            detailScreenController.likedUnlikedSongs(
-                                musicId: widget.type == 'download song'
-                                    ? (downloadSongScreenController
+                            : widget.type == 'download song'
+                                ? (downloadSongScreenController
+                                    .allSongsListModel!
+                                    .data![widget.index]
+                                    .description)!
+                                : widget.type == 'playlist'
+                                    ? (playlistScreenController
                                         .allSongsListModel!
                                         .data![widget.index]
-                                        .id)!
-                                    : widget.type == 'playlist'
-                                        ? (playlistScreenController
+                                        .description)!
+                                    : widget.type == 'allSongs'
+                                        ? (allSongsScreenController
+                                            .allSongsListModel!
+                                            .data![widget.index]
+                                            .description)!
+                                        : homeScreenController
+                                                .categoryData
+                                                .value
+                                                .data![widget.index]
+                                                .description ??
+                                            AppStrings.unknown,
+                        maxLines: 2,
+                        textAlign: TextAlign.center),
+                  ),
+                  SizedBox(
+                    height: h * 0.055,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // (categoryData1 == null ||
+                        //         categoryData2 == null ||
+                        //         categoryData3 == null)
+                        //     ? Center(
+                        //         child: SizedBox(
+                        //           height: 15,
+                        //           width: 14,
+                        //           child: CircularProgressIndicator(
+                        //             color: AppColors.white,
+                        //             strokeWidth: 2,
+                        //           ),
+                        //         ),
+                        //       )
+                        //     :
+                        Obx(
+                          () =>
+                           GestureDetector(
+                            onTap: () {
+                              // log((queueSongsScreenController
+                              //     .allSongsListModel!.data![widget.index].id)!,name: 'queue');
+                              // log((downloadSongScreenController
+                              //     .allSongsListModel!.data![widget.index].id)!,name: 'download');
+                              // log((playlistScreenController
+                              //     .allSongsListModel!.data![widget.index].id)!,name: 'playlist');
+                              // log((allSongsScreenController
+                              //     .allSongsListModel!.data![widget.index].id)!,name: 'all song');
+                              // log((categoryData1!.data![widget.index].id)!,name: 'cate1');
+                              // log((categoryData2!.data![widget.index].id)!,name: 'cate2');
+                              // log((categoryData3!.data![widget.index].id)!,name: 'cate3');
+
+                              if(GlobVar.login == true) {
+                              setState(() {
+                                detailScreenController.likedUnlikedSongs(
+                                    musicId: widget.type == 'queue song'
+                                        ? (queueSongsScreenController
                                             .allSongsListModel!
                                             .data![widget.index]
                                             .id)!
-                                        : widget.type == 'allSongs'
-                                            ? (allSongsScreenController
+                                        : widget.type == 'download song'
+                                            ? (downloadSongScreenController
                                                 .allSongsListModel!
                                                 .data![widget.index]
                                                 .id)!
-                                            : widget.type == 'home' &&
-                                                    controller.category1AudioUrl
-                                                        .isNotEmpty
-                                                ? (categoryData1!
-                                                    .data![widget.index].id)!
-                                                : widget.type == 'home' &&
-                                                        controller
-                                                            .category2AudioUrl
-                                                            .isNotEmpty
-                                                    ? (categoryData2!
-                                                        .data![widget.index]
-                                                        .id)!
-                                                    : widget.type == 'home' &&
-                                                            controller
-                                                                .category3AudioUrl
-                                                                .isNotEmpty
-                                                        ? (categoryData3!
-                                                            .data![widget.index]
-                                                            .id)!
-                                                        //  (homeScreenController.categoryData
-                                                        //     .value.data![widget.index].id)!
-                                                        // : (homeScreenController.categoryData
-                                                        //     .value.data![widget.index].id)!
-                                                        // );
-                                                        : (homeScreenController
-                                                            .categoryData
-                                                            .value
-                                                            .data![widget.index]
-                                                            .id)!);
-                            downloadSongScreenController.downloadSongsList();
-                            playlistScreenController.songsInPlaylist(
-                                playlistId: '');
-                            allSongsScreenController.allSongsList();
-                            fetchData();
-                          });
-                        },
-                        child: ((widget.type == 'download song')
-                                ? downloadSongScreenController
-                                            .allSongsListModel!
-                                            .data![widget.index]
-                                            .isLiked ==
-                                        true
-                                    ? downloadSongScreenController
-                                        .allSongsListModel!
-                                        .data![widget.index]
-                                        .isLiked = true
-                                    : downloadSongScreenController
-                                        .allSongsListModel!
-                                        .data![widget.index]
-                                        .isLiked = false
-                                : (widget.type == 'playlist')
-                                    ? playlistScreenController
-                                                .allSongsListModel!
-                                                .data![widget.index]
-                                                .isLiked ==
-                                            true
-                                        ? playlistScreenController
-                                            .allSongsListModel!
-                                            .data![widget.index]
-                                            .isLiked = true
-                                        : playlistScreenController
-                                            .allSongsListModel!
-                                            .data![widget.index]
-                                            .isLiked = false
-                                    : widget.type == 'allSongs'
-                                        ? allSongsScreenController
+                                            : widget.type == 'playlist'
+                                                ? (playlistScreenController
                                                     .allSongsListModel!
                                                     .data![widget.index]
-                                                    .isLiked ==
-                                                true
-                                            ? allSongsScreenController.allSongsListModel!.data![widget.index].isLiked = true
-                                            : allSongsScreenController.allSongsListModel!.data![widget.index].isLiked = false
-                                        : widget.type == 'home' && controller.category1AudioUrl.isNotEmpty
-                                            ? categoryData1!.data![widget.index].isLiked == true
-                                                ? categoryData1!.data![widget.index].isLiked = false
-                                                : categoryData1!.data![widget.index].isLiked = true
-                                            : widget.type == 'home' && controller.category2AudioUrl.isNotEmpty
-                                                ? categoryData2!.data![widget.index].isLiked == true
-                                                    ? categoryData2!.data![widget.index].isLiked = false
-                                                    : categoryData2!.data![widget.index].isLiked = true
-                                                : widget.type == 'home' && controller.category3AudioUrl.isNotEmpty
-                                                    ? categoryData3!.data![widget.index].isLiked == true
-                                                        ? categoryData3!.data![widget.index].isLiked = false
-                                                        : categoryData3!.data![widget.index].isLiked = true
+                                                    .id)!
+                                                : widget.type == 'allSongs'
+                                                    ? (allSongsScreenController
+                                                        .allSongsListModel!
+                                                        .data![widget.index]
+                                                        .id)!
+                                                    // : widget.type == 'home' &&
+                                                    //         controller
+                                                    //             .category1AudioUrl
+                                                    //             .isNotEmpty
+                                                    //     ? (widget.categoryData1!
+                                                    //         .data![widget.index]
+                                                    //         .id)!
+                                                    //     : widget.type == 'home' &&
+                                                    //             controller
+                                                    //                 .category2AudioUrl
+                                                    //                 .isNotEmpty
+                                                    //         ? (widget.categoryData2!
+                                                    //             .data![widget
+                                                    //                 .index]
+                                                    //             .id)!
+                                                    //         : widget.type == 'home' &&
+                                                    //                 controller
+                                                    //                     .category3AudioUrl
+                                                    //                     .isNotEmpty
+                                                    //             ? (widget.categoryData3!
+                                                    //                 .data![widget
+                                                    //                     .index]
+                                                    //                 .id)!
+                                                                //  (homeScreenController.categoryData
+                                                                //     .value.data![widget.index].id)!
+                                                                : (homeScreenController.categoryData
+                                                                    .value.data![widget.index].id)!
+                                                                // );
+                                                                // : ''
+                                                                );
+                              });
+                              downloadSongScreenController.downloadSongsList();
+                              fetchData();
+                              queueSongsScreenController
+                                  .queueSongsListWithoutPlaylist();
+                              playlistScreenController.songsInPlaylist(
+                                  playlistId: GlobVar.playlistId);
+                              allSongsScreenController.allSongsList();} else {
+                                Get.to(const WitoutLogginScreen(),transition: Transition.downToUp);
+                              }
+                            },
+                            child:
+                                ((widget.type == 'queue song')
+                                        // &&
+                                        //             controller.queueSongsUrl.isNotEmpty
+                                        ? queueSongsScreenController.isLikeQueueData[widget.index].isLiked ==
+                                            false
+                                        : (widget.type == 'download song') &&
+                                                controller.isMiniPlayerOpenDownloadSongs.value == true
+                                            ? downloadSongScreenController.isLikeDownloadData[widget.index].isLiked ==
+                                                false
+                                            : (widget.type == 'playlist') &&
+                                                    controller.isMiniPlayerOpen.value == true
+                                                ? playlistScreenController
+                                                        .isLikePlaylistData[widget.index]
+                                                        .isLiked ==
+                                                    false
+                                                : widget.type == 'allSongs' &&
+                                                        controller.isMiniPlayerOpenAllSongs.value == true
+                                                    ? allSongsScreenController.isLikeAllSongData[widget.index]
+                                                            .isLiked ==
+                                                        false
+                                                    : widget.type == 'home'
+                                                    &&
+                                                            controller.isMiniPlayerOpenHome1.value == true
+                                                        ? categoryData1!.data![widget.index].isLiked ==
+                                                            false
+                                                        : widget.type == 'home' &&
+                                                                controller.isMiniPlayerOpenHome2.value == true
+                                                            ? categoryData2!
+                                                                    .data![widget.index]
+                                                                    .isLiked ==
+                                                                false
+                                                            : widget.type == 'home' &&
+                                                                    controller.isMiniPlayerOpenHome3.value == true
+                                                                ? categoryData3!.data![widget.index].isLiked == false
 
-                                                    // ? homeScreenController.categoryData.value.data![widget.index].isLiked = true
-                                                    : homeScreenController.categoryData.value.data![widget.index].isLiked = false)
-                            ? AnimatedContainer(
-                                duration: const Duration(milliseconds: 2000),
-                                curve: Curves.fastEaseInToSlowEaseOut,
-                                height: 55,
-                                width: 55,
-                                child: containerIcon(
-                                    icon: Icons.favorite,
-                                    iconColor: AppColors.white,
-                                    containerColor: Colors.red.shade200),
-                              )
-                            : containerIcon(
-                                icon: Icons.favorite,
-                              ),
-                      ),
-                containerIcon(icon: Icons.shuffle),
-                InkWell(
-                  onTap: () async {
-                    final prefs = await SharedPreferences.getInstance();
-                    final login = prefs.getBool('isLoggedIn') ?? '';
-                    if (login == true) {
-                      if (kDebugMode) {
-                        print(downloadProgress);
-                      }
-                      detailScreenController.songExistsLocally.value == true &&
+                                                                //  ? homeScreenController.categoryData.value.data![widget.index].isLiked == false
+                                                                // ignore: unrelated_type_equality_checks
+                                                                : "" == true
+                                                                ) || GlobVar.login == false
+                                    ? containerIcon(
+                                        icon: Icons.favorite,
+                                      )
+                                    : AnimatedContainer(
+                                        duration: const Duration(milliseconds: 2000),
+                                        curve: Curves.fastEaseInToSlowEaseOut,
+                                        height: 55,
+                                        width: 55,
+                                        child: containerIcon(
+                                            icon: Icons.favorite,
+                                            iconColor: AppColors.white,
+                                            containerColor: Colors.red.shade200),
+                                      ),
+                                // ((widget.type == 'queue song') &&
+                                //             controller.queueSongsUrl.isNotEmpty
+                                //         ? queueSongsScreenController.isLikeQueueData[widget.index].isLiked ==
+                                //                 true
+                                //             ? queueSongsScreenController
+                                //                 .isLikeQueueData[widget.index]
+                                //                 .isLiked = true
+                                //             : queueSongsScreenController
+                                //                 .isLikeQueueData[widget.index]
+                                //                 .isLiked = false
+                                //         : (widget.type == 'download song') &&
+                                //                 controller
+                                //                     .downloadSongsUrl.isNotEmpty
+                                //             ? downloadSongScreenController.isLikeDownloadData[widget.index].isLiked ==
+                                //                     true
+                                //                 ? downloadSongScreenController
+                                //                         .isLikeDownloadData[widget.index].isLiked =
+                                //                     true
+                                //                 : downloadSongScreenController
+                                //                         .isLikeDownloadData[widget.index].isLiked =
+                                //                     false
+                                //             : (widget.type == 'playlist') &&
+                                //                     controller
+                                //                         .playlisSongAudioUrl
+                                //                         .isNotEmpty
+                                //                 ? playlistScreenController.isLikePlaylistData[widget.index].isLiked ==
+                                //                         true
+                                //                     ? playlistScreenController.isLikePlaylistData[widget.index].isLiked =
+                                //                         true
+                                //                     : playlistScreenController
+                                //                         .isLikePlaylistData[widget.index]
+                                //                         .isLiked = false
+                                //                 : widget.type == 'allSongs' && controller.allSongsUrl.isNotEmpty
+                                //                     ? allSongsScreenController.isLikeAllSongData[widget.index].isLiked == true
+                                //                         ? allSongsScreenController.isLikeAllSongData[widget.index].isLiked = true
+                                //                         : allSongsScreenController.isLikeAllSongData[widget.index].isLiked = false
+                                //                     : widget.type == 'home' && controller.category1AudioUrl.isNotEmpty && controller.isMiniPlayerOpenHome1.value == true
+                                //                         ? widget.categoryData1!.data![widget.index].isLiked! == true
+                                //                             ? widget.categoryData1!.data![widget.index].isLiked = true
+                                //                             : widget.categoryData1!.data![widget.index].isLiked = false
+                                //                         : widget.type == 'home' && controller.category2AudioUrl.isNotEmpty && controller.isMiniPlayerOpenHome2.value == true
+                                //                             ? widget.categoryData2!.data![widget.index].isLiked! == true
+                                //                                 ? widget.categoryData2!.data![widget.index].isLiked = true
+                                //                                 : widget.categoryData2!.data![widget.index].isLiked = false
+                                //                             : widget.type == 'home' && controller.category3AudioUrl.isNotEmpty && controller.isMiniPlayerOpenHome3.value == true
+                                //                                 ? widget.categoryData3!.data![widget.index].isLiked! == true
+                                //                                     ? widget.categoryData3!.data![widget.index].isLiked = true
+                                //                                     : widget.categoryData3!.data![widget.index].isLiked = false
+
+                                //                                 // ? homeScreenController.categoryData.value.data![widget.index].isLiked = true
+                                //                                 : '' == true)
+                                //     ? AnimatedContainer(
+                                //         duration:
+                                //             const Duration(milliseconds: 2000),
+                                //         curve: Curves.fastEaseInToSlowEaseOut,
+                                //         height: 55,
+                                //         width: 55,
+                                //         child: containerIcon(
+                                //             icon: Icons.favorite,
+                                //             iconColor: AppColors.white,
+                                //             containerColor:
+                                //                 Colors.red.shade200),
+                                //       )
+                                //     : containerIcon(
+                                //         icon: Icons.favorite,
+                                //       ),
+                          ),
+                        ),
+                        containerIcon(icon: Icons.shuffle),
+                        InkWell(
+                          onTap: () async {
+                            final prefs = await SharedPreferences.getInstance();
+                            final login = prefs.getBool('isLoggedIn') ?? '';
+                            if (login == true) {
+                              if (kDebugMode) {
+                                print(downloadProgress);
+                              }
+                              // detailScreenController.songExistsLocally.value == true &&
                               (categoryData1 == null ||
-                                  categoryData2 == null ||
-                                  categoryData3 == null)
-                          ? null
-                          : downloadAudio();
-                    } else {
-                      noLoginBottomSheet();
-                    }
-                  },
-                  child: downloading
-                      ? Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            SizedBox(
-                              height: 56,
-                              width: 56,
-                              child: CircularProgressIndicator(
-                                value: downloadProgress,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: containerIcon(icon: Icons.download),
-                            ),
-                            Positioned.fill(
-                              bottom: 5,
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: lable(
-                                  text:
-                                      '${(downloadProgress * 100).toStringAsFixed(0)}%',
-                                  color: AppColors.backgroundColor,
-                                  fontSize: 8,
-                                ),
-                              ),
-                            ),
-                          ],
-                        )
-                      :
-                      //  Obx(
-                      //     () =>
-                      // detailScreenController.songExistsLocally.value ==
-                      //         true
-                      categoryData1 == null ||
-                              categoryData2 == null ||
-                              categoryData3 == null
-                          ? Center(
-                              child: SizedBox(
-                                height: 15,
-                                width: 14,
-                                child: CircularProgressIndicator(
-                                  color: AppColors.white,
-                                  strokeWidth: 2,
-                                ),
-                              ),
-                            )
-                          : (widget.type == 'download song'
-                                  ? controller.downloadSongsUrl.contains(
-                                          '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
-                                      true
-                                  : widget.type == 'playlist'
-                                      ? controller.playlisSongAudioUrl.contains(
-                                              '${AppStrings.localPathMusic}/${playlistScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
-                                          true
-                                      : widget.type == 'allSongs'
-                                          ? controller.allSongsUrl.contains(
-                                                  '${AppStrings.localPathMusic}/${allSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                          categoryData2 == null ||
+                                          categoryData3 == null) ||
+                                      (widget.type == 'queue song'
+                                          ? controller.queueSongsUrl.contains(
+                                                  '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                               true
-                                          : widget.type == 'home'
-                                              ? controller.category1AudioUrl
-                                                      .isNotEmpty
-                                                  ? controller.category1AudioUrl
-                                                          .contains(
-                                                              '${AppStrings.localPathMusic}/${categoryData1!.data![widget.index].id}.mp3') ==
+                                          : widget.type == 'download song'
+                                              ? controller.downloadSongsUrl.contains(
+                                                      '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                  true
+                                              : widget.type == 'playlist'
+                                                  ? controller.playlisSongAudioUrl.contains(
+                                                          '${AppStrings.localPathMusic}/${playlistScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                                       true
-                                                  : controller.category2AudioUrl
-                                                          .isNotEmpty
-                                                      ? controller
-                                                              .category2AudioUrl
-                                                              .contains('${AppStrings.localPathMusic}/${categoryData2!.data![widget.index].id}.mp3') ==
+                                                  : widget.type == 'allSongs'
+                                                      ? controller.allSongsUrl.contains('${AppStrings.localPathMusic}/${allSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                                           true
-                                                      : controller.category3AudioUrl.isNotEmpty
-                                                          ? controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${categoryData3!.data![widget.index].id}.mp3') == true
-                                                          : controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${homeScreenController.categoryData.value.data![widget.index].id}.mp3') == true
-                                              : controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${homeScreenController.categoryData.value.data![widget.index].id}.mp3') == true)
-                              ? containerIcon(icon: Icons.check, containerColor: Colors.green, iconColor: Colors.white)
-                              : containerIcon(icon: Icons.download),
-                  // ),
-                ),
-              ],
-            ),
-          ),
-          sizeBoxHeight(10),
-          StreamBuilder<PositionData>(
-            stream: _positionDataStream,
-            builder: (context, snapshot) {
-              final positionData = snapshot.data;
-              return SeekBar(
-                isTrackTimeShow: true,
-                duration: widget.duration != null
-                    ? widget.duration!
-                    : positionData?.duration ?? Duration.zero,
-                position: positionData?.position ?? Duration.zero,
-                // widget.position != null
-                //     ? widget.position!
-                //     : positionData?.position ?? Duration.zero,
-                bufferedPosition:
-                    positionData?.bufferedPosition ?? Duration.zero,
-                //  widget.bufferedPosition != null
-                //     ? widget.bufferedPosition!
-                //     : positionData?.bufferedPosition ?? Duration.zero,
-                onChangeEnd: (newPosition) {
-                  widget.audioPlayer != null
-                      ? (widget.audioPlayer!).seek(newPosition)
-                      : audioPlayer.seek(newPosition);
-                },
-                onChanged: (newPosition) {
-                  audioPlayer.seek(newPosition);
-                },
-              );
-            },
-          ),
-          sizeBoxHeight(30),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                InkWell(
-                    onTap: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      final login = prefs.getBool('isLoggedIn') ?? '';
-                      if (login == true) {
-                        // ignore: use_build_context_synchronously
-                        addToPlaylist(context);
-                      } else {
-                        noLoginBottomSheet();
-                      }
+                                                      : widget.type == 'home' &&
+                                                              controller.isMiniPlayerOpenHome1.value ==
+                                                                  true &&
+                                                              controller
+                                                                  .category1AudioUrl
+                                                                  .isNotEmpty
+                                                          ? controller.category1AudioUrl
+                                                                  .contains(
+                                                                      '${AppStrings.localPathMusic}/${categoryData1!.data![widget.index].id}.mp3') ==
+                                                              true
+                                                          : widget.type == 'home' &&
+                                                                  controller.isMiniPlayerOpenHome2.value == true &&
+                                                                  controller.category2AudioUrl.isNotEmpty
+                                                              ? controller.category2AudioUrl.contains('${AppStrings.localPathMusic}/${categoryData2!.data![widget.index].id}.mp3') == true
+                                                              : widget.type == 'home' && controller.isMiniPlayerOpenHome3.value == true && controller.category3AudioUrl.isNotEmpty
+                                                                  ? controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${categoryData3!.data![widget.index].id}.mp3') == true
+                                                                  // ignore: unrelated_type_equality_checks
+                                                                  : '' == true)
+                                  //         ||
+                                  // (playlistScreenController.allSongsListModel ==
+                                  //     null) ||
+                                  // (downloadSongScreenController.allSongsListModel ==
+                                  //     null) ||
+                                  // (allSongsScreenController.allSongsListModel ==
+                                  //     null) ||
+                                  // (queueSongsScreenController.allSongsListModel ==
+                                  //     null)
+                                  ? null
+                                  : downloadAudio();
+                            } else {
+                              // noLoginBottomSheet();
+                                Get.to(const WitoutLogginScreen(),transition: Transition.downToUp);
+                            }
+                          },
+                          child: downloading
+                              ? Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    SizedBox(
+                                      height: 56,
+                                      width: 56,
+                                      child: CircularProgressIndicator(
+                                        value: downloadProgress,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
+                                    Positioned.fill(
+                                      child:
+                                          containerIcon(icon: Icons.download),
+                                    ),
+                                    Positioned.fill(
+                                      bottom: 5,
+                                      child: Align(
+                                        alignment: Alignment.bottomCenter,
+                                        child: lable(
+                                          text:
+                                              '${(downloadProgress * 100).toStringAsFixed(0)}%',
+                                          color: AppColors.backgroundColor,
+                                          fontSize: 8,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              :
+                              //  Obx(
+                              //     () =>
+                              // detailScreenController.songExistsLocally.value ==
+                              //         true
+                              // categoryData1 == null ||
+                              //         categoryData2 == null ||
+                              //         categoryData3 == null
+                              //     //  || (playlistScreenController.allSongsListModel == null) ||
+                              //     //     (downloadSongScreenController.allSongsListModel == null) ||
+                              //     //     (allSongsScreenController.allSongsListModel == null) ||
+                              //     //     (queueSongsScreenController.allSongsListModel == null)
+                              //     ? Center(
+                              //         child: SizedBox(
+                              //           height: 15,
+                              //           width: 14,
+                              //           child: CircularProgressIndicator(
+                              //             color: AppColors.white,
+                              //             strokeWidth: 2,
+                              //           ),
+                              //         ),
+                              //       )
+                              //     : 
+                                  (widget.type == 'queue song'
+                                          ? controller.queueSongsUrl.contains(
+                                                  '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                              true
+                                          : widget.type == 'download song'
+                                              ? controller.downloadSongsUrl.contains(
+                                                      '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                  true
+                                              : widget.type == 'playlist'
+                                                  ? controller.playlisSongAudioUrl.contains(
+                                                          '${AppStrings.localPathMusic}/${playlistScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                      true
+                                                  : widget.type == 'allSongs'
+                                                      ? controller.allSongsUrl.contains('${AppStrings.localPathMusic}/${allSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                          true
+                                                      : widget.type == 'home' &&
+                                                              controller.isMiniPlayerOpenHome1.value ==
+                                                                  true &&
+                                                              controller
+                                                                  .category1AudioUrl
+                                                                  .isNotEmpty
+                                                          ? controller.category1AudioUrl
+                                                                  .contains(
+                                                                      '${AppStrings.localPathMusic}/${widget.categoryData1!.data![widget.index].id}.mp3') ==
+                                                              true
+                                                          : widget.type == 'home' &&
+                                                                  controller.isMiniPlayerOpenHome2.value == true &&
+                                                                  controller.category2AudioUrl.isNotEmpty
+                                                              ? controller.category2AudioUrl.contains('${AppStrings.localPathMusic}/${widget.categoryData2!.data![widget.index].id}.mp3') == true
+                                                              : widget.type == 'home' && controller.isMiniPlayerOpenHome3.value == true && controller.category3AudioUrl.isNotEmpty
+                                                                  ? controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${widget.categoryData3!.data![widget.index].id}.mp3') == true
+                                                                  // ignore: unrelated_type_equality_checks
+                                                                  : '' == true
+                                      // : controller.category3AudioUrl.contains('${AppStrings.localPathMusic}/${homeScreenController.categoryData.value.data![widget.index].id}.mp3') == true
+                                      )
+                                      ? containerIcon(
+                                          icon: Icons.check,
+                                          containerColor: Colors.green,
+                                          iconColor: Colors.white,
+                                        )
+                                      : containerIcon(
+                                          icon: Icons.download,
+                                        ),
+                          // ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  sizeBoxHeight(10),
+                  StreamBuilder<PositionData>(
+                    stream: _positionDataStream,
+                    builder: (context, snapshot) {
+                      final positionData = snapshot.data;
+                      return SeekBar(
+                        isTrackTimeShow: true,
+                        duration: widget.duration != null
+                            ? widget.duration!
+                            : positionData?.duration ?? Duration.zero,
+                        position: positionData?.position ?? Duration.zero,
+                        // widget.position != null
+                        //     ? widget.position!
+                        //     : positionData?.position ?? Duration.zero,
+                        bufferedPosition:
+                            positionData?.bufferedPosition ?? Duration.zero,
+                        //  widget.bufferedPosition != null
+                        //     ? widget.bufferedPosition!
+                        //     : positionData?.bufferedPosition ?? Duration.zero,
+                        onChangeEnd: (newPosition) {
+                          widget.audioPlayer != null
+                              ? (widget.audioPlayer!).seek(newPosition)
+                              : audioPlayer.seek(newPosition);
+                        },
+                        onChanged: (newPosition) {
+                          audioPlayer.seek(newPosition);
+                        },
+                      );
                     },
-                    child: customIcon(
-                      icon: Icons.playlist_add,
-                    )),
-                customIcon(icon: Icons.skip_previous),
-                ControlButtons(widget.audioPlayer != null
-                    ? (widget.audioPlayer!)
-                    : audioPlayer),
-                customIcon(icon: Icons.skip_next),
-                customIcon(icon: Icons.volume_up),
-              ],
+                  ),
+                  sizeBoxHeight(30),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        InkWell(
+                            onTap: () async {
+                              final prefs =
+                                  await SharedPreferences.getInstance();
+                              final login = prefs.getBool('isLoggedIn') ?? '';
+                              if (login == true) {
+                                // ignore: use_build_context_synchronously
+                                addToPlaylist(context);
+                              } else {
+                                // noLoginBottomSheet();
+                                Get.to(const WitoutLogginScreen(),transition: Transition.downToUp);
+
+                              }
+                            },
+                            child: customIcon(
+                              icon: Icons.playlist_add,
+                            )),
+                        customIcon(icon: Icons.skip_previous),
+                        ControlButtons(widget.audioPlayer != null
+                            ? (widget.audioPlayer!)
+                            : audioPlayer),
+                        customIcon(icon: Icons.skip_next),
+                        customIcon(icon: Icons.volume_up),
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: h * 0.05,
+                  ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: h * 0.05,
-          ),
-        ],
-      ),
     );
   }
 
@@ -1143,7 +1434,6 @@ class _DetailScreenState extends State<DetailScreen>
             child: Align(
               alignment: Alignment.center,
               child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
                 child: AlertDialog(
                   backgroundColor: AppColors.backgroundColor,
                   title: lable(
@@ -1153,57 +1443,56 @@ class _DetailScreenState extends State<DetailScreen>
                     physics: const BouncingScrollPhysics(),
                     child: Form(
                       key: myKey4,
-                      child: Expanded(
-                        child: SizedBox(
-                          height: 150,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              TextFormField(
-                                style: TextStyle(color: AppColors.white),
-                                controller: playlistNameController,
-                                validator: (value) =>
-                                    AppValidation.validateName(value!),
-                                decoration: InputDecoration(
-                                  hintText: AppStrings.enterPlaylistName,
-                                  hintStyle: TextStyle(
-                                    color: AppColors.white,
-                                    fontWeight: FontWeight.normal,
-                                    fontSize: 12,
-                                  ),
+                      child: SizedBox(
+                        height: 150,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextFormField(
+                              style: TextStyle(color: AppColors.white),
+                              controller: playlistNameController,
+                              validator: (value) =>
+                                  AppValidation.validateName(value!),
+                              decoration: InputDecoration(
+                                hintText: AppStrings.enterPlaylistName,
+                                hintStyle: TextStyle(
+                                  color: AppColors.white,
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 12,
                                 ),
                               ),
-                              const SizedBox(
-                                height: 50,
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  if (myKey4.currentState!.validate()) {
-                                    snackBar(
-                                        '${playlistNameController.text} ${AppStrings.added}');
-                                    detailScreenController
-                                        .addPlaylist(
-                                            playlistTitle:
-                                                playlistNameController.text)
-                                        .then((value) {
-                                      fetchMyPlaylistData();
-                                      FocusScope.of(context).unfocus();
-                                      Get.offAll(DetailScreen(
-                                        index: 0,
-                                        type: '',
-                                      ));
-                                    });
-                                    playlistNameController.text = '';
-                                  } else {
-                                    snackBar(AppStrings.enterPlaylistName);
-                                  }
-                                },
-                                child: lable(
-                                    text: AppStrings.addToPlaylist,
-                                    color: AppColors.backgroundColor),
-                              ),
-                            ],
-                          ),
+                            ),
+                            const SizedBox(
+                              height: 50,
+                            ),
+                            ElevatedButton(
+                              onPressed: () {
+                                if (myKey4.currentState!.validate()) {
+                                  snackBar(
+                                      '${playlistNameController.text} ${AppStrings.added}');
+                                  detailScreenController
+                                      .addPlaylist(
+                                          playlistTitle:
+                                              playlistNameController.text)
+                                      .then((value) {
+                                    fetchMyPlaylistData();
+                                    FocusScope.of(context).unfocus();
+                                    Get.offAll(DetailScreen(
+                                      index: 0,
+                                      type: '',
+                                    ));
+                                  });
+                                  playlistNameController.text = '';
+                                } else {
+                                  snackBar(AppStrings.enterPlaylistName);
+                                }
+                              },
+                              child: lable(
+                                  text: AppStrings.addToPlaylist,
+                                  color: AppColors.backgroundColor),
+                            ),
+                          ],
                         ),
                       ),
                     ),

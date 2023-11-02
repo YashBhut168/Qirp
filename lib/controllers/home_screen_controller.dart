@@ -6,14 +6,21 @@ import 'package:get/get.dart';
 
 class HomeScreenController extends GetxController{
   final ApiHelper apiHelper = ApiHelper();
-  RxBool isLoading = false.obs;
+  final isLoading = false.obs;
   final categoryData = CategoryData().obs;
    final RxInt selectedIndex = 0.obs;
-   AllSongsListModel? allSongsListModel;
+   RxList<dynamic> data = [].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    recentSongsList();
+  }
 
   void updateCategoryData(CategoryData newData){
     categoryData.value = newData;
   }
+
 
   void changeTab(int index) {
     selectedIndex.value = index;
@@ -43,6 +50,10 @@ class HomeScreenController extends GetxController{
     }
   }
 
+   AllSongsListModel? allSongsListModel;
+    // final allSongsListModel = AllSongsListModel().obs;
+
+
   Future<void> recentSongsList() async {
     try {
     isLoading.value = true;
@@ -50,6 +61,8 @@ class HomeScreenController extends GetxController{
 
       allSongsListModel =
           AllSongsListModel.fromJson(recentSongListDataModelJson);
+
+      data.value = allSongsListModel!.data!;
       isLoading.value = false;
     } catch (e) {
       if (kDebugMode) {

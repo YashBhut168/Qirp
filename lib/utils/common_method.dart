@@ -20,42 +20,14 @@ class ControlButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: [
+      children: [       
         StreamBuilder<PlayerState>(
           stream: audioPlayer.playerStateStream,
           builder: (context, snapshot) {
             final playerState = snapshot.data;
             final processingState = playerState?.processingState;
             final playing = playerState?.playing;
-//             void _notifyAudioHandlerAboutPlaybackEvents() {
-//   audioPlayer.playbackEventStream.listen((PlaybackEvent event) {
-//     final playing = audioPlayer.playing;
-//     playbackState.value.add(
-//       controls: [
-//         MediaControl.skipToPrevious,
-//         if (playing) MediaControl.pause else MediaControl.play,
-//         MediaControl.stop,
-//         MediaControl.skipToNext,
-//       ],
-//       systemActions: const {
-//         MediaAction.seek,
-//       },
-//       androidCompactActionIndices: const [0, 1, 3],
-//       processingState: const {
-//         ProcessingState.idle: AudioProcessingState.idle,
-//         ProcessingState.loading: AudioProcessingState.loading,
-//         ProcessingState.buffering: AudioProcessingState.buffering,
-//         ProcessingState.ready: AudioProcessingState.ready,
-//         ProcessingState.completed: AudioProcessingState.completed,
-//       }[audioPlayer.processingState]!,
-//       playing: playing,
-//       updatePosition: audioPlayer.position,
-//       bufferedPosition: audioPlayer.bufferedPosition,
-//       speed: audioPlayer.speed,
-//       queueIndex: event.currentIndex,
-//     );
-//   });
-// }
+            
             if (processingState == ProcessingState.loading ||
                 processingState == ProcessingState.buffering) {
               return Container(
@@ -94,8 +66,6 @@ class ControlButtons extends StatelessWidget {
       ],
     );
   }
-
-  
 }
 
 // ignore: must_be_immutable

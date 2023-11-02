@@ -11,6 +11,14 @@ class DetailScreenController extends GetxController {
   String? message = '';
   RxBool isLoading = false.obs;
   AudioPlayer? audioPlayer;
+  List<String> filteredPlaylistTitles = [];
+  List<String> playlistTitles = [];
+
+  @override
+  void onInit() {
+    super.onInit();
+    fetchMyPlaylistData();
+  }
 
   final RxBool songExistsLocally = false.obs;
 
@@ -52,15 +60,22 @@ class DetailScreenController extends GetxController {
     }
   }
 
-  MyPlaylistDataModel? myPlaylistDataModel;
+  // MyPlaylistDataModel? myPlaylistDataModel;
+  final myPlaylistDataModel = MyPlaylistDataModel().obs;
 
   Future<void> fetchMyPlaylistData() async {
-    isLoading.value = true;
     try {
+    isLoading.value = true;
       final myPlaylistDataModelJson = await apiHelper.fetchMyPlaylistData();
 
-      myPlaylistDataModel =
+      myPlaylistDataModel.value =
           MyPlaylistDataModel.fromJson(myPlaylistDataModelJson);
+      
+      playlistTitles =
+          myPlaylistDataModel.value.data!.map((item) => item.plTitle!).toList();
+
+      filteredPlaylistTitles = playlistTitles;
+
       isLoading.value = false;
     } catch (e) {
       if (kDebugMode) {

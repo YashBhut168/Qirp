@@ -1,3 +1,6 @@
+
+import 'dart:developer';
+
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
 import 'package:flutter/foundation.dart';
@@ -9,12 +12,16 @@ class PlaylistScreenController extends GetxController {
   RxDouble downloadProgress = 0.0.obs;
   RxInt index = 0.obs;
   RxBool downloading = false.obs;
-  RxList<String> queueAudioUrls = <String>[].obs;
-  RxList<String> queueSongIds = <String>[].obs;
+  // RxList<String> queueAudioUrls = <String>[].obs;
+  RxList<String> playlistSongAudioUrls = <String>[].obs;
+  // RxList<String> queueSongIds = <String>[].obs;
   // RxBool isQueueItemExists  = false.obs;
   // RxBool isQueue = false.obs;
   // RxBool addToQueue = false.obs;
   String success = '';
+  RxString message = RxString('');
+  var isLikePlaylistData = [].obs;
+
 
   AllSongsListModel? allSongsListModel;
 
@@ -24,8 +31,12 @@ class PlaylistScreenController extends GetxController {
       final allSongsListModelJson = await apiHelper.songsInPlaylist(playlistId);
 
       allSongsListModel = AllSongsListModel.fromJson(allSongsListModelJson);
+      isLikePlaylistData.value = allSongsListModel!.data!;
       isLoading.value = false;
 
+
+      playlistSongAudioUrls.assignAll(allSongsListModel!.data!.map((item) => item.audio.toString()));
+      
       // isQueue.value = (allSongsListModel!.data![index.value].is_queue) ?? false;
       if (kDebugMode) {
         print('isQueue::::${allSongsListModel!.data![index.value].is_queue}');
@@ -33,9 +44,9 @@ class PlaylistScreenController extends GetxController {
 
 
     } catch (e) {
+        isLoading.value = false;
       if (kDebugMode) {
         print(e);
-        isLoading.value = false;
       }
     }
   }
@@ -74,17 +85,29 @@ class PlaylistScreenController extends GetxController {
     }
   }
 
-   Future<void> queueSongsList({String? playlistId}) async {
+    queueSongsList({String? playlistId}) async {
     try {
       isLoading.value = true;
       final response = await apiHelper.queueSongsList(playlisId: playlistId);
       if (kDebugMode) {
         print(response['success']);
       }
-      final List<dynamic> data = response['data'];
-      queueAudioUrls.assignAll(data.map((item) => item['audio'].toString()));
-      queueSongIds.assignAll(data.map((item) => item['id'].toString()));
-      // success = response['success'];
+      final List<dynamic>? data = response['data'];
+    //   if (data != null && data is List<dynamic>) {
+    //   queueAudioUrls.assignAll(data.map((item) => item['audio'].toString()));
+    //   queueSongIds.assignAll(data.map((item) => item['id'].toString()));
+    // } else {
+    //   print('queque song list fetch failed: Data is null or not a List<dynamic>.');
+    // }
+    if(data != null){
+
+      // queueAudioUrls.assignAll(data.map((item) => item['audio'].toString()));
+      // queueSongIds.assignAll(data.map((item) => item['id'].toString()));
+    }
+      success = response['success'] ?? '';
+      message.value = response['message'] ?? '';
+      log("${response['message']}",name: 'message');
+      log("${response['success']}",name: 'success');
     } catch (e) {
       if (kDebugMode) {
         print('queque song list fetch failed: $e');

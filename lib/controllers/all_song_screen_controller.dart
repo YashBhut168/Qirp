@@ -11,19 +11,23 @@ class AllSongsScreenController extends GetxController {
 
   final List<int> selectedSongIndices = [];
        List<bool>? isChecked;
+  
+  var isLikeAllSongData = [].obs;
 
 
   AllSongsListModel? allSongsListModel;
   Future<void> allSongsList({checkedIds}) async {
-    isLoading.value = true;
     final prefs = await SharedPreferences.getInstance();
     final login = prefs.getBool('isLoggedIn') ?? '';
     try {
+    isLoading.value = true;
       final myPlaylistDataModelJson = login == false
           ? await apiHelper.noAuthAllSongsList()
           : await apiHelper.allSongsList();
 
       allSongsListModel = AllSongsListModel.fromJson(myPlaylistDataModelJson);
+
+       isLikeAllSongData.value = allSongsListModel!.data!;
 
       isChecked = List<bool>.generate(
         allSongsListModel!.data!.length,

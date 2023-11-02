@@ -4,7 +4,6 @@ import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/playlist_screens/playlist_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -85,7 +84,8 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
             padding: const EdgeInsets.only(top: 30, right: 30),
             child: InkWell(
                 onTap: () {
-                  Get.off(const PlylistScreen());
+                  Get.back();
+                  Get.back();
                 },
                 child: lable(text: AppStrings.cancel)),
           )
@@ -211,8 +211,9 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
                                   songsId: checkedIds,
                                 )
                                     .then((value) {
-                                  Get.off(const PlylistScreen());
-
+                                  Get.back();
+                                  Get.back();
+                                  detailScreenController.fetchMyPlaylistData();
                                   detailScreenController.success == "true"
                                       ? snackBar(
                                           '${AppStrings.songAddedInPlaylistSuccessfully} ${widget.playlistTitle}')

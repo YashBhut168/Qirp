@@ -43,8 +43,13 @@ class _SubjectScreenState extends State<PodcatsScreen> {
       if (kDebugMode) {
         print(e);
       }
+
       setState(() {
-          isLoading = false;
+        isLoading = false;
+      });
+    } finally {
+      setState(() {
+        isLoading = false;
       });
     }
   }
@@ -54,7 +59,7 @@ class _SubjectScreenState extends State<PodcatsScreen> {
     return Scaffold(
         backgroundColor: AppColors.backgroundColor,
         body: allCategoryDataModel == null
-            ?  Center(
+            ? Center(
                 child: CircularProgressIndicator(
                 color: AppColors.white,
               ))
@@ -81,26 +86,27 @@ class _SubjectScreenState extends State<PodcatsScreen> {
                           itemCount: allCategoryDataModel!.allCategory!.length,
                           itemBuilder: (context, index) {
                             return Stack(
-                              children: [Positioned.fill(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Image.network(
-                                    (allCategoryDataModel!
-                                            .allCategory![index].picture) ??
-                                        'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-                                    height: 120,
-                                    width: 120,
-                                    fit: BoxFit.fill,
-                                    filterQuality: FilterQuality.high,
+                              children: [
+                                Positioned.fill(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Image.network(
+                                      (allCategoryDataModel!
+                                              .allCategory![index].picture) ??
+                                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
+                                      height: 120,
+                                      width: 120,
+                                      fit: BoxFit.fill,
+                                      filterQuality: FilterQuality.high,
+                                    ),
                                   ),
-                                     
                                 ),
-                              ),
-                              Align(
-                                alignment: Alignment.center,
-                                child: lable(text: (allCategoryDataModel!
-                                            .allCategory![index].title)!),
-                              )
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: lable(
+                                      text: (allCategoryDataModel!
+                                          .allCategory![index].title)!),
+                                )
                               ],
                             );
                           })

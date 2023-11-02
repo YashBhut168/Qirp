@@ -1,27 +1,38 @@
 import 'dart:developer';
 
+import 'package:edpal_music_app_ui/apihelper/music_handler.dart';
+import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 // import 'package:edpal_music_app_ui/views/auth_screens/login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+
+final logger = Logger(
+  level: Level.warning, // Set the log level to WARNING or ERROR
+);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   final isLoggedIn = await checkLoginStatus();
   await JustAudioBackground.init(
+    // androidNotificationChannelId: 'com.ryanheise.audioservice.AudioService',
     androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
     androidNotificationChannelName: 'Audio playback',
-    androidNotificationOngoing: true,
+    androidNotificationOngoing: false,
   );
+
   runApp(MyApp(isLoggedIn: isLoggedIn));
-  // WidgetsBinding.instance.addObserver(Handler());
+  WidgetsBinding.instance.addObserver(Handler());
 }
 
 class MyApp extends StatelessWidget {
@@ -37,6 +48,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         visualDensity: VisualDensity.adaptivePlatformDensity,
+        appBarTheme: const AppBarTheme(systemOverlayStyle: SystemUiOverlayStyle(systemNavigationBarColor: AppColors.backgroundColor,)),
         useMaterial3: true,
       ),
       home: isLoggedIn ? MainScreen() : const InitialLoginScreen(),

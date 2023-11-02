@@ -79,6 +79,7 @@ Widget commonTextField(
     bool border = true,
     Color backgroundColor = Colors.white,
     Color? borderColor,
+    Color? focusBorderColor,
     Widget? prefix,
     Widget? suffix,
     String? Function(String?)? validator,
@@ -145,7 +146,8 @@ Widget commonTextField(
             : null,
         focusedBorder: border
             ? OutlineInputBorder(
-                borderSide: BorderSide(color: borderColor ?? AppColors.white),
+                borderSide:
+                    BorderSide(color: focusBorderColor ?? AppColors.white),
                 borderRadius: BorderRadius.circular(
                   borderRadius ?? getProportionateScreenHeight(7),
                 ),
@@ -321,6 +323,73 @@ Widget commonViewAll({CategoryData? onTapData}) {
           color: AppColors.btnColor,
         )
       ],
+    ),
+  );
+}
+
+Widget commonAuthContainer({
+  String? image,
+  String? text,
+  void Function()? onTap,
+  bool? isLoading,
+  bool? isIcon,
+  IconData? icon,
+  double? imageHeight,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 9),
+        decoration: const BoxDecoration(
+          color: Color(0xFF005FF7),
+          borderRadius: BorderRadius.all(
+            Radius.circular(10),
+          ),
+        ),
+        child: isLoading == true
+            ? Expanded(
+                child: Center(
+                  child: SizedBox(
+                    height: 20,
+                    width: 20,
+                    child: CircularProgressIndicator(
+                      color: AppColors.white,
+                      strokeWidth: 3,
+                    ),
+                  ),
+                ),
+              )
+            : Row(
+                // mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  sizeBoxWidth(14),
+                  isIcon == true
+                      ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0),
+                        child: Icon(
+                            icon,
+                            size: 27,
+                            color: Colors.white,
+                          ),
+                      )
+                      : Padding(
+                        padding: const EdgeInsets.only(left: 6,top: 6,bottom: 6),
+                        child: Image.asset(image ?? '', height: imageHeight ?? 16),
+                      ),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: lable(
+                        text: text ?? '',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+      ),
     ),
   );
 }

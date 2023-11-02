@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileController extends GetxController {
   ApiHelper apiHelper = ApiHelper();
-  final RxBool isLoading = false.obs;
+  final isLoading = false.obs;
   RxString id = RxString('');
   RxString name = RxString('');
   RxString email = RxString('');
@@ -18,12 +18,19 @@ class ProfileController extends GetxController {
   // ignore: non_constant_identifier_names
   RxString profile_pic = RxString('');
 
+  @override
+  void onInit() {
+    fetchProfile();
+    super.onInit();
+  }
+
+
   fetchProfile() async {
     try {
     isLoading.value = true;
-      final prefs = await SharedPreferences.getInstance();
-      final authToken = prefs.getString('token') ?? '';
-      final response = await apiHelper.fetchProfile(authToken);
+      // final prefs = await SharedPreferences.getInstance();
+      // final authToken = prefs.getString('token') ?? '';
+      final response = await apiHelper.fetchProfile();
 
       if (response != null && response.containsKey('profile')) {
         final profile = response['profile'];
@@ -50,14 +57,14 @@ class ProfileController extends GetxController {
       } else {
         if (kDebugMode) {
           print('Profile not found in response');
-          isLoading.value = false;
         }
+          isLoading.value = false;
       }
     } catch (e) {
       if (kDebugMode) {
         print('Fetch profile failed: $e');
-        isLoading.value = false;
       }
+        isLoading.value = false;
     } finally {
       isLoading.value = false;
     }
@@ -93,6 +100,8 @@ class ProfileController extends GetxController {
       if (kDebugMode) {
         print('profile edit failed: $e');
       }
+      isLoading.value = false;
+
     } finally {
       isLoading.value = false;
     }

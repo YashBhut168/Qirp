@@ -32,11 +32,11 @@ class AuthController extends GetxController {
       if (kDebugMode) {
         log("login token::$token");
       }
-      GlobVar.login == true;
       log("${GlobVar.login}", name: 'library login');
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('token', token);
+       await prefs.setString('token', token);
       await prefs.setBool('isLoggedIn', true);
+      GlobVar.login = true;
       isLoading.value = false;
     } catch (e) {
       isLoading.value = false;
