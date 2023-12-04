@@ -69,7 +69,7 @@ class AppValidation {
       //     AppStrings.enterValidPhoneNumber.tr;
     }
     return result;
-  }
+  }                                 
 
   // /// Password validation
   // static validateAge(String value) {

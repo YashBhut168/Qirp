@@ -214,6 +214,7 @@ class _MobileLoginScreenState extends State<MobileLoginScreen> {
             phoneNumber: phoneNumber,
             selectedCountry: _selectedCountry,
             varify: verificationId,
+            inWhichScreen: 'Mobile screen',
           ));
         },
         codeAutoRetrievalTimeout: (String verificationId) {},

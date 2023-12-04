@@ -9,6 +9,12 @@ class DownloadSongScreenController extends GetxController {
   var isLoading = false.obs;
   var isLikeDownloadData = [].obs;
 
+  @override
+  void onInit() {
+    downloadSongsList();
+    super.onInit();
+  }  
+
   Future<void> downloadSongsList() async {
     try {
       isLoading.value = true;

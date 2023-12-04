@@ -58,7 +58,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   Align(
                     alignment: Alignment.center,
                     child: Image.asset(
-                      AppAsstes.appIconTeal,
+                      AppAsstes.qirpLogo,
                       scale: 7.5,
                     ),
                   ),

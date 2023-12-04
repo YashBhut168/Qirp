@@ -1,11 +1,9 @@
 // ignore_for_file: file_names
 
-import 'package:edpal_music_app_ui/models/category_data_model.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/text_styles.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/home_screen/see_all_songs/see_all_songs.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -65,10 +63,10 @@ Widget containerIcon({
   );
 }
 
-Icon customIcon({required IconData icon}) {
+Icon customIcon({required IconData icon,double? size}) {
   return Icon(
     icon,
-    size: 40,
+    size: size ?? 20,
     color: AppColors.white,
   );
 }
@@ -129,7 +127,6 @@ Widget commonTextField(
         errorMaxLines: 2,
         isDense: true,
         hintText: hintText.tr,
-
         filled: true,
         fillColor: backgroundColor,
         // constraints: BoxConstraints(
@@ -299,15 +296,17 @@ Widget commonListTilePlaylist({
   );
 }
 
-Widget commonViewAll({CategoryData? onTapData}) {
+Widget commonViewAll({void Function()? onTap}) {
   return GestureDetector(
-    onTap: () {
-      Get.to(
-        SeeAllSongScreen(
-          categoryData: onTapData,
-        ),
-      );
-    },
+    onTap: onTap,
+    
+    // () {
+    //   Get.to(
+    //     SeeAllSongScreen(
+    //       homeCategoryData: onTapData,
+    //     ),
+    //   );
+    // },
     child: Column(
       children: [
         containerIcon(
@@ -349,18 +348,16 @@ Widget commonAuthContainer({
           ),
         ),
         child: isLoading == true
-            ? Expanded(
-                child: Center(
-                  child: SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(
-                      color: AppColors.white,
-                      strokeWidth: 3,
-                    ),
-                  ),
+            ? Center(
+              child: SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  color: AppColors.white,
+                  strokeWidth: 3,
                 ),
-              )
+              ),
+            )
             : Row(
                 // mainAxisAlignment: MainAxisAlignment.center,
                 children: [

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/my_playlist_data_model.dart';
 import 'package:flutter/foundation.dart';
@@ -12,7 +14,13 @@ class DetailScreenController extends GetxController {
   RxBool isLoading = false.obs;
   AudioPlayer? audioPlayer;
   List<String> filteredPlaylistTitles = [];
+  List<String> filteredPlaylistTracks = [];
+  List<String> filteredPlaylistIds = [];
+  List<List<String>> filteredPlaylisImages = [];
   List<String> playlistTitles = [];
+  List<String> playlistTracks = [];
+  List<String> playlistIds = [];
+  List<List<String>> playlistImages = [];
 
   @override
   void onInit() {
@@ -65,17 +73,28 @@ class DetailScreenController extends GetxController {
 
   Future<void> fetchMyPlaylistData() async {
     try {
-    isLoading.value = true;
+      isLoading.value = true;
       final myPlaylistDataModelJson = await apiHelper.fetchMyPlaylistData();
 
       myPlaylistDataModel.value =
           MyPlaylistDataModel.fromJson(myPlaylistDataModelJson);
-      
+
       playlistTitles =
           myPlaylistDataModel.value.data!.map((item) => item.plTitle!).toList();
-
+      playlistTracks =
+          myPlaylistDataModel.value.data!.map((item) => item.tracks!).toList();
+      playlistIds =
+          myPlaylistDataModel.value.data!.map((item) => item.id!).toList();
+      // playlistImages = myPlaylistDataModel.value.data!.map((item) => item.plImage!).expand((images) => images).toList();
+      playlistImages = myPlaylistDataModel.value.data!
+          .map((item) => item.plImage!) // Assuming pl_image is non-null
+          .toList();
       filteredPlaylistTitles = playlistTitles;
+      filteredPlaylistTracks = playlistTracks;
+      filteredPlaylistIds = playlistIds;
+      filteredPlaylisImages = playlistImages;
 
+      log('$playlistImages', name: 'playlistImages');
       isLoading.value = false;
     } catch (e) {
       if (kDebugMode) {

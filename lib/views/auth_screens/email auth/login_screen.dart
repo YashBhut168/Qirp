@@ -7,6 +7,7 @@ import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/validation.dart';
+import 'package:edpal_music_app_ui/views/auth_screens/email%20auth/forgot_password_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/email%20auth/sign_up_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
@@ -81,14 +82,14 @@ class _LogInScreenState extends State<LogInScreen> {
                       children: [
                         sizeBoxHeight(60),
                         Image.asset(
-                          AppAsstes.appIconTeal,
+                          AppAsstes.qirpLogo,
                           scale: 7.5,
                         ),
-                        lable(
-                            text: AppStrings.edpal,
-                            fontSize: 33,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: 1.9),
+                        // lable(
+                        //     text: AppStrings.qirp,
+                        //     fontSize: 33,
+                        //     fontWeight: FontWeight.w800,
+                        //     letterSpacing: 1.9),
                       ],
                     ),
                   ),
@@ -282,7 +283,14 @@ class _LogInScreenState extends State<LogInScreen> {
                     alignment: Alignment.centerRight,
                     child: Column(
                       children: [
-                        lable(text: AppStrings.forgotPassword),
+                        GestureDetector(
+                            onTap: () {
+                              Get.to(
+                                const ForgotPasswordScreen(),
+                                transition: Transition.leftToRight,
+                              );
+                            },
+                            child: lable(text: AppStrings.forgotPassword)),
                         sizeBoxHeight(20),
                         // customElevatedButton(
                         //   text: AppStrings.loginS,

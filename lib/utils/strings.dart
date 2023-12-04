@@ -8,6 +8,7 @@ class AppStrings {
   static const String skip = "Skip";
   static const String loginAndEnjoyMoreThen80MillonSongs = "Login and enjoy more then 80 Millon Songs";
   static const String googleLogin = "Google Login";
+  static const String initScreen = "Init Screen";
 
 
   // mobile login screen
@@ -24,6 +25,7 @@ class AppStrings {
   // main screen
   static const String home = "Home";
   static const String search = "Search";
+  static const String reel = "Reel";
   static const String forYou = "For You";
   // static const String addPlaylist = "Add Playlist";
   static const String myLibrary = "My Library";
@@ -79,13 +81,18 @@ class AppStrings {
   static const String registerSuccessfully = "Register Successfully";
 
   // Log in screen
-  static const String edpal = "EdPal";
+  static const String qirp = "Qirp";
   static const String loginC = "LOGIN";
   static const String loginS = "Login";
   static const String forgotPassword = "Forgot Password?";
   static const String createNewAccountTo = "Create new account to ";
   static const String signUpM = "SignUp";
   static const String loginSuccessfully = "Login Successfully";
+
+  // Forgot pass screen
+  static const String sendOtpToEmail = 'Send OTP to Email';
+  static const String forgotScreen = 'Forgot Screen';
+
 
   // profile screen
   static const String profile = "Profile";

@@ -15,7 +15,16 @@ class ApiHelper {
   /// API Paths
   static const String register = "$baseUrl/new_register";
   static const String login = "$baseUrl/login";
+  static const String forgotPassword = "$baseUrl/forgot-password";
+  static const String verifyOtp = "$baseUrl/verify-user";
   static const String socialLogin = "$baseUrl/social_login";
+  static const String deviceToken = "$baseUrl/device_token";
+  static const String categories = "$baseUrl/categories";
+  static const String addReels = "$baseUrl/add-reels";
+  static const String getReels = "$baseUrl/get-reels";
+  // static const String getReelsPost = "$baseUrl/get-reels";
+  static const String viewReels = "$baseUrl/view-reels";
+  static const String likeUnlikeReels = "$baseUrl/like-unlike-reel";
   static const String editPofile = "$baseUrl/edit-profile";
   static const String allCategory = "$baseUrl/allCategory";
   static const String addPlayList = "$baseUrl/addPlayList";
@@ -32,40 +41,81 @@ class ApiHelper {
   static const String favoriteSongList = "$baseUrl/like_songlist";
   static const String addRecentlySong = "$baseUrl/add_recentlysong";
   static const String recentSongList = "$baseUrl/recently_songlist";
-  static const String queueSongListWithoutPlaylist = "$baseUrl/queue_songlist_without_playlist";
+  static const String queueSongListWithoutPlaylist =
+      "$baseUrl/queue_songlist_without_playlist";
 
-
-
-  // API Paths with no auth
+  /// API Paths with no auth
+  static const String noAuthCateoriesList = "$baseUrl/no-auth-categories";
   static const String noAuthAddSongList = "$baseUrl/noauthallSongsList";
 
-    Future<Map<String, dynamic>> fetchHomeCategoryData(String endpoint) async {
-        // Future.delayed(const Duration(seconds: 5));
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        final authToken = prefs.getString('token');
-        
-        log("$authToken",name: 'authToken home data');
-        final headers = {
-          'Authorization': 'Bearer $authToken',
-          'Content-Type': 'application/json',
-        };
-        final response = await http.get(
-          Uri.parse('$baseUrl/$endpoint'),
-          headers: headers,
-        );
-        
+  Future<Map<String, dynamic>> fetchHomeCategoryData(String endpoint) async {
+    // Future.delayed(const Duration(seconds: 5));
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('token');
 
-        if (response.statusCode == 200) {
-          final jsonData = json.decode(response.body);
-          return jsonData;
-        } else {
-          throw Exception('Failed to load data');
-        }
-      } catch (e) {
-        throw Exception('Error: $e');
+      log("$authToken", name: 'authToken home data');
+      final headers = {
+        'Authorization': 'Bearer $authToken',
+        'Content-Type': 'application/json',
+      };
+      final response = await http.get(
+        Uri.parse('$baseUrl/$endpoint'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load data');
       }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
+  }
+
+  Future<Map<String, dynamic>> homeCategories() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final authToken = prefs.getString('token') ?? '';
+      final headers = {
+        'Authorization': 'Bearer $authToken',
+        'Content-Type': 'application/json',
+      };
+      final response = await http.get(
+        Uri.parse(categories),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        log( response.body, name: 'homeCategoryResponse');
+        return jsonData;
+      } else {
+        throw Exception('Failed to load category data');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> noAuthHomeCategoriesList() async {
+    try {
+      final response = await http.get(
+        Uri.parse(noAuthCateoriesList),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load category data');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
 
   // fetchHomeCategoryData(String endpoint) async {
   //   final client = http.Client();
@@ -102,7 +152,6 @@ class ApiHelper {
   //   }
   //   currentRetry++;
   // }
-
 
   Future<Map<String, dynamic>> noAuthFetchHomeCategoryData(
       String endpoint) async {
@@ -177,6 +226,55 @@ class ApiHelper {
     }
   }
 
+  Future<Map<String, dynamic>> forgotPasswordForEmail(
+    String email,
+  ) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'email': email,
+    });
+
+    final response = await http.post(
+      Uri.parse(forgotPassword),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to forgot password sent');
+    }
+  }
+
+  Future<Map<String, dynamic>> verifyOtpUser(String email, otp) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'email': email,
+      'otp': otp,
+    });
+
+    final response = await http.post(
+      Uri.parse(verifyOtp),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to forgot password sent');
+    }
+  }
+
   Future<Map<String, dynamic>> socialLoginUser(
     String email,
     String userName,
@@ -206,11 +304,11 @@ class ApiHelper {
     }
   }
 
-  fetchProfile() async {
+  fetchProfileUser() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('token') ?? '';
-      log(authToken,name: 'fetch profile authtoken');
+      log(authToken, name: 'fetch profile authtoken');
       final response = await http.post(
         Uri.parse(editPofile),
         headers: <String, String>{
@@ -232,6 +330,169 @@ class ApiHelper {
     }
   }
 
+  deviceTokens(deviceTokens) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'device_token': deviceTokens,
+    });
+
+    final response = await http.post(
+      Uri.parse(deviceToken),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to give device token');
+    }
+  }
+
+  Future<Map<String, dynamic>> addReelsVideo(video, description) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+
+    final request = http.MultipartRequest('POST', Uri.parse(addReels));
+    request.headers['Authorization'] = 'Bearer $authToken';
+    request.fields['description'] = description;
+    request.files.add(await http.MultipartFile.fromPath('post_pic', video));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to social login user');
+    }
+  }
+
+  // Future<Map<String, dynamic>> getReel() async {
+  //   try {
+  //     final response = await http.get(
+  //       Uri.parse(getReels),
+  //     );
+
+  //     if (response.statusCode == 200) {
+  //       final jsonData = json.decode(response.body);
+  //       return jsonData;
+  //     } else {
+  //       throw Exception('Failed to fetch reels data');
+  //     }
+  //   } catch (e) {
+  //     throw Exception('Error: $e');
+  //   }
+  // }
+
+  Future<Map<String, dynamic>> getReel({userId}) async {
+    try {
+      final headers = {
+        'Content-Type': 'application/json',
+      };
+
+      final body = jsonEncode({
+        'user_id': userId,
+      });
+
+      final response = await http.post(
+        Uri.parse(getReels),
+        headers: headers,
+        body: body,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to fetch reels data');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  // getReelPost(userId) async {
+  //   final headers = {
+  //     'Content-Type': 'application/json',
+  //   };
+
+  //   final body = jsonEncode({
+  //     'user_id': userId,
+  //   });
+
+  //   final response = await http.post(
+  //     Uri.parse(getReelsPost),
+  //     headers: headers,
+  //     body: body,
+  //   );
+
+  //   if (response.statusCode == 200) {
+  //     final jsonResponse = jsonDecode(response.body);
+  //     return jsonResponse;
+  //   } else {
+  //     throw Exception('Failed to fetcu reel data');
+  //   }
+  // }
+
+  viewReel(userId, reelsId) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'user_id': userId,
+      'reel_id': reelsId,
+    });
+
+    final response = await http.post(
+      Uri.parse(viewReels),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to view reel count');
+    }
+  }
+
+  likeUnlikeReel(reelsId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'reel_id': reelsId,
+    });
+
+    final response = await http.post(
+      Uri.parse(likeUnlikeReels),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to like reel');
+    }
+  }
+
   Future<Map<String, dynamic>> editProfile(
     String authToken,
     String name,
@@ -240,38 +501,69 @@ class ApiHelper {
     String age,
     String gender,
     // ignore: non_constant_identifier_names
-    File profile_pic,
+    profile_pic,
   ) async {
     final uri = Uri.parse(editPofile);
 
     try {
-      final request = http.MultipartRequest('POST', uri)
-        ..headers['Authorization'] = 'Bearer $authToken'
-        ..fields['name'] = name
-        ..fields['email'] = email
-        ..fields['mobile_no'] = mobileNo
-        ..fields['age'] = age
-        ..fields['gender'] = gender
-        ..files.add(
-          http.MultipartFile(
-            'profile_pic',
-            profile_pic.readAsBytes().asStream(),
-            profile_pic.lengthSync(),
-            filename:
-                'profile_pic.jpg', // You can change the filename as needed
-            contentType: MediaType('image',
-                'jpg'), // Adjust the content type based on your image type
-          ),
+      if (kDebugMode) {
+        print("profilePick----> $profile_pic");
+      }
+      if (profile_pic == '') {
+        final headers = {
+          'Authorization': 'Bearer $authToken',
+          'Content-Type': 'application/json',
+        };
+
+        final body = jsonEncode({
+          'name': name,
+          'email': email,
+          'mobile_no': mobileNo,
+          'age': age,
+          'gender': gender,
+          'profile_pic': profile_pic,
+        });
+
+        final response = await http.post(
+          Uri.parse(editPofile),
+          headers: headers,
+          body: body,
         );
 
-      final streamedResponse = await request.send();
-      final response = await http.Response.fromStream(streamedResponse);
-
-      if (response.statusCode == 200) {
-        final jsonResponse = json.decode(response.body);
-        return jsonResponse;
+        if (response.statusCode == 200) {
+          final jsonResponse = jsonDecode(response.body);
+          return jsonResponse;
+        } else {
+          throw Exception('Request failed with status: ${response.statusCode}');
+        }
       } else {
-        throw Exception('Request failed with status: ${response.statusCode}');
+        final request = http.MultipartRequest('POST', uri)
+          ..headers['Authorization'] = 'Bearer $authToken'
+          ..fields['name'] = name
+          ..fields['email'] = email
+          ..fields['mobile_no'] = mobileNo
+          ..fields['age'] = age
+          ..fields['gender'] = gender
+          ..files.add(
+            http.MultipartFile(
+              'profile_pic',
+              profile_pic.readAsBytes().asStream(),
+              profile_pic.lengthSync(),
+              filename:
+                  'profile_pic.jpg', // You can change the filename as needed
+              contentType: MediaType('image',
+                  'jpg'), // Adjust the content type based on your image type
+            ),
+          );
+
+        final streamedResponse = await request.send();
+        final response = await http.Response.fromStream(streamedResponse);
+        if (response.statusCode == 200) {
+          final jsonResponse = json.decode(response.body);
+          return jsonResponse;
+        } else {
+          throw Exception('Request failed with status: ${response.statusCode}');
+        }
       }
     } catch (e) {
       if (kDebugMode) {
@@ -557,11 +849,11 @@ class ApiHelper {
         throw Exception('Failed to fetch download song list');
       }
     } catch (e) {
-       if (e is SocketException) {
-      throw Exception('Network error: Unable to connect to the server.');
-    } else {
-      throw Exception('Error: $e');
-    }
+      if (e is SocketException) {
+        throw Exception('Network error: Unable to connect to the server.');
+      } else {
+        throw Exception('Error: $e');
+      }
     }
   }
 
@@ -595,8 +887,8 @@ class ApiHelper {
     }
   }
 
-
-  Future<Map<String, dynamic>> addQueueSong({String? musicId,String? playlisId}) async {
+  Future<Map<String, dynamic>> addQueueSong(
+      {String? musicId, String? playlisId}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('token') ?? '';
@@ -682,7 +974,7 @@ class ApiHelper {
     }
   }
 
-   Future<Map<String, dynamic>> addRecentlySongs({String? musicId}) async {
+  Future<Map<String, dynamic>> addRecentlySongs({String? musicId}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('token') ?? '';
@@ -736,7 +1028,6 @@ class ApiHelper {
       throw Exception('Error: $e');
     }
   }
-
 
   Future<Map<String, dynamic>> queueSongsListWithoutPlaylist() async {
     try {

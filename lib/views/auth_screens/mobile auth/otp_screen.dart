@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:edpal_music_app_ui/controllers/auth_controller.dart';
@@ -8,6 +9,7 @@ import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
+import 'package:edpal_music_app_ui/views/auth_screens/email%20auth/login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/mobile%20auth/mobile_login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
@@ -19,13 +21,18 @@ import 'package:pinput/pinput.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpMobileAuthScreen extends StatefulWidget {
-  final String varify;
-  final TextEditingController phoneNumber;
-  final CountryCode selectedCountry;
+  final String? varify;
+  final TextEditingController? phoneNumber;
+  final TextEditingController? email;
+  final CountryCode? selectedCountry;
+  final String inWhichScreen;
+
   const OtpMobileAuthScreen(
-      {required this.varify,
-      required this.phoneNumber,
-      required this.selectedCountry,
+      {this.varify,
+      this.phoneNumber,
+      this.email,
+      this.selectedCountry,
+      required this.inWhichScreen,
       super.key});
 
   @override
@@ -72,6 +79,48 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final defaultPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: TextStyle(
+        fontSize: 20,
+        color: AppColors.white,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: const Color(0xFF333333)),
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
+    final focusedPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: TextStyle(
+        fontSize: 20,
+        color: AppColors.white,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: AppColors.themeBlueColor),
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
+    final submittedPinTheme = PinTheme(
+      width: 56,
+      height: 56,
+      textStyle: TextStyle(
+        fontSize: 20,
+        color: AppColors.white,
+        fontWeight: FontWeight.w600,
+      ),
+      decoration: BoxDecoration(
+        border: Border.all(
+            color: AppColors.themeBlueColor),
+        borderRadius: BorderRadius.circular(20),
+      ),
+    );
     return GestureDetector(
       onTap: () {
         FocusScope.of(context).unfocus();
@@ -88,7 +137,9 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
               size: 26,
             ),
             onPressed: () {
-              Get.offAll(const InitialLoginScreen());
+              widget.inWhichScreen == AppStrings.initScreen
+                  ? Get.offAll(const InitialLoginScreen())
+                  : Get.off(const LogInScreen());
             },
           ),
         ),
@@ -110,20 +161,26 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                 Row(
                   children: [
                     lable(
-                        text:
-                            "${widget.selectedCountry.dialCode ?? ''} ${widget.phoneNumber.text}"),
+                        text: widget.inWhichScreen == AppStrings.initScreen
+                            ? "${widget.selectedCountry!.dialCode ?? ''} ${widget.phoneNumber!.text}"
+                            : widget.email!.text),
                   ],
                 ),
                 sizeBoxHeight(100),
                 Pinput(
                   length: 6,
                   showCursor: true,
+                  autofocus: true,
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: focusedPinTheme,
+                  submittedPinTheme: submittedPinTheme,
                   onChanged: (value) {
                     if (kDebugMode) {
                       print('val::::::$value');
                     }
 
                     code = value;
+                    log(code, name: 'otp');
                     setState(() {});
                   },
                 ),
@@ -132,7 +189,9 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                   onTap: () async {
                     if (showResendButton) {
                       startResendTimer();
-                      resendOtp();
+                      widget.inWhichScreen == AppStrings.initScreen
+                          ? resendOtp()
+                          : resendOtpEmail();
                     }
                   },
                   child: lable(
@@ -151,7 +210,9 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                       isLoding = true;
                     });
 
-                    verifyOtp();
+                    widget.inWhichScreen == AppStrings.initScreen
+                        ? verifyOtp()
+                        : verifyOtpEmail();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
@@ -161,8 +222,8 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: code == ''
-                          ? const Color(0xFF4c4f56)
-                          : const Color(0xFF2cc5b3),
+                          ? const Color(0xFF262626)
+                          : const Color(0xFF005FF7),
                       borderRadius: const BorderRadius.all(
                         Radius.circular(10),
                       ),
@@ -177,7 +238,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
                         : lable(
                             text: AppStrings.next,
                             color: code == ''
-                                ? const Color(0xFF8e8e94)
+                                ? const Color(0xFF605F5F)
                                 : AppColors.white,
                             textAlign: TextAlign.center,
                           ),
@@ -196,7 +257,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
       // timeout:
       const Duration(seconds: 20);
       var credential = PhoneAuthProvider.credential(
-        verificationId: widget.varify,
+        verificationId: widget.varify!,
         smsCode: code.toString(),
         //  pinController.toString(),
       );
@@ -210,18 +271,18 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
 
       await auth.signInWithCredential(credential);
       if (kDebugMode) {
-        print(widget.phoneNumber.text);
+        print(widget.phoneNumber!.text);
       }
       authController
           .registerUser(
               mobileNo:
-                  '${widget.selectedCountry.dialCode}${widget.phoneNumber.text}')
+                  '${widget.selectedCountry!.dialCode}${widget.phoneNumber!.text}')
           .then(
             (value) => snackBar(AppStrings.loginSuccessfully),
           )
-          .then((value) =>
-          
-              Get.offAll(MainScreen(), transition: Transition.upToDown));
+          .then((value) {
+        Get.offAll(MainScreen(), transition: Transition.upToDown);
+      });
       final prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
       controller.currentIndex.value = 0;
@@ -246,11 +307,37 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
     }
   }
 
+  verifyOtpEmail() async {
+    authController
+        .verifyOtpUser(
+      email: widget.email!.text,
+      otp: code,
+    )
+        .then((value) {
+      if (GlobVar.verifyOtpApiSuccess == true) {
+        controller.currentIndex.value = 0;
+        snackBar(GlobVar.forgotPasswordApiMessage);
+        setState(() {
+          isLoding = false;
+        });
+        Get.offAll(
+          MainScreen(),
+          transition: Transition.upToDown,
+        );
+      } else {
+        snackBar(GlobVar.forgotPasswordApiMessage);
+        setState(() {
+          isLoding = false;
+        });
+      }
+    });
+  }
+
   resendOtp() async {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber:
-            '${widget.selectedCountry.dialCode}${widget.phoneNumber.text}',
+            '${widget.selectedCountry!.dialCode}${widget.phoneNumber!.text}',
         verificationCompleted: (PhoneAuthCredential credential) {},
         timeout: const Duration(seconds: 20),
         verificationFailed: (FirebaseAuthException e) {
@@ -273,5 +360,30 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
         isLoding = false;
       });
     }
+  }
+
+  resendOtpEmail() {
+    authController
+        .forgotPassword(
+      email: widget.email!.text,
+    )
+        .then((value) {
+      if (GlobVar.forgotPasswordApiSuccess == true) {
+        //   controller.currentIndex.value = 0;
+        snackBar(GlobVar.forgotPasswordApiMessage);
+        setState(() {
+          isLoding = false;
+        });
+        // Get.offAll(OtpMobileAuthScreen(
+        //   inWhichScreen: AppStrings.forgotScreen,
+        //   email: widget.email!.text,
+        // ));
+      } else {
+        snackBar(GlobVar.forgotPasswordApiMessage);
+        setState(() {
+          isLoding = false;
+        });
+      }
+    });
   }
 }

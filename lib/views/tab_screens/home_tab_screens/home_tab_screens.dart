@@ -4,7 +4,6 @@ import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/home_screen/home_screen.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/podcasts_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -31,7 +30,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 1,
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
         // appBar: AppBar(
@@ -57,7 +56,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   // overlayColor: Colors.transparent,
                   dividerColor: Colors.transparent,
                   unselectedLabelColor: Colors.transparent,
-                  indicatorColor: AppColors.btnColor,
+                  indicatorColor: AppColors.themeBlueColor,
                   indicatorSize: TabBarIndicatorSize.label,
                   isScrollable: true,
                   labelPadding: const EdgeInsets.symmetric(horizontal: 10),
@@ -79,21 +78,21 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                         ),
                       ),
                     ),
-                    Obx(
-                      () => Tab(
-                        child: lable(
-                          text: AppStrings.podcast,
-                          fontWeight:
-                              homeScreenController.selectedIndex.value == 1
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                          fontSize:
-                              homeScreenController.selectedIndex.value == 1
-                                  ? 20
-                                  : 15,
-                        ),
-                      ),
-                    ),
+                    // Obx(
+                    //   () => Tab(
+                    //     child: lable(
+                    //       text: AppStrings.podcast,
+                    //       fontWeight:
+                    //           homeScreenController.selectedIndex.value == 1
+                    //               ? FontWeight.w600
+                    //               : FontWeight.w500,
+                    //       fontSize:
+                    //           homeScreenController.selectedIndex.value == 1
+                    //               ? 20
+                    //               : 15,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                   onTap: (index) {
                     homeScreenController.changeTab(index);
@@ -105,7 +104,7 @@ class _HomeTabScreenState extends State<HomeTabScreen> {
                   physics: NeverScrollableScrollPhysics(),
                   children: [
                     HomeScreen(),
-                    PodcatsScreen(),
+                    // PodcatsScreen(),
                   ],
                 ),
               ),

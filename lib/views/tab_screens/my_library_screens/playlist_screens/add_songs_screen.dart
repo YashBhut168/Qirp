@@ -33,6 +33,7 @@ class _AddSongsScreenState extends State<AddSongsScreen> {
   @override
   void initState() {
     super.initState();
+    
     allSongsScreenController.allSongsList(checkedIds: widget.checkedIds ?? []);
     setState(() {
       widget.checkedIds;

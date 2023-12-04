@@ -3,29 +3,37 @@ import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
-class QueueSongsScreenController extends GetxController{
+class QueueSongsScreenController extends GetxController {
   final ApiHelper apiHelper = ApiHelper();
   AllSongsListModel? allSongsListModel;
   RxBool isLoading = false.obs;
   var isLikeQueueData = [].obs;
 
+  @override
+  void onInit() {
+    queueSongsListWithoutPlaylist();
+    super.onInit();
+  }
 
   Future<void> queueSongsListWithoutPlaylist() async {
     try {
-    isLoading.value = true;
-      final queueSongListDataModelJson = await apiHelper.queueSongsListWithoutPlaylist();
+      isLoading.value = true;
+      final queueSongListDataModelJson =
+          await apiHelper.queueSongsListWithoutPlaylist();
 
       allSongsListModel =
           AllSongsListModel.fromJson(queueSongListDataModelJson);
-      
-      isLikeQueueData.value = allSongsListModel!.data!;
+
+      // isLikeQueueData.value =  allSongsListModel!.data!.length == null ? [] : allSongsListModel!.data!;
+      isLikeQueueData.value =  allSongsListModel!.data!;
       isLoading.value = false;
     } catch (e) {
-        // isLoading.value = false;
+
+      isLoading.value = false;
       if (kDebugMode) {
         print(e);
       }
     }
+    isLoading.value = false;
   }
-
 }

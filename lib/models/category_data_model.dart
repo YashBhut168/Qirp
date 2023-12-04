@@ -36,7 +36,9 @@ class Data {
   String? audio;
   late String? image;
   bool? isLiked;
-  String? totalLikes;
+  // ignore: non_constant_identifier_names
+  bool? is_queue;
+  // String? totalLikes;
 
   Data({
     this.id,
@@ -47,7 +49,9 @@ class Data {
     this.audio,
     required this.image,
     this.isLiked,
-    this.totalLikes,
+      // ignore: non_constant_identifier_names
+      this.is_queue,
+    // this.totalLikes,
   });
 
   Data.fromJson(Map<String, dynamic> json) {
@@ -59,7 +63,8 @@ class Data {
     audio = json['audio'];
     image = json['image'];
     isLiked = json['is_likes'];
-    totalLikes = json['total_likes'];
+    is_queue = json['is_queue'];
+    // totalLikes = json['total_likes'];
   }
 
   Map<String, dynamic> toJson() {
@@ -72,7 +77,8 @@ class Data {
     data['audio'] = audio;
     data['image'] = image;
     data['is_likes'] = isLiked;
-    data['total_likes'] = totalLikes;
+    data['is_queue'] = is_queue;
+    // data['total_likes'] = totalLikes;
     return data;
   }
 }

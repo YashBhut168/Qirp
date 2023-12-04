@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
@@ -21,7 +22,19 @@ class PlaylistScreenController extends GetxController {
   String success = '';
   RxString message = RxString('');
   var isLikePlaylistData = [].obs;
+  RxString currentPlayingTitle = RxString('');
+  RxString currentPlayingImage = RxString('');
+  RxString currentPlayingDesc = RxString('');
 
+
+  // RxBool isPlaylistSongsEmpty = false.obs;
+
+
+  @override
+  void onInit() {
+    songsInPlaylist(playlistId: GlobVar.playlistId);
+    super.onInit();
+  }
 
   AllSongsListModel? allSongsListModel;
 
@@ -33,8 +46,12 @@ class PlaylistScreenController extends GetxController {
       allSongsListModel = AllSongsListModel.fromJson(allSongsListModelJson);
       isLikePlaylistData.value = allSongsListModel!.data!;
       isLoading.value = false;
-
-
+      //  isLikePlaylistData.isEmpty
+      //                                   ? isPlaylistSongsEmpty.value = true
+      //                                   : isPlaylistSongsEmpty.value = false;
+      //                       log('${isPlaylistSongsEmpty.value}',
+      //                                   name:
+      //                                       "playlistScreenController.isPlaylistSongsEmpty.value");
       playlistSongAudioUrls.assignAll(allSongsListModel!.data!.map((item) => item.audio.toString()));
       
       // isQueue.value = (allSongsListModel!.data![index.value].is_queue) ?? false;
@@ -73,12 +90,12 @@ class PlaylistScreenController extends GetxController {
       isLoading.value = true;
       final response = await apiHelper.addQueueSong(musicId: musicId,playlisId: playlistId);
       if (kDebugMode) {
-        print(response['success']);
+        print(response);
       }
       // success = response['success'];
     } catch (e) {
       if (kDebugMode) {
-        print('remove song failed: $e');
+        print('queue song failed: $e');
       }
     } finally {
       isLoading.value = false;

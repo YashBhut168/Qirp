@@ -36,40 +36,45 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
   final MainScreenController controller =
       Get.put(MainScreenController(initialIndex: 0));
 
-  final TextEditingController countrycode = TextEditingController();
+  // final TextEditingController countrycode = TextEditingController();
   bool isLoding = false;
-  bool isLoggedIn = false;
-  String? token;
+  // String encryptPhonnumber = '';
+  // bool isLoggedIn = false;
+  // String? token;
 
   @override
   void initState() {
     super.initState();
 
     // sharedPref();
-    SharedPreferences.getInstance().then((prefs) {
-      bool login = prefs.getBool('isLoggedIn') ?? false;
-      setState(() {
-        isLoggedIn = login;
-      });
-    });
+    // SharedPreferences.getInstance().then((prefs) {
+    //   bool login = prefs.getBool('isLoggedIn') ?? false;
+    //   setState(() {
+    //     isLoggedIn = login;
+    //   });
+    // });
     log("${GlobVar.login}", name: 'library login');
-    countrycode.text = "+91";
+    // countrycode.text = "+91";
     // if (mounted) {
     //   setState(() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      profileController.fetchProfile();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    profileController.fetchProfile();
+
+    // var phoneNumber = profileController.mobile_no;
+    // encryptPhonnumber = formatPhoneNumber(phoneNumber.value);
+    // });
     // profileController.fetchProfile();
     // setState(() {
-    //   controller.isMiniPlayerOpenQueueSongs.value == true ||
-    //           controller.isMiniPlayerOpenDownloadSongs.value == true ||
-    //           controller.isMiniPlayerOpen.value == true ||
-    //           controller.isMiniPlayerOpenHome1.value == true ||
-    //           controller.isMiniPlayerOpenHome2.value == true ||
-    //           controller.isMiniPlayerOpenHome3.value == true ||
-    //           controller.isMiniPlayerOpenAllSongs.value == true
-    //       ? controller.audioPlayer.play()
-    //       : null;
+    // controller.isMiniPlayerOpenQueueSongs.value == true ||
+    //         controller.isMiniPlayerOpenDownloadSongs.value == true ||
+    //         controller.isMiniPlayerOpen.value == true ||
+    //         controller.isMiniPlayerOpenHome1.value == true ||
+    //         controller.isMiniPlayerOpenHome2.value == true ||
+    //         controller.isMiniPlayerOpenHome3.value == true ||
+    //         controller.isMiniPlayerOpenAllSongs.value == true
+    //     ? controller.audioPlayer.play()
+    //     : controller.audioPlayer.dispose();
     //   controller.currentListTileIndexQueueSongs.value;
     //   controller.currentListTileIndexDownloadSongs.value;
     //   controller.currentListTileIndex.value;
@@ -98,17 +103,17 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
     // }
   }
 
-  String formatPhoneNumber(String phoneNumber) {
-    if (phoneNumber.length < 10) {
-      return phoneNumber;
-    }
+  // String formatPhoneNumber(String phoneNumber) {
+  //   if (phoneNumber.length < 10) {
+  //     return phoneNumber;
+  //   }
 
-    String lastFourDigits = phoneNumber.substring(phoneNumber.length - 4);
+  //   String lastFourDigits = phoneNumber.substring(phoneNumber.length - 4);
 
-    String maskedPhoneNumber = '+XXXXXXXX$lastFourDigits';
+  //   String maskedPhoneNumber = '+XXXXXXXX$lastFourDigits';
 
-    return maskedPhoneNumber;
-  }
+  //   return maskedPhoneNumber;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -116,53 +121,56 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
           backgroundColor: AppColors.backgroundColor,
-          appBar: AppBar(
-            backgroundColor: AppColors.backgroundColor,
-            title: Padding(
-              padding: const EdgeInsets.only(left: 7),
-              child: lable(
-                text: AppStrings.myLibrary,
-                fontSize: 19,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.6,
-              ),
-            ),
-            automaticallyImplyLeading: false,
-            centerTitle: false,
-            actions: [
-              commonIconButton(
-                icon: const Icon(
-                  Icons.logout,
-                ),
-                onPressed: () async {
-                  controller.audioPlayer.stop();
-                  final prefs = await SharedPreferences.getInstance();
-                  // ignore: unused_local_variable
-                  final login = prefs.getBool('isLoggedIn');
-                  GlobVar.login = false;
-                  await prefs.setString('imagePath', '');
-                  await prefs.setString('token', '');
-                  await prefs.setBool('isLoggedIn', false);
-                  var loginType = prefs.getString('loginType');
-                  if (kDebugMode) {
-                    print(loginType);
-                  }
-                  if (loginType == AppStrings.googleLogin) {
-                    await GoogleSignIn().disconnect();
-                    FirebaseAuth.instance.signOut();
-                    await prefs.setString('loginType', '');
-                  } else {}
-                  snackBar('Logout successfully');
-                  Get.offAll(const InitialLoginScreen());
-                },
-              ),
-              sizeBoxWidth(15),
-            ],
-          ),
+          // appBar: AppBar(
+          //   backgroundColor: AppColors.backgroundColor,
+          //   title: Padding(
+          //     padding: const EdgeInsets.only(left: 7),
+          //     child: lable(
+          //       text: AppStrings.myLibrary,
+          //       fontSize: 19,
+          //       fontWeight: FontWeight.w700,
+          //       letterSpacing: 0.6,
+          //     ),
+          //   ),
+          //   automaticallyImplyLeading: false,
+          //   centerTitle: false,
+          //   actions: [
+          //     GlobVar.login == true
+          //         ? commonIconButton(
+          //             icon: const Icon(
+          //               Icons.logout,
+          //             ),
+          //             onPressed: () async {
+          //               controller.audioPlayer.stop();
+          //               final prefs = await SharedPreferences.getInstance();
+          //               // ignore: unused_local_variable
+          //               final login = prefs.getBool('isLoggedIn');
+          //               GlobVar.login = false;
+          //               await prefs.setString('imagePath', '');
+          //               await prefs.setString('token', '');
+          //               await prefs.setBool('isLoggedIn', false);
+          //               var loginType = prefs.getString('loginType');
+          //               if (kDebugMode) {
+          //                 print(loginType);
+          //               }
+          //               if (loginType == AppStrings.googleLogin) {
+          //                 await GoogleSignIn().disconnect();
+          //                 FirebaseAuth.instance.signOut();
+          //                 await prefs.setString('loginType', '');
+          //               } else {}
+          //               snackBar('Logout successfully');
+          //               Get.offAll(
+          //                 const InitialLoginScreen(),
+          //                 transition: Transition.downToUp,
+          //               );
+          //             },
+          //           )
+          //         : const SizedBox(),
+          //     sizeBoxWidth(15),
+          //   ],
+          // ),
           body: Obx(
             () {
-              var phoneNumber = profileController.mobile_no;
-              var encryptPhonnumber = formatPhoneNumber(phoneNumber.value);
               if (profileController.isLoading.value == true) {
                 return Center(
                   heightFactor: 14,
@@ -173,66 +181,149 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
               } else {
                 return Column(
                   children: [
-                    sizeBoxHeight(22),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 0, 0, 0),
+                      padding: const EdgeInsets.fromLTRB(18, 40, 15, 0),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          containerIcon(
-                            icon: Icons.person_2_outlined,
-                            borderRadius: 20,
-                            height: 35,
-                            width: 35,
-                            containerColor: Colors.grey,
+                          lable(
+                            text: AppStrings.myLibrary,
+                            fontSize: 19,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.6,
                           ),
-                          sizeBoxWidth(12),
                           GlobVar.login == true
-                              ? Obx(
-                                  () => lable(
-                                    text:
-                                        profileController.email.value.isNotEmpty
-                                            ? profileController.email.value
-                                            : encryptPhonnumber,
-                                    fontWeight: FontWeight.w600,
+                              ? commonIconButton(
+                                  icon: const Icon(
+                                    Icons.logout,
                                   ),
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    lable(
-                                      text: 'Guest',
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                    lable(
-                                      text: 'Not logged in',
-                                      color: Colors.grey,
-                                      fontSize: 13,
-                                    ),
-                                  ],
-                                ),
-                          const Spacer(),
-                          GlobVar.login == true
-                              ? TextButton(
-                                  onPressed: () {
-                                    Get.to(
-                                      EditProfileScreen(
-                                        encryptPhonnumber: encryptPhonnumber,
-                                      ),
+                                  onPressed: () async {
+                                    controller.audioPlayer.stop();
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    // ignore: unused_local_variable
+                                    final login = prefs.getBool('isLoggedIn');
+                                    GlobVar.login = false;
+                                    await prefs.setString('imagePath', '');
+                                    await prefs.setString('token', '');
+                                    await prefs.setBool('isLoggedIn', false);
+                                    var loginType = prefs.getString('loginType');
+                                    GlobVar.userId = '';
+                                    if (kDebugMode) {
+                                      print(loginType);
+                                    }
+                                    if (loginType == AppStrings.googleLogin) {
+                                      await GoogleSignIn().disconnect();
+                                      FirebaseAuth.instance.signOut();
+                                      await prefs.setString('loginType', '');
+                                    } else {}
+                                    snackBar('Logout successfully');
+                                    Get.offAll(
+                                      const InitialLoginScreen(),
+                                      transition: Transition.downToUp,
                                     );
                                   },
-                                  child: lable(
-                                    text: 'Edit',
-                                    color: Colors.grey,
-                                    fontSize: 11,
-                                  ),
                                 )
                               : const SizedBox(),
                         ],
                       ),
                     ),
+              // sizeBoxWidth(15),
+
+                    sizeBoxHeight(22),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(18, 0, 0, 0),
+                      child: GestureDetector(
+                        onTap: () {
+                          GlobVar.login == false
+                              ? Get.to(
+                                  const WitoutLogginScreen(),
+                                  transition: Transition.downToUp,
+                                )
+                              : null;
+                        },
+                        child: Row(
+                          children: [
+                            containerIcon(
+                              icon: Icons.person_2_outlined,
+                              borderRadius: 20,
+                              height: 35,
+                              width: 35,
+                              containerColor: Colors.grey,
+                            ),
+                            sizeBoxWidth(12),
+                            GlobVar.login == true
+                                ? Obx(
+                                    () => lable(
+                                      text:
+
+                                          // profileController.profileModel!.profile!.email!.isNotEmpty ?
+                                          //  profileController.profileModel!.profile!.email! :
+                                          //  profileController.profileModel!.profile!.mobileNo!,
+                                          // GlobVar.emailProfile.isNotEmpty ?
+                                          // GlobVar.emailProfile :
+                                          // GlobVar.encryptPhonnumber,
+                                          profileController
+                                                  .emailProfile.isNotEmpty
+                                              ? profileController.email.value
+                                              : profileController
+                                                  .encryptPhonnumber.value,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      lable(
+                                        text: 'Guest',
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                      ),
+                                      lable(
+                                        text: 'Not logged in',
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ],
+                                  ),
+                            const Spacer(),
+                            GlobVar.login == true
+                                ? TextButton(
+                                    onPressed: () {
+                                      Get.to(
+                                        EditProfileScreen(
+                                          encryptPhonnumber: profileController
+                                              .encryptPhonnumber.value,
+                                        ),
+                                        transition: Transition.leftToRight,
+                                      );
+                                    },
+                                    child: lable(
+                                      text: 'Edit',
+                                      color: Colors.grey,
+                                      fontSize: 11,
+                                    ),
+                                  )
+                                : const SizedBox(),
+                          ],
+                        ),
+                      ),
+                    ),
                     sizeBoxHeight(20),
                     commonListTile(
+                      onTap: () {
+                              controller.currentIndex.value = 2;
+                        GlobVar.login == true
+                            ? Get.to(
+                                 MainScreen(),
+                                transition: Transition.leftToRight,
+                              )
+                            : Get.to(
+                                const WitoutLogginScreen(),
+                                transition: Transition.downToUp,
+                              );
+                      },
                       icon: Icons.music_note_outlined,
                       text: 'Songs',
                     ),
@@ -247,7 +338,10 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                     commonListTile(
                       onTap: () {
                         GlobVar.login == true
-                            ? Get.to(const DownloadScreen())
+                            ? Get.to(
+                                const DownloadScreen(),
+                                transition: Transition.leftToRight,
+                              )
                             : Get.to(
                                 const WitoutLogginScreen(),
                                 transition: Transition.downToUp,
@@ -259,7 +353,10 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                     commonListTile(
                       onTap: () {
                         GlobVar.login == true
-                            ? Get.to(const QueueSongsScreen())
+                            ? Get.to(
+                                const QueueSongsScreen(),
+                                transition: Transition.leftToRight,
+                              )
                             : Get.to(
                                 const WitoutLogginScreen(),
                                 transition: Transition.downToUp,
@@ -271,7 +368,10 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                     commonListTile(
                       onTap: () {
                         GlobVar.login == true
-                            ? Get.to(const FavoriteSongsScreen())
+                            ? Get.to(
+                                const FavoriteSongsScreen(),
+                                transition: Transition.leftToRight,
+                              )
                             : Get.to(
                                 const WitoutLogginScreen(),
                                 transition: Transition.downToUp,
@@ -283,7 +383,10 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                     commonListTile(
                       onTap: () {
                         GlobVar.login == true
-                            ? Get.to(const PlylistScreen())
+                            ? Get.to(
+                                const PlylistScreen(),
+                                transition: Transition.leftToRight,
+                              )
                             : Get.to(
                                 const WitoutLogginScreen(),
                                 transition: Transition.downToUp,

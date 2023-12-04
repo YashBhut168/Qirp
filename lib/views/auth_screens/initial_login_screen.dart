@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:edpal_music_app_ui/controllers/auth_controller.dart';
+import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/utils/assets.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/validation.dart';
@@ -12,6 +14,7 @@ import 'package:edpal_music_app_ui/views/auth_screens/email%20auth/login_screen.
 import 'package:edpal_music_app_ui/views/auth_screens/mobile%20auth/otp_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,6 +35,8 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
   final TextEditingController countrycode = TextEditingController();
   AuthController authController = Get.put(AuthController());
   final TextEditingController phoneNumber = TextEditingController();
+  final MainScreenController controller =
+      Get.put(MainScreenController(initialIndex: 0));
   // ignore: deprecated_member_use
   CountryCode _selectedCountry = CountryCode.fromCode('IN');
 
@@ -42,6 +47,15 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
   void initState() {
     super.initState();
     countrycode.text = "+91";
+    FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+    firebaseMessaging.getToken().then((token){
+      if (kDebugMode) {
+        GlobVar.deviceToken = token!;
+        print("Device token---> $token");
+        print("Device token Glob---> ${GlobVar.deviceToken}");
+
+      }
+  });
   }
 
   @override
@@ -110,7 +124,7 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
                 Align(
                   alignment: Alignment.center,
                   child: Image.asset(
-                    AppAsstes.appIconTeal,
+                    AppAsstes.qirpLogo,
                     height: 60,
                   ),
                 ),
@@ -198,20 +212,20 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
                                         fontSize: 18,
                                         color: Colors.grey.shade400),
                                     cursorColor: Colors.grey.shade400,
-                                    decoration: const InputDecoration(
-                                      contentPadding: EdgeInsets.symmetric(
+                                    decoration:  InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(
                                         vertical: 12.0,
                                         horizontal: 10,
                                       ),
                                       hintText: "Enter phone number",
                                       focusedBorder: OutlineInputBorder(
                                         borderSide: BorderSide(
-                                          color: Color(0xFF005FF7),
+                                          color: AppColors.themeBlueColor,
                                         ), // Change border color when focused
                                       ),
                                       errorText: null,
                                       counterText: "",
-                                      hintStyle: TextStyle(
+                                      hintStyle: const TextStyle(
                                         color: Colors.grey,
                                         fontWeight: FontWeight.normal,
                                         fontSize: 15,
@@ -253,7 +267,7 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
                                     //  phoneNumber.text == '' &&
                                     phoneNumber.text.length <= 7
                                         ? const Color(0xFF262626)
-                                        : const Color(0xFF005FF7),
+                                        : AppColors.themeBlueColor,
                                 borderRadius: const BorderRadius.all(
                                   Radius.circular(10),
                                 ),
@@ -364,6 +378,7 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
             phoneNumber: phoneNumber,
             selectedCountry: _selectedCountry,
             varify: verificationId,
+            inWhichScreen: AppStrings.initScreen,
           ));
         },
         codeAutoRetrievalTimeout: (String verificationId) {},
@@ -405,7 +420,8 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('loginType', AppStrings.googleLogin);
             snackBar(AppStrings.loginSuccessfully);
-            Get.offAll(MainScreen());
+            Get.offAll(MainScreen(), transition: Transition.upToDown);
+            controller.currentIndex.value = 0;
           });
         } else {
           if (kDebugMode) {

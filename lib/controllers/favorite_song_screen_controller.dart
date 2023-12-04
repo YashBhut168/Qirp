@@ -7,7 +7,14 @@ class FavoriteSongScreenController extends GetxController{
   final ApiHelper apiHelper = ApiHelper();
   AllSongsListModel? allSongsListModel;
   RxBool isLoading = false.obs;
+  var isLikeFavData = [].obs;
 
+
+  @override
+  void onInit() {
+    favoriteSongsList();
+    super.onInit();
+  }
 
   Future<void> favoriteSongsList() async {
     try {
@@ -16,6 +23,8 @@ class FavoriteSongScreenController extends GetxController{
 
       allSongsListModel =
           AllSongsListModel.fromJson(favoriteSongListDataModelJson);
+      isLikeFavData.value =  allSongsListModel!.data!;
+      
       isLoading.value = false;
     } catch (e) {
       if (kDebugMode) {
@@ -23,6 +32,7 @@ class FavoriteSongScreenController extends GetxController{
         isLoading.value = false;
       }
     }
+     isLoading.value = false;
   }
 
 }

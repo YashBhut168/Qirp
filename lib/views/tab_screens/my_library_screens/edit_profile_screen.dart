@@ -1,6 +1,7 @@
-import 'dart:developer';
+
 import 'dart:io';
 
+import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/profile_controller.dart';
 import 'package:edpal_music_app_ui/utils/assets.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
@@ -8,7 +9,6 @@ import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/utils/validation.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -25,6 +25,7 @@ class EditProfileScreen extends StatefulWidget {
 
 class _EditProfileScreenState extends State<EditProfileScreen> {
   ProfileController profileController = Get.put(ProfileController());
+  MainScreenController controller = Get.put(MainScreenController());
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController mobileNumberController = TextEditingController();
@@ -116,7 +117,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               IconButton(
                                 onPressed: () {
                                   profileController.fetchProfile();
-                                  Get.to(MainScreen());
+                                  Get.back();
+                                  // Get.to(MainScreen());
                                 },
                                 icon: Icon(
                                   Icons.arrow_back_ios_new_outlined,
@@ -131,8 +133,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                         await SharedPreferences.getInstance();
                                     String path =
                                         prefs.getString('imagePath') ?? '';
-                                    log("initpath:::$path");
-                                    File initialPath = File(path);
+                                    if (kDebugMode) {
+                                      print("path:::$path");
+                                    }
+                                    var initialPath = path.isNotEmpty ? File(path) : '';
+                                    if (kDebugMode) {
+                                      print("initpath:::$initialPath");
+                                    }
+                                    if (kDebugMode) {
+                                      print("profileController.profile_pic.value:::${profileController.profile_pic.value}");
+                                    }
                                     profileController
                                         // ignore: prefer_if_null_operators
                                         .editProfile(
@@ -160,9 +170,39 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       gender: dropdownValue,
                                     )
                                         .then((value) {
+                                      Get.back();
+
                                       snackBar('Successfully Profile Edit');
                                       profileController.fetchProfile();
-                                      Get.to(MainScreen());
+                                      //   setState(() {
+                                      // controller.isMiniPlayerOpenQueueSongs
+                                      //                   .value ==
+                                      //               false ||
+                                      //           controller
+                                      //                   .isMiniPlayerOpenDownloadSongs
+                                      //                   .value ==  
+                                      //               false ||
+                                      //           controller.isMiniPlayerOpen.value ==
+                                      //               false ||
+                                      //           controller.isMiniPlayerOpenHome1.value ==
+                                      //               false ||
+                                      //           controller.isMiniPlayerOpenHome2.value ==
+                                      //               false ||
+                                      //           controller
+                                      //                   .isMiniPlayerOpenHome3.value ==
+                                      //               false ||
+                                      //           controller
+                                      //                   .isMiniPlayerOpenAllSongs
+                                      //                   .value ==
+                                      //               false ||
+                                      //           controller
+                                      //                   .isMiniPlayerOpenFavoriteSongs
+                                      //                   .value ==
+                                      //               false
+                                      //       ? controller.audioPlayer.dispose()
+                                      //       : controller.audioPlayer.play();
+
+                                      // });
                                     });
                                   } else {
                                     snackBar('Something went wrong');

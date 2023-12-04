@@ -1,11 +1,13 @@
 import 'dart:developer';
 
 import 'package:edpal_music_app_ui/apihelper/music_handler.dart';
+import 'package:edpal_music_app_ui/notification/notification_service.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 // import 'package:edpal_music_app_ui/views/auth_screens/login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -15,14 +17,22 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 final logger = Logger(
   level: Level.warning, // Set the log level to WARNING or ERROR
 );
 
+Future<void> backgroundHandler(RemoteMessage message) async {
+  // ignore: avoid_print
+  print(message.data.toString());
+  // ignore: avoid_print
+  print(message.notification!.title);
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  FirebaseMessaging.onBackgroundMessage(backgroundHandler);
+  LocalNotificationService.initialize();
   final isLoggedIn = await checkLoginStatus();
   await JustAudioBackground.init(
     // androidNotificationChannelId: 'com.ryanheise.audioservice.AudioService',
@@ -48,7 +58,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         visualDensity: VisualDensity.adaptivePlatformDensity,
-        appBarTheme: const AppBarTheme(systemOverlayStyle: SystemUiOverlayStyle(systemNavigationBarColor: AppColors.backgroundColor,)),
+        appBarTheme: const AppBarTheme(
+            systemOverlayStyle: SystemUiOverlayStyle(
+          systemNavigationBarColor: AppColors.backgroundColor,
+        )),
         useMaterial3: true,
       ),
       home: isLoggedIn ? MainScreen() : const InitialLoginScreen(),

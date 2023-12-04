@@ -1,3 +1,5 @@
+import 'package:edpal_music_app_ui/controllers/all_song_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/detail_screen_controller.dart';
 import 'package:edpal_music_app_ui/models/my_playlist_data_model.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
@@ -21,6 +23,10 @@ class LookingForSongsScreen extends StatefulWidget {
 }
 
 class _LookingForSongsScreenState extends State<LookingForSongsScreen> {
+  AllSongsScreenController allSongsScreenController =
+      Get.put(AllSongsScreenController());
+  DetailScreenController detailScreenController =
+      Get.put(DetailScreenController());
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,6 +46,7 @@ class _LookingForSongsScreenState extends State<LookingForSongsScreen> {
                       color: AppColors.white,
                     ),
                     onPressed: () {
+                      detailScreenController.fetchMyPlaylistData();
                       Get.back();
                     },
                   ),
@@ -59,6 +66,10 @@ class _LookingForSongsScreenState extends State<LookingForSongsScreen> {
                 sizeBoxHeight(25),
                 ElevatedButton(
                   onPressed: () {
+                    allSongsScreenController.isChecked = List<bool>.generate(
+                      allSongsScreenController.allSongsListModel!.data!.length,
+                      (index) => false,
+                    );
                     Get.to(
                       AddSongsScreen(
                         myPlaylistId: (widget.myPlaylistData.id)!,

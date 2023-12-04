@@ -1,20 +1,27 @@
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
-import 'package:edpal_music_app_ui/models/category_data_model.dart';
+import 'package:edpal_music_app_ui/models/category_model.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+
+import '../models/category_data_model.dart';
 
 class HomeScreenController extends GetxController{
   final ApiHelper apiHelper = ApiHelper();
   final isLoading = false.obs;
+  final isLoadingHome = false.obs;
+  final isLoadingRecent = false.obs;
   final categoryData = CategoryData().obs;
    final RxInt selectedIndex = 0.obs;
    RxList<dynamic> data = [].obs;
+   RxList<dynamic> homeCategoryData= [].obs;
 
   @override
   void onInit() {
     super.onInit();
     recentSongsList();
+    homeCategories();
   }
 
   void updateCategoryData(CategoryData newData){
@@ -56,22 +63,41 @@ class HomeScreenController extends GetxController{
 
   Future<void> recentSongsList() async {
     try {
-    isLoading.value = true;
+    isLoadingRecent.value = true;
       final recentSongListDataModelJson = await apiHelper.recentSongsList();
 
       allSongsListModel =
           AllSongsListModel.fromJson(recentSongListDataModelJson);
 
       data.value = allSongsListModel!.data!;
-      isLoading.value = false;
+      isLoadingRecent.value = false;
     } catch (e) {
       if (kDebugMode) {
         print(e);
-        isLoading.value = false;
+        isLoadingRecent.value = false;
       }
     }
   }
 
+  HomeCategoryModel? homeCategoryModel;
+
+  Future<void> homeCategories() async {
+    try {
+    isLoadingHome.value = true;
+      final homeCategoryModelJson = GlobVar.login == false ? await apiHelper.noAuthHomeCategoriesList() :  await apiHelper.homeCategories();
+
+      homeCategoryModel =
+          HomeCategoryModel.fromJson(homeCategoryModelJson);
+
+      homeCategoryData.value = homeCategoryModel!.data!;
+      isLoadingHome.value = false;
+    } catch (e) {
+      if (kDebugMode) {
+        print(e);
+        isLoadingHome.value = false;
+      }
+    }
+  }
 }
 
 
