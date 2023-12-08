@@ -1,4 +1,4 @@
-# edpal_music_app
+# Qirp
 
 A new Flutter project.
 
