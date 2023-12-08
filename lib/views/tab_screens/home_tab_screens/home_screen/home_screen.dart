@@ -5,7 +5,9 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
+import 'package:edpal_music_app_ui/controllers/album_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/all_song_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/artist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/download_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/favorite_song_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/home_screen_controller.dart';
@@ -48,7 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
       Get.put(PlaylistScreenController());
   FavoriteSongScreenController favoriteSongScreenController =
       Get.put(FavoriteSongScreenController());
+  AlbumScreenController albumScreenController =
+      Get.put(AlbumScreenController());
   final apiHelper = ApiHelper();
+  ArtistScreenController artistScreenController = Get.put(ArtistScreenController());
 
   @override
   void initState() {
@@ -376,21 +381,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
                                                   }
                                                   setState(() {
-                                                    Future.delayed(const Duration(milliseconds: 600));
-                                                    // GlobVar.homeCateIndex =
-                                                    //     controller
-                                                    //         .currentListTileIndexCategory
-                                                    //         .value;
-                                                    // GlobVar.homeCateSongIndex =
-                                                    //     controller
-                                                    //         .currentListTileIndexCategoryData
-                                                    //         .value;
-                                                    // if (kDebugMode) {
-                                                    //   print(
-                                                    //       'GlobVar home Cate Index----> ${GlobVar.homeCateIndex}');
-                                                    //   print(
-                                                    //       "GlobVar home Cate Song Index ------> ${GlobVar.homeCateSongIndex}");
-                                                    // }
+                                                    Future.delayed(
+                                                        const Duration(
+                                                            milliseconds: 600));
+
                                                     // ignore: unused_local_variable
                                                     var categorySongIds =
                                                         List.generate(
@@ -443,10 +437,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         .isMiniPlayerOpenHome
                                                         .value = true;
                                                     controller
+                                                        .isMiniPlayerOpenArtistSongs
+                                                        .value = false;
+                                                    controller
                                                         .isMiniPlayerOpenFavoriteSongs
                                                         .value = false;
                                                     controller
                                                         .isMiniPlayerOpenDownloadSongs
+                                                        .value = false;
+                                                    controller
+                                                        .isMiniPlayerOpenAlbumSongs
                                                         .value = false;
                                                     controller
                                                         .isMiniPlayerOpenQueueSongs
@@ -559,6 +559,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
                                                                       controller.isMiniPlayerOpen.value ==
                                                                           false &&
+                                                                      controller.isMiniPlayerOpenArtistSongs.value ==
+                                                                          false &&
+                                                                      controller.isMiniPlayerOpenAlbumSongs.value ==
+                                                                          false &&
                                                                       controller.isMiniPlayerOpenFavoriteSongs.value ==
                                                                           false &&
                                                                       controller.isMiniPlayerOpenHome.value ==
@@ -598,6 +602,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                          (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                          (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null))
                                                                       ? Opacity(
                                                                           opacity:
@@ -643,6 +649,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
                                                                         controller.isMiniPlayerOpen.value ==
                                                                             false &&
+                                                                        controller.isMiniPlayerOpenAlbumSongs.value ==
+                                                                            false &&
+                                                                        controller.isMiniPlayerOpenArtistSongs.value ==
+                                                                            false &&
                                                                         controller.isMiniPlayerOpenHome.value ==
                                                                             false &&
                                                                         controller.isMiniPlayerOpenHome1.value ==
@@ -660,12 +670,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     ? const SizedBox()
                                                                     : (((controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongAudios[controller.currentListTileIndexAllSongs.value] == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].audio!) && allSongsScreenController.allSongsListModel != null) ||
                                                                                 (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData.isNotEmpty && (homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData![controller.currentListTileIndexCategoryData.value].title!) == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                                (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 // (controller.isMiniPlayerOpenHome1.value == true && categoryData1 != null && categoryData1!.data![controller.currentListTileIndexCategory1.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 // (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 // (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                                (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null)) &&
                                                                             controller.musicPlay.value == true)

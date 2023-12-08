@@ -7,7 +7,9 @@ import 'package:audio_session/audio_session.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import 'package:dio/dio.dart';
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
+import 'package:edpal_music_app_ui/controllers/album_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/all_song_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/artist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/detail_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/download_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/favorite_song_screen_controller.dart';
@@ -102,6 +104,10 @@ class _DetailScreenState extends State<DetailScreen>
       Get.put(QueueSongsScreenController());
   FavoriteSongScreenController favoriteSongScreenController =
       Get.put(FavoriteSongScreenController());
+  AlbumScreenController albumScreenController =
+      Get.put(AlbumScreenController());
+  ArtistScreenController artistScreenController =
+      Get.put(ArtistScreenController());
 
   final TextEditingController playlistNameController = TextEditingController();
 
@@ -210,29 +216,33 @@ class _DetailScreenState extends State<DetailScreen>
 
   // ignore: unused_element
   void _initAudioPlayer() async {
-    final url = widget.type == 'favorite song'
-        ? favoriteSongScreenController
-            .allSongsListModel!.data![widget.index].audio
-        : widget.type == 'queue song'
-            ? queueSongsScreenController
-                .allSongsListModel!.data![widget.index].audio
-            : widget.type == 'download song'
-                ? downloadSongScreenController
+    final url = widget.type == 'album song'
+        ? albumScreenController.allSongsListModel!.data![widget.index].audio
+        : widget.type == 'artist song'
+            ? artistScreenController.currentPlayingAudio.value
+            : widget.type == 'favorite song'
+                ? favoriteSongScreenController
                     .allSongsListModel!.data![widget.index].audio
-                : widget.type == 'playlist'
-                    ? playlistScreenController
+                : widget.type == 'queue song'
+                    ? queueSongsScreenController
                         .allSongsListModel!.data![widget.index].audio
-                    : widget.type == 'allSongs'
-                        ? allSongsScreenController
+                    : widget.type == 'download song'
+                        ? downloadSongScreenController
                             .allSongsListModel!.data![widget.index].audio
-                        : widget.type == 'home cat song'
-                            ? homeScreenController
-                                .homeCategoryData[controller
-                                    .currentListTileIndexCategory.value]
-                                .categoryData[widget.index]
-                                .audio
-                            : homeScreenController
-                                .categoryData.value.data![widget.index].audio;
+                        : widget.type == 'playlist'
+                            ? playlistScreenController
+                                .allSongsListModel!.data![widget.index].audio
+                            : widget.type == 'allSongs'
+                                ? allSongsScreenController.allSongsListModel!
+                                    .data![widget.index].audio
+                                : widget.type == 'home cat song'
+                                    ? homeScreenController
+                                        .homeCategoryData[controller
+                                            .currentListTileIndexCategory.value]
+                                        .categoryData[widget.index]
+                                        .audio
+                                    : homeScreenController.categoryData.value
+                                        .data![widget.index].audio;
 
     if (url != null) {
       final session = await AudioSession.instance;
@@ -303,46 +313,56 @@ class _DetailScreenState extends State<DetailScreen>
         // audioPlayer.dispose();
         log('plying with internet.');
         MediaItem mediaItem = MediaItem(
-          id: widget.type == 'favorite song'
-              ? '${favoriteSongScreenController.allSongsListModel!.data![widget.index].id}'
-              : widget.type == 'queue song'
-                  ? '${queueSongsScreenController.allSongsListModel!.data![widget.index].id}'
-                  : widget.type == 'download song'
-                      ? '${downloadSongScreenController.allSongsListModel!.data![widget.index].id}'
-                      : widget.type == 'playlist'
-                          ? '${playlistScreenController.allSongsListModel!.data![widget.index].id}'
-                          : widget.type == 'allSongs'
-                              ? '${allSongsScreenController.allSongsListModel!.data![widget.index].id}'
-                              : '${homeScreenController.categoryData.value.data![widget.index].id}',
+          id: widget.type == 'album song'
+              ? '${albumScreenController.allSongsListModel!.data![widget.index].id}'
+              : widget.type == 'artist song'
+                  ? artistScreenController.currentPlayingId.value
+                  : widget.type == 'favorite song'
+                      ? '${favoriteSongScreenController.allSongsListModel!.data![widget.index].id}'
+                      : widget.type == 'queue song'
+                          ? '${queueSongsScreenController.allSongsListModel!.data![widget.index].id}'
+                          : widget.type == 'download song'
+                              ? '${downloadSongScreenController.allSongsListModel!.data![widget.index].id}'
+                              : widget.type == 'playlist'
+                                  ? '${playlistScreenController.allSongsListModel!.data![widget.index].id}'
+                                  : widget.type == 'allSongs'
+                                      ? '${allSongsScreenController.allSongsListModel!.data![widget.index].id}'
+                                      : '${homeScreenController.categoryData.value.data![widget.index].id}',
           album: "Album name",
-          title: widget.type == 'favorite song'
-              ? "${favoriteSongScreenController.allSongsListModel!.data![widget.index].title}"
-              : widget.type == 'queue song'
-                  ? "${queueSongsScreenController.allSongsListModel!.data![widget.index].title}"
-                  : widget.type == 'download song'
-                      ? "${downloadSongScreenController.allSongsListModel!.data![widget.index].title}"
-                      : widget.type == 'playlist'
-                          ? "${playlistScreenController.allSongsListModel!.data![widget.index].title}"
-                          : widget.type == 'allSongs'
-                              ? '${allSongsScreenController.allSongsListModel!.data![widget.index].title}'
-                              : "${homeScreenController.categoryData.value.data![widget.index].title}",
-          artUri: widget.type == 'favorite song'
+          title: widget.type == 'album song'
+              ? '${albumScreenController.allSongsListModel!.data![widget.index].title}'
+              : widget.type == 'artist song'
+                  ? artistScreenController.currentPlayingTitle.value
+                  : widget.type == 'favorite song'
+                      ? "${favoriteSongScreenController.allSongsListModel!.data![widget.index].title}"
+                      : widget.type == 'queue song'
+                          ? "${queueSongsScreenController.allSongsListModel!.data![widget.index].title}"
+                          : widget.type == 'download song'
+                              ? "${downloadSongScreenController.allSongsListModel!.data![widget.index].title}"
+                              : widget.type == 'playlist'
+                                  ? "${playlistScreenController.allSongsListModel!.data![widget.index].title}"
+                                  : widget.type == 'allSongs'
+                                      ? '${allSongsScreenController.allSongsListModel!.data![widget.index].title}'
+                                      : "${homeScreenController.categoryData.value.data![widget.index].title}",
+          artUri: widget.type == 'album song'
               ? Uri.parse(
-                  "${favoriteSongScreenController.allSongsListModel!.data![widget.index].image}")
-              : widget.type == 'queue song'
-                  ? Uri.parse(
-                      "${queueSongsScreenController.allSongsListModel!.data![widget.index].image}")
-                  : widget.type == 'download song'
+                  "${albumScreenController.allSongsListModel!.data![widget.index].image}")
+              : widget.type == 'artist song'
+                  ? Uri.parse(artistScreenController.currentPlayingImage.value)
+                  : widget.type == 'queue song'
                       ? Uri.parse(
-                          "${downloadSongScreenController.allSongsListModel!.data![widget.index].image}")
-                      : widget.type == 'playlist'
+                          "${queueSongsScreenController.allSongsListModel!.data![widget.index].image}")
+                      : widget.type == 'download song'
                           ? Uri.parse(
-                              "${playlistScreenController.allSongsListModel!.data![widget.index].image}")
-                          : widget.type == 'allSongs'
+                              "${downloadSongScreenController.allSongsListModel!.data![widget.index].image}")
+                          : widget.type == 'playlist'
                               ? Uri.parse(
-                                  "${allSongsScreenController.allSongsListModel!.data![widget.index].image}")
-                              : Uri.parse(
-                                  "${homeScreenController.categoryData.value.data![widget.index].image}"),
+                                  "${playlistScreenController.allSongsListModel!.data![widget.index].image}")
+                              : widget.type == 'allSongs'
+                                  ? Uri.parse(
+                                      "${allSongsScreenController.allSongsListModel!.data![widget.index].image}")
+                                  : Uri.parse(
+                                      "${homeScreenController.categoryData.value.data![widget.index].image}"),
         );
         await audioPlayer.setAudioSource(
           AudioSource.uri(
@@ -404,30 +424,41 @@ class _DetailScreenState extends State<DetailScreen>
 
     try {
       final myPlaylistDataModel1Json = await apiHelper
-          .cheackInMyPlaylistSongAvailable(widget.type == 'favorite song'
-              ? (favoriteSongScreenController
+          .cheackInMyPlaylistSongAvailable(widget.type == 'album song'
+              ? (albumScreenController
                   .allSongsListModel!.data![widget.index].id)!
-              : widget.type == 'queue song'
-                  ? (queueSongsScreenController
-                      .allSongsListModel!.data![widget.index].id)!
-                  : widget.type == 'download song'
-                      ? (downloadSongScreenController
+              : widget.type == 'artist song'
+                  ? (artistScreenController.currentPlayingId.value)
+                  : widget.type == 'favorite song'
+                      ? (favoriteSongScreenController
                           .allSongsListModel!.data![widget.index].id)!
-                      : widget.type == 'playlist'
-                          ? (playlistScreenController
+                      : widget.type == 'queue song'
+                          ? (queueSongsScreenController
                               .allSongsListModel!.data![widget.index].id)!
-                          : widget.type == 'allSongs'
-                              ? (allSongsScreenController
+                          : widget.type == 'download song'
+                              ? (downloadSongScreenController
                                   .allSongsListModel!.data![widget.index].id)!
-                              : widget.type == 'home cat song'
-                                  ? (homeScreenController
-                                      .homeCategoryData[controller
-                                          .currentListTileIndexCategory.value]
-                                      .categoryData[widget.index]
-                                      .id)!
-                                  : (homeScreenController.categoryData.value
-                                          .data![widget.index].id) ??
-                                      '');
+                              : widget.type == 'playlist'
+                                  ? (playlistScreenController.allSongsListModel!
+                                      .data![widget.index].id)!
+                                  : widget.type == 'allSongs'
+                                      ? (allSongsScreenController
+                                          .allSongsListModel!
+                                          .data![widget.index]
+                                          .id)!
+                                      : widget.type == 'home cat song'
+                                          ? (homeScreenController
+                                              .homeCategoryData[controller
+                                                  .currentListTileIndexCategory
+                                                  .value]
+                                              .categoryData[widget.index]
+                                              .id)!
+                                          : (homeScreenController
+                                                  .categoryData
+                                                  .value
+                                                  .data![widget.index]
+                                                  .id) ??
+                                              '');
 
       myPlaylistDataModel1 =
           MyPlaylistDataModel.fromJson(myPlaylistDataModel1Json);
@@ -452,42 +483,59 @@ class _DetailScreenState extends State<DetailScreen>
   }
 
   Future<void> downloadAudio() async {
-    final url = widget.type == 'favorite song'
-        ? favoriteSongScreenController
-            .allSongsListModel!.data![widget.index].audio
-        : widget.type == 'queue song'
-            ? queueSongsScreenController
-                .allSongsListModel!.data![widget.index].audio
-            : widget.type == 'download song'
-                ? downloadSongScreenController
+    final url = widget.type == 'album song'
+        ? (albumScreenController.allSongsListModel!.data![widget.index].audio)!
+        : widget.type == 'artist song'
+            ? (artistScreenController.currentPlayingAudio.value)
+            : widget.type == 'favorite song'
+                ? favoriteSongScreenController
                     .allSongsListModel!.data![widget.index].audio
-                : widget.type == 'playlist'
-                    ? playlistScreenController
+                : widget.type == 'queue song'
+                    ? queueSongsScreenController
                         .allSongsListModel!.data![widget.index].audio
-                    : widget.type == 'allSongs'
-                        ? allSongsScreenController
-                            .filteredAllSongsAudios[widget.index]
-                        : widget.type == 'home cat song'
-                            ? homeScreenController
-                                .homeCategoryModel!.data![controller
-                                    .currentListTileIndexCategory.value]
-                                .categoryData![widget.index]
-                                .audio
-                            : widget.type == 'home' &&
-                                    controller.category1AudioUrl.isNotEmpty
-                                ? (categoryData1!.data![widget.index].audio)
-                                : widget.type == 'home' &&
-                                        controller.category2AudioUrl.isNotEmpty
-                                    ? (categoryData2!.data![widget.index].audio)
+                    : widget.type == 'download song'
+                        ? downloadSongScreenController
+                            .allSongsListModel!.data![widget.index].audio
+                        : widget.type == 'playlist'
+                            ? playlistScreenController
+                                .allSongsListModel!.data![widget.index].audio
+                            : widget.type == 'allSongs'
+                                ? allSongsScreenController
+                                    .filteredAllSongsAudios[widget.index]
+                                : widget.type == 'home cat song'
+                                    ? homeScreenController
+                                        .homeCategoryModel!
+                                        .data![controller
+                                            .currentListTileIndexCategory.value]
+                                        .categoryData![widget.index]
+                                        .audio
                                     : widget.type == 'home' &&
                                             controller
-                                                .category3AudioUrl.isNotEmpty
-                                        ? (categoryData3!
+                                                .category1AudioUrl.isNotEmpty
+                                        ? (categoryData1!
                                             .data![widget.index].audio)
-                                        : null;
+                                        : widget.type == 'home' &&
+                                                controller.category2AudioUrl
+                                                    .isNotEmpty
+                                            ? (categoryData2!
+                                                .data![widget.index].audio)
+                                            : widget.type == 'home' &&
+                                                    controller.category3AudioUrl
+                                                        .isNotEmpty
+                                                ? (categoryData3!
+                                                    .data![widget.index].audio)
+                                                : null;
     // homeScreenController
     // .categoryData.value.data![widget.index].audio;
-    final id = widget.type == 'favorite song'
+    final id = 
+    widget.type == 'album song'
+              ? (albumScreenController
+                  .allSongsListModel!.data![widget.index].id)!
+              : 
+            widget.type == 'artist song'
+              ? (artistScreenController.currentPlayingId.value)
+              : 
+    widget.type == 'favorite song'
         ? favoriteSongScreenController.allSongsListModel!.data![widget.index].id
         : widget.type == 'queue song'
             ? queueSongsScreenController
@@ -503,7 +551,8 @@ class _DetailScreenState extends State<DetailScreen>
                             .filteredAllSongsIds[widget.index]
                         : widget.type == 'home cat song'
                             ? homeScreenController
-                                .homeCategoryModel!.data![controller
+                                .homeCategoryModel!
+                                .data![controller
                                     .currentListTileIndexCategory.value]
                                 .categoryData![widget.index]
                                 .id
@@ -550,7 +599,15 @@ class _DetailScreenState extends State<DetailScreen>
             downloading = false;
           });
           detailScreenController.addSongInDownloadlist(
-              musicId: widget.type == 'favorite song'
+              musicId:
+              widget.type == 'album song'
+              ? (albumScreenController
+                  .allSongsListModel!.data![widget.index].id)!
+              : 
+            widget.type == 'artist song'
+              ? (artistScreenController.currentPlayingId.value)
+              : 
+               widget.type == 'favorite song'
                   ? favoriteSongScreenController
                       .allSongsListModel!.data![widget.index].id
                   : widget.type == 'queue song'
@@ -567,7 +624,8 @@ class _DetailScreenState extends State<DetailScreen>
                                       .filteredAllSongsIds[widget.index]
                                   : widget.type == 'home cat song'
                                       ? homeScreenController
-                                          .homeCategoryModel!.data![controller
+                                          .homeCategoryModel!
+                                          .data![controller
                                               .currentListTileIndexCategory
                                               .value]
                                           .categoryData![widget.index]
@@ -606,6 +664,20 @@ class _DetailScreenState extends State<DetailScreen>
                                           true
                                   ? controller.allSongsUrl[widget.index] =
                                       '${AppStrings.localPathMusic}/${allSongsScreenController.filteredAllSongsIds[widget.index]}.mp3'
+                                  : widget.type == 'album song' &&
+                                          controller
+                                                  .isMiniPlayerOpenAlbumSongs
+                                                  .value ==
+                                              true
+                                      ? controller.albumSongsUrl[widget.index] =
+                                          '${AppStrings.localPathMusic}/${albumScreenController.allSongsListModel!.data![widget.index].id}.mp3'
+                                  : widget.type == 'artist song' &&
+                                          controller
+                                                  .isMiniPlayerOpenArtistSongs
+                                                  .value ==
+                                              true
+                                      ? controller.artistSongsUrl[widget.index] =
+                                          '${AppStrings.localPathMusic}/${artistScreenController.currentPlayingId.value}.mp3'
                                   : widget.type == 'download song' &&
                                           controller
                                                   .isMiniPlayerOpenDownloadSongs
@@ -794,6 +866,13 @@ class _DetailScreenState extends State<DetailScreen>
                                                   .data![widget.index]
                                                   .image ??
                                               'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                                          : widget.type == 'artist song'
+                                              ? artistScreenController.currentPlayingImage.value
+                                          : widget.type == 'album song'
+                                              ? albumScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .image
                                           : widget.type == 'allSongs'
                                               ? allSongsScreenController
                                                       .filteredAllSongsImage[
@@ -833,6 +912,13 @@ class _DetailScreenState extends State<DetailScreen>
                                               .value]
                                           .categoryData[widget.index]
                                           .title)!
+                                      : widget.type == 'album song'
+                                              ? (albumScreenController
+                                                  .allSongsListModel!
+                                                  .data![widget.index]
+                                                  .title)!
+                                      : widget.type == 'artist song'
+                                              ? artistScreenController.currentPlayingTitle.value
                                       : widget.type == 'favorite song'
                                           ? (favoriteSongScreenController
                                               .allSongsListModel!
@@ -888,6 +974,13 @@ class _DetailScreenState extends State<DetailScreen>
                                               .value]
                                           .categoryData[widget.index]
                                           .description)!
+                                      : widget.type == 'album song'
+                                              ? (albumScreenController
+                                                  .allSongsListModel!
+                                                  .data![widget.index]
+                                                  .description)!
+                                      : widget.type == 'artist song'
+                                              ? artistScreenController.currentPlayingDesc.value
                                       : widget.type == 'favorite song'
                                           ? (favoriteSongScreenController
                                               .allSongsListModel!
@@ -961,6 +1054,28 @@ class _DetailScreenState extends State<DetailScreen>
                                                         .categoryData[
                                                             widget.index]
                                                         .isLiked = true
+                                                : widget.type == 'album song'
+                                                    ? (albumScreenController.allSongsListModel!.data![widget.index].isLiked)! ==
+                                                            true
+                                                        ? albumScreenController
+                                                            .allSongsListModel!
+                                                            .data![widget.index]
+                                                            .isLiked = false
+                                                        : albumScreenController
+                                                            .allSongsListModel!
+                                                            .data![widget.index]
+                                                            .isLiked = true
+                                                : widget.type == 'artist song'
+                                                    ? (artistScreenController.currentPlayingIsLiked.value) ==
+                                                            true
+                                                        ? artistScreenController
+                                                            .allSongsListModel!
+                                                            .data![widget.index]
+                                                            .isLiked = false
+                                                        : artistScreenController
+                                                            .allSongsListModel!
+                                                            .data![widget.index]
+                                                            .isLiked = true
                                                 : widget.type == 'queue song'
                                                     ? (queueSongsScreenController.allSongsListModel!.data![widget.index].isLiked)! ==
                                                             true
@@ -1024,6 +1139,16 @@ class _DetailScreenState extends State<DetailScreen>
                                                             .categoryData[
                                                                 widget.index]
                                                             .id)!
+                                                         : widget.type ==
+                                                                'album song'
+                                                            ? (albumScreenController
+                                                                .allSongsListModel!
+                                                                .data![widget
+                                                                    .index]
+                                                                .id)!
+                                                           : widget.type ==
+                                                                'artist song'
+                                                            ? (artistScreenController.currentPlayingId.value)
                                                         : widget.type ==
                                                                 'queue song'
                                                             ? (queueSongsScreenController
@@ -1090,6 +1215,14 @@ class _DetailScreenState extends State<DetailScreen>
                                           allSongsScreenController
                                               .allSongsList();
                                         }
+                                        if (widget.type == 'album song') {
+                                          albumScreenController
+                                              .albumsSongsList(albumId: GlobVar.albumId);
+                                        }
+                                        if (widget.type == 'artist song') {
+                                          artistScreenController
+                                              .artistsSongsList(artistId: GlobVar.artistId);
+                                        }
                                         if (widget.type == 'home cat song') {
                                           homeScreenController.homeCategories();
                                         }
@@ -1115,9 +1248,21 @@ class _DetailScreenState extends State<DetailScreen>
                                                           .isLiked ==
                                                       false
                                                   : (widget.type ==
+                                                          'album song')
+                                                      ? albumScreenController
+                                                              .albumSongsData[
+                                                                  widget.index]
+                                                              .isLiked ==
+                                                          false
+                                                  : (widget.type ==
+                                                          'artist song')
+                                                      ? artistScreenController
+                                                              .artistSongsData[
+                                                                  widget.index]
+                                                              .isLiked ==
+                                                          false
+                                                  : (widget.type ==
                                                           'queue song')
-                                                      // &&
-                                                      //             controller.queueSongsUrl.isNotEmpty
                                                       ? queueSongsScreenController
                                                               .isLikeQueueData[
                                                                   widget.index]
@@ -1191,11 +1336,25 @@ class _DetailScreenState extends State<DetailScreen>
                                                                   '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                                           true
                                                       : widget.type ==
-                                                              'download song'
+                                                              'album song'
+                                                          ? controller
+                                                                  .albumSongsUrl
+                                                                  .contains(
+                                                                      '${AppStrings.localPathMusic}/${albumScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                              true
+                                                      : widget.type ==
+                                                              'artist song'
                                                           ? controller
                                                                   .downloadSongsUrl
                                                                   .contains(
                                                                       '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                              true
+                                                      : widget.type ==
+                                                              'download song'
+                                                          ? controller
+                                                                  .artistSongsUrl
+                                                                  .contains(
+                                                                      '${AppStrings.localPathMusic}/${artistScreenController.currentPlayingId.value}.mp3') ==
                                                               true
                                                           : widget.type ==
                                                                   'playlist'
@@ -1277,7 +1436,15 @@ class _DetailScreenState extends State<DetailScreen>
                                               ? controller.queueSongsUrl.contains(
                                                       '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                                   true
-                                              : widget.type == 'download song'
+                                              : widget.type == 'album song'
+                                                  ? controller.albumSongsUrl.contains(
+                                                          '${AppStrings.localPathMusic}/${albumScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
+                                                      true
+                                                  : widget.type == 'artist song'
+                                                  ? controller.artistSongsUrl.contains(
+                                                          '${AppStrings.localPathMusic}/${artistScreenController.currentPlayingId.value}.mp3') ==
+                                                      true
+                                                  : widget.type == 'download song'
                                                   ? controller.downloadSongsUrl.contains(
                                                           '${AppStrings.localPathMusic}/${downloadSongScreenController.allSongsListModel!.data![widget.index].id}.mp3') ==
                                                       true
@@ -1782,6 +1949,33 @@ class _DetailScreenState extends State<DetailScreen>
                             onTap: () {
                               setState(() {
                                 if (GlobVar.login == true) {
+                                  widget.type == 'album song'
+                                      ? (albumScreenController
+                                                  .allSongsListModel!
+                                                  .data![widget.index]
+                                                  .is_queue)! ==
+                                              true
+                                          ? albumScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .is_queue = false
+                                          : albumScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .is_queue = true
+                                      : 
+                                  widget.type == 'artist song'
+                                      ? artistScreenController.currentPlayingIsQueue.value ==
+                                              true
+                                          ? artistScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .is_queue = false
+                                          : artistScreenController
+                                              .allSongsListModel!
+                                              .data![widget.index]
+                                              .is_queue = true
+                                      :
                                   widget.type == 'favorite song'
                                       ? (favoriteSongScreenController
                                                   .allSongsListModel!
@@ -1872,6 +2066,13 @@ class _DetailScreenState extends State<DetailScreen>
                                                 //     .allSongsListModel!
                                                 //     .data![widget.index]
                                                 //     .id)!
+                                                : widget.type == 'album song'
+                                                    ? (albumScreenController
+                                                        .allSongsListModel!
+                                                        .data![widget.index]
+                                                        .id)!
+                                                : widget.type == 'artist song'
+                                                    ? artistScreenController.currentPlayingId.value
                                                 : widget.type == 'download song'
                                                     ? (downloadSongScreenController
                                                         .allSongsListModel!
@@ -1928,6 +2129,12 @@ class _DetailScreenState extends State<DetailScreen>
                                   if (widget.type == 'allSongs') {
                                     allSongsScreenController.allSongsList();
                                   }
+                                  if (widget.type == 'album song') {
+                                    albumScreenController.albumsSongsList(albumId: GlobVar.albumId);
+                                  }
+                                  if (widget.type == 'artist song') {
+                                    artistScreenController.artistsSongsList(artistId: GlobVar.artistId);
+                                  }
                                   if (widget.type == 'home cat song') {
                                     homeScreenController.homeCategories();
                                   }
@@ -1945,49 +2152,46 @@ class _DetailScreenState extends State<DetailScreen>
                                                 .is_queue ==
                                             false
                                         : widget.type == 'home cat song'
-                                                  ? homeScreenController
-                                                          .homeCategoryData[
-                                                              controller
-                                                                  .currentListTileIndexCategory
-                                                                  .value]
-                                                          .categoryData[
-                                                              widget.index]
-                                                          .is_queue ==
-                                                      false
-                                        : (widget.type == 'queue song')
-                                            // &&
-                                            //             controller.queueSongsUrl.isNotEmpty
-                                            ? queueSongsScreenController.isLikeQueueData[widget.index].is_queue ==
+                                            ? homeScreenController
+                                                    .homeCategoryData[controller
+                                                        .currentListTileIndexCategory
+                                                        .value]
+                                                    .categoryData[widget.index]
+                                                    .is_queue ==
                                                 false
-                                            : (widget.type == 'download song') &&
-                                                    controller.isMiniPlayerOpenDownloadSongs.value ==
-                                                        true
-                                                ? downloadSongScreenController
-                                                        .isLikeDownloadData[
+                                            : (widget.type == 'queue song')
+                                                // &&
+                                                //             controller.queueSongsUrl.isNotEmpty
+                                                ? queueSongsScreenController
+                                                        .isLikeQueueData[
                                                             widget.index]
                                                         .is_queue ==
                                                     false
-                                                : (widget.type == 'playlist') &&
+                                                : (widget.type == 'download song') &&
                                                         controller
-                                                                .isMiniPlayerOpen
+                                                                .isMiniPlayerOpenDownloadSongs
                                                                 .value ==
                                                             true
-                                                    ? playlistScreenController
-                                                            .isLikePlaylistData[
-                                                                widget.index]
+                                                    ? downloadSongScreenController
+                                                            .isLikeDownloadData[widget.index]
                                                             .is_queue ==
                                                         false
-                                                    : widget.type == 'allSongs' &&
-                                                            controller.isMiniPlayerOpenAllSongs.value == true
-                                                        ? allSongsScreenController.filteredAllSongsQueues[widget.index] == false
-                                                        : widget.type == 'home' && controller.isMiniPlayerOpenHome1.value == true
-                                                            ? (isLikeHomeData1[widget.index].is_queue == false)
-                                                            : widget.type == 'home' && controller.isMiniPlayerOpenHome2.value == true
-                                                                ? isLikeHomeData2[widget.index].is_queue == false
-                                                                : widget.type == 'home' && controller.isMiniPlayerOpenHome3.value == true
-                                                                    ? isLikeHomeData3[widget.index].is_queue == false
-                                                                    // ignore: unrelated_type_equality_checks
-                                                                    : "" == true) ||
+                                                    : (widget.type == 'playlist') && controller.isMiniPlayerOpen.value == true
+                                                        ? playlistScreenController.isLikePlaylistData[widget.index].is_queue == false
+                                                        : widget.type == 'allSongs' && controller.isMiniPlayerOpenAllSongs.value == true
+                                                            ? allSongsScreenController.filteredAllSongsQueues[widget.index] == false
+                                                        : widget.type == 'album song' && controller.isMiniPlayerOpenAlbumSongs.value == true
+                                                            ? albumScreenController.albumSongsData[widget.index].is_queue == false
+                                                        : widget.type == 'artist song' && controller.isMiniPlayerOpenArtistSongs.value == true
+                                                            ? artistScreenController.artistSongsData[widget.index].is_queue == false
+                                                            : widget.type == 'home' && controller.isMiniPlayerOpenHome1.value == true
+                                                                ? (isLikeHomeData1[widget.index].is_queue == false)
+                                                                : widget.type == 'home' && controller.isMiniPlayerOpenHome2.value == true
+                                                                    ? isLikeHomeData2[widget.index].is_queue == false
+                                                                    : widget.type == 'home' && controller.isMiniPlayerOpenHome3.value == true
+                                                                        ? isLikeHomeData3[widget.index].is_queue == false
+                                                                        // ignore: unrelated_type_equality_checks
+                                                                        : "" == true) ||
                                     GlobVar.login == false
                                 // : homeScreenController
                                 //         .categoryData

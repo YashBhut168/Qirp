@@ -12,6 +12,8 @@ import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/without_login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/album_screen/album_screen.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/artist_screen/artist_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/download_screen/download_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/edit_profile_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/favorite_screen/favorite_song_screen.dart';
@@ -313,7 +315,7 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                     sizeBoxHeight(20),
                     commonListTile(
                       onTap: () {
-                              controller.currentIndex.value = 2;
+                              controller.currentIndex.value = 1;
                         GlobVar.login == true
                             ? Get.to(
                                  MainScreen(),
@@ -328,10 +330,32 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                       text: 'Songs',
                     ),
                     commonListTile(
+                      onTap: () {
+                        GlobVar.login == true
+                            ? Get.to(
+                                const AlbumScreen(),
+                                transition: Transition.leftToRight,
+                              )
+                            : Get.to(
+                                const WitoutLogginScreen(),
+                                transition: Transition.downToUp,
+                              );
+                      },
                       icon: Icons.album_outlined,
                       text: 'Albums',
                     ),
                     commonListTile(
+                      onTap: () {
+                        GlobVar.login == true
+                            ? Get.to(
+                                const ArtistScreen(),
+                                transition: Transition.leftToRight,
+                              )
+                            : Get.to(
+                                const WitoutLogginScreen(),
+                                transition: Transition.downToUp,
+                              );
+                      },
                       icon: Icons.mic_external_on_outlined,
                       text: 'Artist',
                     ),
@@ -395,10 +419,6 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
                       },
                       icon: Icons.queue_music_outlined,
                       text: 'Playlists',
-                    ),
-                    commonListTile(
-                      icon: Icons.videocam_outlined,
-                      text: 'Videos',
                     ),
                   ],
                 );

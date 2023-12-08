@@ -1,17 +1,13 @@
-import 'package:chewie/chewie.dart';
+
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
-import 'package:edpal_music_app_ui/controllers/reels_screen_controller.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
-import 'package:edpal_music_app_ui/utils/globVar.dart';
-import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/reels_screen/reels_options_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:just_audio/just_audio.dart';
 import 'dart:math';
 // ignore: depend_on_referenced_packages
 import 'package:audio_service/audio_service.dart';
-import 'package:video_player/video_player.dart';
+// import 'package:video_player/video_player.dart';
 
 // ignore: must_be_immutable
 class ControlButtons extends StatefulWidget {
@@ -310,168 +306,180 @@ class AudioPlayerHandler extends BaseAudioHandler {
   );
 }
 
-// ignore: must_be_immutable
-class ContentScreen extends StatefulWidget {
-  final String src;
-  // ignore: prefer_typing_uninitialized_variables
-  var reelData;
-  // ignore: prefer_typing_uninitialized_variables
-  var index;
+// // ignore: must_be_immutable
+// class ContentScreen extends StatefulWidget {
+//   final String src;
+//   // ignore: prefer_typing_uninitialized_variables
+//   var reelData;
+//   // ignore: prefer_typing_uninitialized_variables
+//   var index;
 
-  ContentScreen({Key? key, required this.src, this.reelData, this.index})
-      : super(key: key);
+//   ContentScreen({Key? key, required this.src, this.reelData, this.index})
+//       : super(key: key);
 
-  @override
-  // ignore: library_private_types_in_public_api
-  _ContentScreenState createState() => _ContentScreenState();
-}
+//   @override
+//   // ignore: library_private_types_in_public_api
+//   _ContentScreenState createState() => _ContentScreenState();
+// }
 
-class _ContentScreenState extends State<ContentScreen> {
-  ReelsScreenController reelsScreenController =
-      Get.put(ReelsScreenController());
-  MainScreenController controller = Get.put(MainScreenController());
-  VideoPlayerController? _videoPlayerController;
-  ChewieController? chewieController;
+// class _ContentScreenState extends State<ContentScreen> {
+//   ReelsScreenController reelsScreenController =
+//       Get.put(ReelsScreenController());
+//   MainScreenController controller = Get.put(MainScreenController());
+//   VideoPlayerController? _videoPlayerController;
+//   ChewieController? chewieController;
 
-  // bool _liked = false;
-  @override
-  void initState() {
-    super.initState();
-    // print("userid>>>>> ${widget.reelData.userId}");
-    // print("reelid>>>>> ${widget.reelData.id}");
-    reelsScreenController.viewReels(
-      reelId: "${widget.reelData.id}",
-      userId: "${widget.reelData.userId}",
-    );
+//   // bool _liked = false;
+//   @override
+//   void initState() {
+//     super.initState();
+//     // print("userid>>>>> ${widget.reelData.userId}");
+//     // print("reelid>>>>> ${widget.reelData.id}");
+//     reelsScreenController.viewReels(
+//       reelId: "${widget.reelData.id}",
+//       userId: "${widget.reelData.userId}",
+//     );
 
-    GlobVar.reelIndex = widget.index;
-    if (kDebugMode) {
-      print('GlobVar.reelIndex-----> ${GlobVar.reelIndex}');
-    }
-    // viewReel();
+//     GlobVar.reelIndex = widget.index;
+//     if (kDebugMode) {
+//       print('GlobVar.reelIndex-----> ${GlobVar.reelIndex}');
+//     }
+//     // viewReel();
 
-    // controller.currentIndex.value == 2 ?
-    initializePlayer();
-    //  : null;
-  }
+//     // controller.currentIndex.value == 2 ?
+//     initializePlayer();
+//     //  : null;
+//   }
 
-  //  viewReel() {
-  //   print("userid>>>>> ${widget.reelData.userId}");
-  //   print("reelid>>>>> ${widget.reelData.id}");
-  //   reelsScreenController.viewReels(
-  //     reelId: widget.reelData.id,
-  //     userId: widget.reelData.userId,
-  //   );
-  // }
+//   //  viewReel() {
+//   //   print("userid>>>>> ${widget.reelData.userId}");
+//   //   print("reelid>>>>> ${widget.reelData.id}");
+//   //   reelsScreenController.viewReels(
+//   //     reelId: widget.reelData.id,
+//   //     userId: widget.reelData.userId,
+//   //   );
+//   // }
 
-  Future initializePlayer() async {
-    // ignore: deprecated_member_use
-    setState(() {
-            GlobVar.reelVideoList = List.generate(
-                          reelsScreenController.reelsData.length,
-                          (index) =>
-                              reelsScreenController.reelsData[index].postPic!,
-                        );
-            if (kDebugMode) {
-              print("GlobVar.reelVideoList IN COMMON ${GlobVar.reelVideoList}");
-            }
-            if (kDebugMode) {
-              print("GlobVar.reelVideoList length IN COMMON ${GlobVar.reelVideoList.length}");
-            }
-            // reelsScreenController.allReelsVideo[0];
-      _videoPlayerController = VideoPlayerController.network(GlobVar.reelVideoList[widget.index])
-        ..initialize().then((_) {
-          setState(() {
-            controller.currentIndex.value == 2
-                ? _videoPlayerController!.play()
-                : null;
-          });
-        });
-      _videoPlayerController!.addListener(() {
-        if (_videoPlayerController!.value.hasError) {
-          if (kDebugMode) {
-            print(
-              'video player controller Error: ${_videoPlayerController!.value.errorDescription}');
-          }
-        }
-      });
-    });
-    // await Future.wait([_videoPlayerController.initialize()]);
-    chewieController = ChewieController(
-      videoPlayerController: _videoPlayerController!,
-      autoPlay: true,
-      showControls: false,
-      allowFullScreen: false,
-      looping: true,
-      errorBuilder: (context, errorMessage) {
-        return Center(
-          child: Text(
-            errorMessage,
-            style: const TextStyle(color: Colors.white),
-          ),
-        );
-      },
-    );
-    setState(() {});
-  }
+//   Future initializePlayer() async {
+//     // ignore: deprecated_member_use
+//     setState(() {
+//             GlobVar.reelVideoList = List.generate(
+//                           reelsScreenController.reelsData.length,
+//                           (index) =>
+//                               reelsScreenController.reelsData[index].postPic!,
+//                         );
+//             if (kDebugMode) {
+//               print("GlobVar.reelVideoList IN COMMON ${GlobVar.reelVideoList}");
+//             }
+//             if (kDebugMode) {
+//               print("GlobVar.reelVideoList length IN COMMON ${GlobVar.reelVideoList.length}");
+//             }
+//             // reelsScreenController.allReelsVideo[0];
+//       _videoPlayerController = VideoPlayerController.network(GlobVar.reelVideoList[widget.index])
+//         ..initialize().then((_) {
+//           setState(() {
+//             controller.currentIndex.value == 2
+//                 ? _videoPlayerController!.play()
+//                 : null;
+//           });
+//         });
+//       _videoPlayerController!.addListener(() {
+//         if (_videoPlayerController!.value.hasError) {
+//           if (kDebugMode) {
+//             print(
+//               'video player controller Error: ${_videoPlayerController!.value.errorDescription}');
+//           }
+//         }
+//       });
+//     });
+//     // await Future.wait([_videoPlayerController.initialize()]);
+//     chewieController = ChewieController(
+//       videoPlayerController: _videoPlayerController!,
+//       autoPlay: true,
+//       showControls: false,
+//       allowFullScreen: false,
+//       looping: true,
+//       errorBuilder: (context, errorMessage) {
+//         return Center(
+//           child: Text(
+//             errorMessage,
+//             style: const TextStyle(color: Colors.white),
+//           ),
+//         );
+//       },
+//     );
+//     setState(() {});
+//   }
 
-  @override
-  void dispose() {  
-    if (_videoPlayerController != null) {
-      _videoPlayerController!.dispose();
-    }
-    if (chewieController != null) {
-      chewieController!.dispose();
-      chewieController!.setVolume(0);
-    }
-    super.dispose();
-  }
+//   @override
+//   void dispose() {  
+//     if (_videoPlayerController != null) {
+//       _videoPlayerController!.dispose();
+//     }
+//     if (chewieController != null) {
+//       chewieController!.dispose();
+//       chewieController!.setVolume(0);
+//     }
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(0),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          chewieController != null &&
-                  chewieController!.videoPlayerController.value.isInitialized
-              ?
-              // GestureDetector(
-              //     onDoubleTap: () {
-              //       setState(() {
-              //         _liked = !_liked;
-              //       });
-              //     },
-              // child:
-              AspectRatio(
-                  aspectRatio: _videoPlayerController!.value.aspectRatio,
-                  child: Chewie(
-                    controller: chewieController!,
-                  ),
-                )
-              // )
-              : const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(),
-                    // SizedBox(height: 10),
-                    // Text('Loading...')
-                  ],
-                ),
-          // if (_liked)
-          //   Center(
-          //     child: LikeIcon(),
-          //   ),
-          OptionsScreen(
-            reelData: widget.reelData,
-            index: widget.index,
-          )
-        ],
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Padding(
+//       padding: const EdgeInsets.all(0),
+//       child: Stack(
+//         fit: StackFit.expand,
+//         children: [
+//           chewieController != null &&
+//                   chewieController!.videoPlayerController.value.isInitialized
+//               ?
+//               // GestureDetector(
+//               //     onDoubleTap: () {
+//               //       setState(() {
+//               //         _liked = !_liked;
+//               //       });
+//               //     },
+//               // child:
+//               AspectRatio(
+//                   aspectRatio: _videoPlayerController!.value.aspectRatio,
+//                   child: Chewie(
+//                     controller: chewieController!,
+//                   ),
+//                 )
+//               // )
+//               : const Column(
+//                   mainAxisAlignment: MainAxisAlignment.center,
+//                   children: [
+//                     CircularProgressIndicator(),
+//                     // SizedBox(height: 10),
+//                     // Text('Loading...')
+//                   ],
+//                 ),
+//           // if (_liked)
+//           //   Center(
+//           //     child: LikeIcon(),
+//           //   ),
+//           OptionsScreen(
+//             reelData: widget.reelData,
+//             index: widget.index,
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+////---------> usable comman vido method
 
 // // ignore: must_be_immutable
 // class ContentScreen extends StatefulWidget {
@@ -491,7 +499,7 @@ class _ContentScreenState extends State<ContentScreen> {
 
 
 
-// with video player
+// // with video player
 
 
 // class _ContentScreenState extends State<ContentScreen> {
@@ -518,7 +526,7 @@ class _ContentScreenState extends State<ContentScreen> {
 //     }
 //     // viewReel();
 
-//     controller.currentIndex.value == 2 ? initializePlayer() : null;
+//      initializePlayer();
 //   }
 
 //   //  viewReel() {
@@ -532,12 +540,11 @@ class _ContentScreenState extends State<ContentScreen> {
 
 //   Future initializePlayer() async {
 //     // ignore: deprecated_member_use
-//     _videoPlayerController =
-//         VideoPlayerController.network(widget.src)
+//     _videoPlayerController = VideoPlayerController.network(widget.src)
 //       ..initialize().then((_) {
 //           setState(() {});
 //           // _showBottomSheet(context);
-//           _videoPlayerController.play();
+//           controller.currentIndex.value == 2 ?  _videoPlayerController.play() : null;
 //         });
 //     // await Future.wait([_videoPlayerController.initialize()]);
 //     // chewieController = ChewieController(
@@ -572,10 +579,13 @@ class _ContentScreenState extends State<ContentScreen> {
 //               //       });
 //               //     },
 //               // child:
-//               VideoPlayer(
+//               AspectRatio(
+//                   aspectRatio: _videoPlayerController.value.aspectRatio,
+//                   child: VideoPlayer(
 //                   _videoPlayerController,
+                  
 //                 )
-//               // )
+//               )
 //               : const Column(
 //                   mainAxisAlignment: MainAxisAlignment.center,
 //                   children: [

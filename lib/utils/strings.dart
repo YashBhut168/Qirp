@@ -133,6 +133,13 @@ class AppStrings {
   // playlist song screen
   static const String addMore = "Add More";
 
+  // artis screen
+  static const String artist = "Artists";
+  static const String artistSongs = "Artist Songs";
+
+  // album screen
+  static const String album = "Albums";
+  static const String albumSongs = "Album Songs";
 
   // download screen
   static const String downloads = "Downloads";

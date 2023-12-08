@@ -43,6 +43,10 @@ class ApiHelper {
   static const String recentSongList = "$baseUrl/recently_songlist";
   static const String queueSongListWithoutPlaylist =
       "$baseUrl/queue_songlist_without_playlist";
+  static const String artistList = "$baseUrl/popularArtitst";
+  static const String albumList = "$baseUrl/get-album";
+  static const String albumSongList = "$baseUrl/get-album-song";
+  static const String artistSongList = "$baseUrl/get-artist-song";
 
   /// API Paths with no auth
   static const String noAuthCateoriesList = "$baseUrl/no-auth-categories";
@@ -1051,6 +1055,92 @@ class ApiHelper {
       }
     } catch (e) {
       throw Exception('Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> artistLists() async {
+    try {
+      final response = await http.get(
+        Uri.parse(artistList),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load artist list');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> albumLists() async {
+    try {
+      final response = await http.get(
+        Uri.parse(albumList),
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load album list');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> albumSongsList(String albumId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'album_id': albumId,
+    });
+
+    final response = await http.post(
+      Uri.parse(albumSongList),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to fetch album songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> artistSongsList(String artistId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'artist_id': artistId,
+    });
+
+    final response = await http.post(
+      Uri.parse(artistSongList),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else {
+      throw Exception('Failed to fetch artist songs');
     }
   }
 }

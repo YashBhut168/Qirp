@@ -51,6 +51,14 @@ class GlobVar {
   static var reelIndex;
 
 
+  // album screen
+  static String albumId = '';
+
+  // artist screen
+  static String artistId = '';
+
+
+
   ///Array
   // reels screen
   static var reelVideoList = [];

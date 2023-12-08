@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
+import 'package:edpal_music_app_ui/controllers/album_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/all_song_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/artist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/download_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/favorite_song_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/home_screen_controller.dart';
@@ -30,6 +32,10 @@ class MainScreenController extends GetxController {
   FavoriteSongScreenController favoriteSongScreenController =
       Get.put(FavoriteSongScreenController());
   ProfileController profileController = Get.put(ProfileController());
+  AlbumScreenController albumScreenController =
+      Get.put(AlbumScreenController());
+  ArtistScreenController artistScreenController =
+      Get.put(ArtistScreenController());
 
   AudioPlayer audioPlayer = AudioPlayer();
 
@@ -47,6 +53,8 @@ class MainScreenController extends GetxController {
   final RxBool isMiniPlayerOpenDownloadSongs;
   final RxBool isMiniPlayerOpenQueueSongs;
   final RxBool isMiniPlayerOpenFavoriteSongs;
+  final RxBool isMiniPlayerOpenAlbumSongs;
+  final RxBool isMiniPlayerOpenArtistSongs;
 
   // final RxBool isMiniPlayerOpen;
   final RxInt currentListTileIndex;
@@ -59,6 +67,8 @@ class MainScreenController extends GetxController {
   final RxInt currentListTileIndexDownloadSongs;
   final RxInt currentListTileIndexQueueSongs;
   final RxInt currentListTileIndexFavoriteSongs;
+  final RxInt currentListTileIndexAlbumSongs;
+  final RxInt currentListTileIndexArtistSongs;
 
   /////
   // AudioPlayer? audioPlayer;
@@ -71,6 +81,8 @@ class MainScreenController extends GetxController {
   List<String> downloadSongsUrl = [];
   List<String> queueSongsUrl = [];
   List<String> favoriteSongsUrl = [];
+  List<String> albumSongsUrl = [];
+  List<String> artistSongsUrl = [];
 
   MainScreenController({int initialIndex = 0})
       : currentIndex = initialIndex.obs,
@@ -83,6 +95,8 @@ class MainScreenController extends GetxController {
         isMiniPlayerOpenDownloadSongs = false.obs,
         isMiniPlayerOpenQueueSongs = false.obs,
         isMiniPlayerOpenFavoriteSongs = false.obs,
+        isMiniPlayerOpenAlbumSongs = false.obs,
+        isMiniPlayerOpenArtistSongs = false.obs,
         currentListTileIndex = 0.obs,
         currentListTileIndexCategory = 0.obs,
         currentListTileIndexCategoryData = 0.obs,
@@ -92,7 +106,9 @@ class MainScreenController extends GetxController {
         currentListTileIndexAllSongs = 0.obs,
         currentListTileIndexDownloadSongs = 0.obs,
         currentListTileIndexQueueSongs = 0.obs,
-        currentListTileIndexFavoriteSongs = 0.obs;
+        currentListTileIndexFavoriteSongs = 0.obs,
+        currentListTileIndexAlbumSongs = 0.obs,
+        currentListTileIndexArtistSongs = 0.obs;
 
   @override
   void onInit() {
@@ -104,6 +120,8 @@ class MainScreenController extends GetxController {
     downloadSongScreenController.downloadSongsList();
     queueSongsScreenController.queueSongsListWithoutPlaylist();
     favoriteSongScreenController.favoriteSongsList();
+    albumScreenController.albumsSongsList(albumId: GlobVar.albumId);
+    artistScreenController.artistsSongsList(artistId: GlobVar.artistId);
     // profileController.fetchProfile();
     initAudioPlayer();
     // isMiniPlayerOpenQueueSongs.value == false ||
@@ -170,6 +188,14 @@ class MainScreenController extends GetxController {
     currentListTileIndexFavoriteSongs.value = index;
   }
 
+  void updateCurrentListTileIndexAlbumSongs(int index) {
+    currentListTileIndexAlbumSongs.value = index;
+  }
+
+  void updateCurrentListTileIndexArtistSongs(int index) {
+    currentListTileIndexArtistSongs.value = index;
+  }
+
   /////////
 
   void addPlaylistSongAudioUrlToList(String newString) {
@@ -214,6 +240,16 @@ class MainScreenController extends GetxController {
 
   void addFavoriteSongsAudioUrlToList(String newString) {
     favoriteSongsUrl.add(newString);
+    update();
+  }
+
+  void addAlbumSongsAudioUrlToList(String newString) {
+    albumSongsUrl.add(newString);
+    update();
+  }
+
+  void addArtistSongsAudioUrlToList(String newString) {
+    artistSongsUrl.add(newString);
     update();
   }
 
@@ -276,33 +312,41 @@ class MainScreenController extends GetxController {
       log("${currentListTileIndexAllSongs.value}",
           name: 'currentListTileIndexAllSongs.value');
       audioPlayer.currentIndexStream.listen((index) {
-        isMiniPlayerOpenFavoriteSongs.value == true
-            ? currentListTileIndexFavoriteSongs.value = index ?? 0
-            : isMiniPlayerOpenQueueSongs.value == true
-                ? currentListTileIndexQueueSongs.value = index ?? 0
-                : isMiniPlayerOpenDownloadSongs.value == true
-                    ? currentListTileIndexDownloadSongs.value = index ?? 0
-                    : isMiniPlayerOpen.value == true
-                        ? currentListTileIndex.value = index ?? 0
-                        // home
-                        : isMiniPlayerOpenHome.value == true
-                            ? currentListTileIndexCategoryData.value =
+        isMiniPlayerOpenArtistSongs.value == true
+            ? currentListTileIndexArtistSongs.value = index ?? 0
+            : isMiniPlayerOpenAlbumSongs.value == true
+                ? currentListTileIndexAlbumSongs.value = index ?? 0
+                : isMiniPlayerOpenFavoriteSongs.value == true
+                    ? currentListTileIndexFavoriteSongs.value = index ?? 0
+                    : isMiniPlayerOpenQueueSongs.value == true
+                        ? currentListTileIndexQueueSongs.value = index ?? 0
+                        : isMiniPlayerOpenDownloadSongs.value == true
+                            ? currentListTileIndexDownloadSongs.value =
                                 index ?? 0
-                            : isMiniPlayerOpenHome1.value == true
-                                ? currentListTileIndexCategory1.value =
-                                    index ?? 0
-                                : isMiniPlayerOpenHome2.value == true
-                                    ? currentListTileIndexCategory2.value =
+                            : isMiniPlayerOpen.value == true
+                                ? currentListTileIndex.value = index ?? 0
+                                // home
+                                : isMiniPlayerOpenHome.value == true
+                                    ? currentListTileIndexCategoryData.value =
                                         index ?? 0
-                                    : isMiniPlayerOpenHome3.value == true
-                                        ? currentListTileIndexCategory3.value =
+                                    : isMiniPlayerOpenHome1.value == true
+                                        ? currentListTileIndexCategory1.value =
                                             index ?? 0
-                                        : isMiniPlayerOpenAllSongs.value == true
-                                            //  &&
-                                            //         allSongsScreenallSongsListModel != null
-                                            ? currentListTileIndexAllSongs
+                                        : isMiniPlayerOpenHome2.value == true
+                                            ? currentListTileIndexCategory2
                                                 .value = index ?? 0
-                                            : null;
+                                            : isMiniPlayerOpenHome3.value ==
+                                                    true
+                                                ? currentListTileIndexCategory3
+                                                    .value = index ?? 0
+                                                : isMiniPlayerOpenAllSongs
+                                                            .value ==
+                                                        true
+                                                    //  &&
+                                                    //         allSongsScreenallSongsListModel != null
+                                                    ? currentListTileIndexAllSongs
+                                                        .value = index ?? 0
+                                                    : null;
         if (playlistScreenController.allSongsListModel != null) {
           playlistScreenController.currentPlayingImage.value =
               (playlistScreenController
@@ -320,381 +364,324 @@ class MainScreenController extends GetxController {
           log(playlistScreenController.currentPlayingDesc.value,
               name: 'playlistScreenController.currentPlayingDesc.value');
         }
-
-        // if (homeScreenController.homeCategoryData.isNotEmpty) {
-        //   GlobVar.homeCateIndex = currentListTileIndexCategory.value;
-        //   GlobVar.homeCateSongIndex = currentListTileIndexCategoryData.value;
-        //   if (kDebugMode) {
-        //     print(
-        //         'GlobVar home Cate Index in main----> ${GlobVar.homeCateIndex}');
-        //     print(
-        //         "GlobVar home Cate Song Index in main------> ${GlobVar.homeCateSongIndex}");
-        //   }
-        // }
+        if(artistScreenController.allSongsListModel != null){
+          artistScreenController.currentPlayingImage.value =
+              (artistScreenController
+                  .allSongsListModel!.data![currentListTileIndexArtistSongs.value].image)!;
+          artistScreenController.currentPlayingTitle.value =
+              (artistScreenController
+                  .allSongsListModel!.data![currentListTileIndexArtistSongs.value].title)!;
+          artistScreenController.currentPlayingDesc.value =
+              (artistScreenController.allSongsListModel!
+                  .data![currentListTileIndexArtistSongs.value].description)!;
+          artistScreenController.currentPlayingId.value =
+              (artistScreenController.allSongsListModel!
+                  .data![currentListTileIndexArtistSongs.value].id)!;
+          artistScreenController.currentPlayingAudio.value =
+              (artistScreenController.allSongsListModel!
+                  .data![currentListTileIndexArtistSongs.value].audio)!;
+          artistScreenController.currentPlayingIsLiked.value =
+              (artistScreenController.allSongsListModel!
+                  .data![currentListTileIndexArtistSongs.value].isLiked)!;
+          log(artistScreenController.currentPlayingImage.value,
+              name: 'artistScreenController.currentPlayingImage.value');
+          log(artistScreenController.currentPlayingTitle.value,
+              name: 'artistScreenController.currentPlayingTitle.value');
+          log(artistScreenController.currentPlayingDesc.value,
+              name: 'artistScreenController.currentPlayingDesc.value');
+        }
       });
-      // MediaItem mediaItem = MediaItem(
-      //   id: isMiniPlayerOpenFavoriteSongs.value == true
-      //       ? (favoriteSongScreenController.allSongsListModel!
-      //           .data![currentListTileIndexFavoriteSongs.value].id)!
-      //       : isMiniPlayerOpenQueueSongs.value == true
-      //           ? (queueSongsScreenController.allSongsListModel!
-      //               .data![currentListTileIndexQueueSongs.value].id)!
-      //           : isMiniPlayerOpenDownloadSongs.value == true
-      //               ? (downloadSongScreenController.allSongsListModel!
-      //                   .data![currentListTileIndexDownloadSongs.value].id)!
-      //               : isMiniPlayerOpen.value == true
-      //                   ? (playlistScreenController.allSongsListModel!
-      //                       .data![currentListTileIndex.value].id)!
-      //                   // : isMiniPlayerOpenHome1.value == true
-      //                   //     ? (categoryData1!
-      //                   //         .data![currentListTileIndexCategory1.value].id)!
-      //                       : isMiniPlayerOpenHome2.value == true
-      //                           ? (categoryData2!
-      //                               .data![currentListTileIndexCategory2.value]
-      //                               .id)!
-      //                           : isMiniPlayerOpenHome3.value == true
-      //                               ? (categoryData3!
-      //                                   .data![
-      //                                       currentListTileIndexCategory3.value]
-      //                                   .id)!
-      //                               : isMiniPlayerOpenAllSongs.value == true
-      //                                   ? (allSongsScreenController
-      //                                           .filteredAllSongsIds[
-      //                                       currentListTileIndexAllSongs.value])
-      //                                   : '',
-      //   title: isMiniPlayerOpenFavoriteSongs.value == true
-      //       ? (favoriteSongScreenController.allSongsListModel!
-      //           .data![currentListTileIndexFavoriteSongs.value].title)!
-      //       : isMiniPlayerOpenQueueSongs.value == true
-      //           ? (queueSongsScreenController.allSongsListModel!
-      //               .data![currentListTileIndexQueueSongs.value].title)!
-      //           : isMiniPlayerOpenDownloadSongs.value == true
-      //               ? (downloadSongScreenController.allSongsListModel!
-      //                   .data![currentListTileIndexDownloadSongs.value].title)!
-      //               : isMiniPlayerOpen.value == true
-      //                   ? (playlistScreenController.allSongsListModel!
-      //                       .data![currentListTileIndex.value].title)!
-      //                   // : isMiniPlayerOpenHome1.value == true
-      //                   //     ? (categoryData1!
-      //                   //         .data![currentListTileIndexCategory1.value]
-      //                   //         .title)!
-      //                       : isMiniPlayerOpenHome2.value == true
-      //                           ? (categoryData2!
-      //                               .data![currentListTileIndexCategory2.value]
-      //                               .title)!
-      //                           : isMiniPlayerOpenHome3.value == true
-      //                               ? (categoryData3!
-      //                                   .data![
-      //                                       currentListTileIndexCategory3.value]
-      //                                   .title)!
-      //                               : isMiniPlayerOpenAllSongs.value == true
-      //                                   ? (allSongsScreenController
-      //                                           .filteredAllSongsTitles[
-      //                                       currentListTileIndexAllSongs.value])
-      //                                   : '',
-      //   album: isMiniPlayerOpenFavoriteSongs.value == true
-      //       ? (favoriteSongScreenController.allSongsListModel!
-      //           .data![currentListTileIndexFavoriteSongs.value].description)!
-      //       : isMiniPlayerOpenQueueSongs.value == true
-      //           ? (queueSongsScreenController.allSongsListModel!
-      //               .data![currentListTileIndexQueueSongs.value].description)!
-      //           : isMiniPlayerOpenDownloadSongs.value == true
-      //               ? (downloadSongScreenController
-      //                   .allSongsListModel!
-      //                   .data![currentListTileIndexDownloadSongs.value]
-      //                   .description)!
-      //               : isMiniPlayerOpen.value == true
-      //                   ? (playlistScreenController.allSongsListModel!
-      //                       .data![currentListTileIndex.value].description)!
-      //                   // : isMiniPlayerOpenHome1.value == true
-      //                   //     ? (categoryData1!
-      //                   //         .data![currentListTileIndexCategory1.value]
-      //                   //         .description)!
-      //                       : isMiniPlayerOpenHome2.value == true
-      //                           ? (categoryData2!
-      //                               .data![currentListTileIndexCategory2.value]
-      //                               .description)!
-      //                           : isMiniPlayerOpenHome3.value == true
-      //                               ? (categoryData3!
-      //                                   .data![
-      //                                       currentListTileIndexCategory3.value]
-      //                                   .description)!
-      //                               : isMiniPlayerOpenAllSongs.value == true
-      //                                   ? (allSongsScreenController
-      //                                           .filteredAllSongsDesc[
-      //                                       currentListTileIndexAllSongs.value])
-      //                                   : '',
-      //   artUri: Uri.parse(isMiniPlayerOpenFavoriteSongs.value == true
-      //       ? (favoriteSongScreenController.allSongsListModel!
-      //           .data![currentListTileIndexFavoriteSongs.value].image)!
-      //       : isMiniPlayerOpenQueueSongs.value == true
-      //           ? (queueSongsScreenController.allSongsListModel!
-      //               .data![currentListTileIndexQueueSongs.value].image)!
-      //           : isMiniPlayerOpenDownloadSongs.value == true
-      //               ? (downloadSongScreenController.allSongsListModel!
-      //                   .data![currentListTileIndexDownloadSongs.value].image)!
-      //               : isMiniPlayerOpen.value == true
-      //                   ? (playlistScreenController.allSongsListModel!
-      //                       .data![currentListTileIndex.value].image)!
-      //                   // : isMiniPlayerOpenHome1.value == true
-      //                   //     ? (categoryData1!
-      //                   //         .data![currentListTileIndexCategory1.value]
-      //                   //         .image)!
-      //                       : isMiniPlayerOpenHome2.value == true
-      //                           ? (categoryData2!
-      //                               .data![currentListTileIndexCategory2.value]
-      //                               .image)!
-      //                           : isMiniPlayerOpenHome3.value == true
-      //                               ? (categoryData3!
-      //                                   .data![
-      //                                       currentListTileIndexCategory3.value]
-      //                                   .image)!
-      //                               : isMiniPlayerOpenAllSongs.value == true
-      //                                   ? (allSongsScreenController
-      //                                           .filteredAllSongsImage[
-      //                                       currentListTileIndexAllSongs.value])
-      //                                   : ''),
-      //   // duration: const Duration(milliseconds: 0),
-      // );
 
       audioPlayer.setAudioSource(
         ConcatenatingAudioSource(
           useLazyPreparation: true,
           shuffleOrder: DefaultShuffleOrder(),
-          children: isMiniPlayerOpenFavoriteSongs.value == true
-              ? favoriteSongsUrl.map((url) {
-                  int index = favoriteSongsUrl.indexOf(url);
+          children: isMiniPlayerOpenArtistSongs.value == true
+              ? artistSongsUrl.map((url) {
+                  int index = artistSongsUrl.indexOf(url);
                   return AudioSource.uri(
                     Uri.parse(url),
                     tag: MediaItem(
-                      id: (favoriteSongScreenController
+                      id: (artistScreenController
                           .allSongsListModel!.data![index].id)!,
-                      title: (favoriteSongScreenController
+                      title: (artistScreenController
                           .allSongsListModel!.data![index].title)!,
-                      album: (favoriteSongScreenController
+                      album: (artistScreenController
                           .allSongsListModel!.data![index].description)!,
-                      artUri: Uri.parse((favoriteSongScreenController
+                      artUri: Uri.parse((artistScreenController
                           .allSongsListModel!.data![index].image)!),
                     ),
                   );
                 }).toList()
-              : isMiniPlayerOpenQueueSongs.value == true
-                  ? queueSongsUrl.map((url) {
-                      int index = queueSongsUrl.indexOf(url);
+              : isMiniPlayerOpenAlbumSongs.value == true
+                  ? albumSongsUrl.map((url) {
+                      int index = albumSongsUrl.indexOf(url);
                       return AudioSource.uri(
                         Uri.parse(url),
                         tag: MediaItem(
-                          id: (queueSongsScreenController
+                          id: (albumScreenController
                               .allSongsListModel!.data![index].id)!,
-                          title: (queueSongsScreenController
+                          title: (albumScreenController
                               .allSongsListModel!.data![index].title)!,
-                          album: (queueSongsScreenController
+                          album: (albumScreenController
                               .allSongsListModel!.data![index].description)!,
-                          artUri: Uri.parse((queueSongsScreenController
+                          artUri: Uri.parse((albumScreenController
                               .allSongsListModel!.data![index].image)!),
                         ),
                       );
                     }).toList()
-                  : isMiniPlayerOpenDownloadSongs.value == true
-                      ? downloadSongsUrl.map((url) {
-                          int index = downloadSongsUrl.indexOf(url);
+                  : isMiniPlayerOpenFavoriteSongs.value == true
+                      ? favoriteSongsUrl.map((url) {
+                          int index = favoriteSongsUrl.indexOf(url);
                           return AudioSource.uri(
                             Uri.parse(url),
                             tag: MediaItem(
-                              id: (downloadSongScreenController
+                              id: (favoriteSongScreenController
                                   .allSongsListModel!.data![index].id)!,
-                              title: (downloadSongScreenController
+                              title: (favoriteSongScreenController
                                   .allSongsListModel!.data![index].title)!,
-                              album: (downloadSongScreenController
+                              album: (favoriteSongScreenController
                                   .allSongsListModel!
                                   .data![index]
                                   .description)!,
-                              artUri: Uri.parse((downloadSongScreenController
+                              artUri: Uri.parse((favoriteSongScreenController
                                   .allSongsListModel!.data![index].image)!),
                             ),
                           );
                         }).toList()
-                      : isMiniPlayerOpen.value == true
-                          ? playlisSongAudioUrl.map((url) {
-                              int index = playlisSongAudioUrl.indexOf(url);
-
-                              log("$index", name: 'index of playlist song');
-                              // playlistScreenController
-                              //         .currentPlayingImage.value =
-                              //     playlistScreenController
-                              //         .allSongsListModel!.data![index].image!;
-                              // playlistScreenController
-                              //         .currentPlayingTitle.value =
-                              //     playlistScreenController
-                              //         .allSongsListModel!.data![index].title!;
-                              // playlistScreenController
-                              //         .currentPlayingDesc.value =
-                              //     playlistScreenController.allSongsListModel!
-                              //         .data![index].description!;
-                              // log('${playlistScreenController.currentPlayingImage.value}',
-                              //     name:
-                              //         'playlistScreenController.currentPlayingImage.value');
-                              // log('${playlistScreenController.currentPlayingTitle.value}',
-                              //     name:
-                              //         'playlistScreenController.currentPlayingTitle.value');
-                              // log('${playlistScreenController.currentPlayingDesc.value}',
-                              //     name:
-                              //         'playlistScreenController.currentPlayingDesc.value');
+                      : isMiniPlayerOpenQueueSongs.value == true
+                          ? queueSongsUrl.map((url) {
+                              int index = queueSongsUrl.indexOf(url);
                               return AudioSource.uri(
                                 Uri.parse(url),
                                 tag: MediaItem(
-                                  id: (playlistScreenController
+                                  id: (queueSongsScreenController
                                       .allSongsListModel!.data![index].id)!,
-                                  title: (playlistScreenController
+                                  title: (queueSongsScreenController
                                       .allSongsListModel!.data![index].title)!,
-                                  album: (playlistScreenController
+                                  album: (queueSongsScreenController
                                       .allSongsListModel!
                                       .data![index]
                                       .description)!,
-                                  artUri: Uri.parse((playlistScreenController
+                                  artUri: Uri.parse((queueSongsScreenController
                                       .allSongsListModel!.data![index].image)!),
                                 ),
                               );
                             }).toList()
-                          : isMiniPlayerOpenHome.value == true
-                              ? categoryAudioUrl.map((url) {
-                                  int index = categoryAudioUrl.indexOf(url);
+                          : isMiniPlayerOpenDownloadSongs.value == true
+                              ? downloadSongsUrl.map((url) {
+                                  int index = downloadSongsUrl.indexOf(url);
                                   return AudioSource.uri(
                                     Uri.parse(url),
                                     tag: MediaItem(
-                                      id: (homeScreenController
-                                          .homeCategoryData[
-                                              currentListTileIndexCategory
-                                                  .value]
-                                          .categoryData[index]
-                                          .id)!,
-                                      title: (homeScreenController
-                                          .homeCategoryData[
-                                              currentListTileIndexCategory
-                                                  .value]
-                                          .categoryData[index]
+                                      id: (downloadSongScreenController
+                                          .allSongsListModel!.data![index].id)!,
+                                      title: (downloadSongScreenController
+                                          .allSongsListModel!
+                                          .data![index]
                                           .title)!,
-                                      album: (homeScreenController
-                                          .homeCategoryData[
-                                              currentListTileIndexCategory
-                                                  .value]
-                                          .categoryData[index]
+                                      album: (downloadSongScreenController
+                                          .allSongsListModel!
+                                          .data![index]
                                           .description)!,
-                                      artUri: Uri.parse((homeScreenController
-                                          .homeCategoryData[
-                                              currentListTileIndexCategory
-                                                  .value]
-                                          .categoryData[index]
-                                          .image)!),
+                                      artUri: Uri.parse(
+                                          (downloadSongScreenController
+                                              .allSongsListModel!
+                                              .data![index]
+                                              .image)!),
                                     ),
                                   );
                                 }).toList()
-                              : isMiniPlayerOpenHome1.value == true
-                                  ? category1AudioUrl.map((url) {
+                              : isMiniPlayerOpen.value == true
+                                  ? playlisSongAudioUrl.map((url) {
                                       int index =
-                                          category1AudioUrl.indexOf(url);
+                                          playlisSongAudioUrl.indexOf(url);
                                       return AudioSource.uri(
                                         Uri.parse(url),
                                         tag: MediaItem(
-                                          id: (categoryData1!.data![index].id)!,
-                                          title: (categoryData1!
-                                              .data![index].title)!,
-                                          album: (categoryData1!
-                                              .data![index].description)!,
-                                          artUri: Uri.parse((categoryData1!
-                                              .data![index].image)!),
+                                          id: (playlistScreenController
+                                              .allSongsListModel!
+                                              .data![index]
+                                              .id)!,
+                                          title: (playlistScreenController
+                                              .allSongsListModel!
+                                              .data![index]
+                                              .title)!,
+                                          album: (playlistScreenController
+                                              .allSongsListModel!
+                                              .data![index]
+                                              .description)!,
+                                          artUri: Uri.parse(
+                                              (playlistScreenController
+                                                  .allSongsListModel!
+                                                  .data![index]
+                                                  .image)!),
                                         ),
                                       );
                                     }).toList()
-                                  : isMiniPlayerOpenHome2.value == true
-                                      ? category2AudioUrl.map((url) {
+                                  : isMiniPlayerOpenHome.value == true
+                                      ? categoryAudioUrl.map((url) {
                                           int index =
-                                              category2AudioUrl.indexOf(url);
+                                              categoryAudioUrl.indexOf(url);
                                           return AudioSource.uri(
                                             Uri.parse(url),
                                             tag: MediaItem(
-                                              id: (categoryData2!
-                                                  .data![index].id)!,
-                                              title: (categoryData2!
-                                                  .data![index].title)!,
-                                              album: (categoryData2!
-                                                  .data![index].description)!,
-                                              artUri: Uri.parse((categoryData2!
-                                                  .data![index].image)!),
+                                              id: (homeScreenController
+                                                  .homeCategoryData[
+                                                      currentListTileIndexCategory
+                                                          .value]
+                                                  .categoryData[index]
+                                                  .id)!,
+                                              title: (homeScreenController
+                                                  .homeCategoryData[
+                                                      currentListTileIndexCategory
+                                                          .value]
+                                                  .categoryData[index]
+                                                  .title)!,
+                                              album: (homeScreenController
+                                                  .homeCategoryData[
+                                                      currentListTileIndexCategory
+                                                          .value]
+                                                  .categoryData[index]
+                                                  .description)!,
+                                              artUri: Uri.parse(
+                                                  (homeScreenController
+                                                      .homeCategoryData[
+                                                          currentListTileIndexCategory
+                                                              .value]
+                                                      .categoryData[index]
+                                                      .image)!),
                                             ),
                                           );
                                         }).toList()
-                                      : isMiniPlayerOpenHome3.value == true
-                                          ? category3AudioUrl.map((url) {
-                                              int index = category3AudioUrl
+                                      : isMiniPlayerOpenHome1.value == true
+                                          ? category1AudioUrl.map((url) {
+                                              int index = category1AudioUrl
                                                   .indexOf(url);
                                               return AudioSource.uri(
                                                 Uri.parse(url),
                                                 tag: MediaItem(
-                                                  id: (categoryData3!
+                                                  id: (categoryData1!
                                                       .data![index].id)!,
-                                                  title: (categoryData3!
+                                                  title: (categoryData1!
                                                       .data![index].title)!,
-                                                  album: (categoryData3!
+                                                  album: (categoryData1!
                                                       .data![index]
                                                       .description)!,
                                                   artUri: Uri.parse(
-                                                      (categoryData3!
+                                                      (categoryData1!
                                                           .data![index]
                                                           .image)!),
                                                 ),
                                               );
                                             }).toList()
-                                          : isMiniPlayerOpenAllSongs.value ==
-                                                  true
-                                              ? allSongsUrl.map((url) {
-                                                  int index =
-                                                      allSongsUrl.indexOf(url);
+                                          : isMiniPlayerOpenHome2.value == true
+                                              ? category2AudioUrl.map((url) {
+                                                  int index = category2AudioUrl
+                                                      .indexOf(url);
                                                   return AudioSource.uri(
                                                     Uri.parse(url),
                                                     tag: MediaItem(
-                                                      id: (allSongsScreenController
-                                                          .allSongsListModel!
+                                                      id: (categoryData2!
+                                                          .data![index].id)!,
+                                                      title: (categoryData2!
+                                                          .data![index].title)!,
+                                                      album: (categoryData2!
                                                           .data![index]
-                                                          .id)!,
-                                                      title:
-                                                          (allSongsScreenController
-                                                              .allSongsListModel!
-                                                              .data![index]
-                                                              .title)!,
-                                                      album:
-                                                          (allSongsScreenController
-                                                              .allSongsListModel!
-                                                              .data![index]
-                                                              .description)!,
+                                                          .description)!,
                                                       artUri: Uri.parse(
-                                                          (allSongsScreenController
-                                                              .allSongsListModel!
+                                                          (categoryData2!
                                                               .data![index]
                                                               .image)!),
                                                     ),
                                                   );
                                                 }).toList()
-                                              : category1AudioUrl.map((url) {
-                                                  int index = category1AudioUrl
-                                                      .indexOf(url);
-                                                  return AudioSource.uri(
-                                                    Uri.parse(url),
-                                                    tag: MediaItem(
-                                                      id: (categoryData1!
-                                                          .data![index].id)!,
-                                                      title: (categoryData1!
-                                                          .data![index].title)!,
-                                                      album: (categoryData1!
-                                                          .data![index]
-                                                          .description)!,
-                                                      artUri: Uri.parse(
-                                                          (categoryData1!
+                                              : isMiniPlayerOpenHome3.value ==
+                                                      true
+                                                  ? category3AudioUrl
+                                                      .map((url) {
+                                                      int index =
+                                                          category3AudioUrl
+                                                              .indexOf(url);
+                                                      return AudioSource.uri(
+                                                        Uri.parse(url),
+                                                        tag: MediaItem(
+                                                          id: (categoryData3!
                                                               .data![index]
-                                                              .image)!),
-                                                    ),
-                                                  );
-                                                }).toList(),
+                                                              .id)!,
+                                                          title: (categoryData3!
+                                                              .data![index]
+                                                              .title)!,
+                                                          album: (categoryData3!
+                                                              .data![index]
+                                                              .description)!,
+                                                          artUri: Uri.parse(
+                                                              (categoryData3!
+                                                                  .data![index]
+                                                                  .image)!),
+                                                        ),
+                                                      );
+                                                    }).toList()
+                                                  : isMiniPlayerOpenAllSongs
+                                                              .value ==
+                                                          true
+                                                      ? allSongsUrl.map((url) {
+                                                          int index =
+                                                              allSongsUrl
+                                                                  .indexOf(url);
+                                                          return AudioSource
+                                                              .uri(
+                                                            Uri.parse(url),
+                                                            tag: MediaItem(
+                                                              id: (allSongsScreenController
+                                                                  .allSongsListModel!
+                                                                  .data![index]
+                                                                  .id)!,
+                                                              title: (allSongsScreenController
+                                                                  .allSongsListModel!
+                                                                  .data![index]
+                                                                  .title)!,
+                                                              album: (allSongsScreenController
+                                                                  .allSongsListModel!
+                                                                  .data![index]
+                                                                  .description)!,
+                                                              artUri: Uri.parse(
+                                                                  (allSongsScreenController
+                                                                      .allSongsListModel!
+                                                                      .data![
+                                                                          index]
+                                                                      .image)!),
+                                                            ),
+                                                          );
+                                                        }).toList()
+                                                      : category1AudioUrl
+                                                          .map((url) {
+                                                          int index =
+                                                              category1AudioUrl
+                                                                  .indexOf(url);
+                                                          return AudioSource
+                                                              .uri(
+                                                            Uri.parse(url),
+                                                            tag: MediaItem(
+                                                              id: (categoryData1!
+                                                                  .data![index]
+                                                                  .id)!,
+                                                              title:
+                                                                  (categoryData1!
+                                                                      .data![
+                                                                          index]
+                                                                      .title)!,
+                                                              album: (categoryData1!
+                                                                  .data![index]
+                                                                  .description)!,
+                                                              artUri: Uri.parse(
+                                                                  (categoryData1!
+                                                                      .data![
+                                                                          index]
+                                                                      .image)!),
+                                                            ),
+                                                          );
+                                                        }).toList(),
         ),
         // AudioSource.uri(
 
@@ -702,25 +689,35 @@ class MainScreenController extends GetxController {
         //       currentListTileIndexCategory1.value]),
         //   tag: mediaItem,
         // ),
-        initialIndex: isMiniPlayerOpenFavoriteSongs.value == true
-            ? currentListTileIndexFavoriteSongs.value
-            : isMiniPlayerOpenQueueSongs.value == true
-                ? currentListTileIndexQueueSongs.value
-                : isMiniPlayerOpenDownloadSongs.value == true
-                    ? currentListTileIndexDownloadSongs.value
-                    : isMiniPlayerOpen.value == true
-                        ? currentListTileIndex.value
-                        : isMiniPlayerOpenHome.value == true
-                            ? currentListTileIndexCategoryData.value
-                            : isMiniPlayerOpenHome1.value == true
-                                ? currentListTileIndexCategory1.value
-                                : isMiniPlayerOpenHome2.value == true
-                                    ? currentListTileIndexCategory2.value
-                                    : isMiniPlayerOpenHome3.value == true
-                                        ? currentListTileIndexCategory3.value
-                                        : isMiniPlayerOpenAllSongs.value == true
-                                            ? currentListTileIndexAllSongs.value
-                                            : null,
+        initialIndex: isMiniPlayerOpenArtistSongs.value == true
+            ? currentListTileIndexArtistSongs.value
+            : isMiniPlayerOpenAlbumSongs.value == true
+                ? currentListTileIndexAlbumSongs.value
+                : isMiniPlayerOpenFavoriteSongs.value == true
+                    ? currentListTileIndexFavoriteSongs.value
+                    : isMiniPlayerOpenQueueSongs.value == true
+                        ? currentListTileIndexQueueSongs.value
+                        : isMiniPlayerOpenDownloadSongs.value == true
+                            ? currentListTileIndexDownloadSongs.value
+                            : isMiniPlayerOpen.value == true
+                                ? currentListTileIndex.value
+                                : isMiniPlayerOpenHome.value == true
+                                    ? currentListTileIndexCategoryData.value
+                                    : isMiniPlayerOpenHome1.value == true
+                                        ? currentListTileIndexCategory1.value
+                                        : isMiniPlayerOpenHome2.value == true
+                                            ? currentListTileIndexCategory2
+                                                .value
+                                            : isMiniPlayerOpenHome3.value ==
+                                                    true
+                                                ? currentListTileIndexCategory3
+                                                    .value
+                                                : isMiniPlayerOpenAllSongs
+                                                            .value ==
+                                                        true
+                                                    ? currentListTileIndexAllSongs
+                                                        .value
+                                                    : null,
         preload: false,
         initialPosition: Duration.zero,
       );
@@ -732,6 +729,8 @@ class MainScreenController extends GetxController {
               (isMiniPlayerOpenHome2.value) == false &&
               (isMiniPlayerOpenHome3.value) == false &&
               (isMiniPlayerOpenFavoriteSongs.value) == false &&
+              (isMiniPlayerOpenAlbumSongs.value) == false &&
+              (isMiniPlayerOpenArtistSongs.value) == false &&
               (isMiniPlayerOpenAllSongs.value) == false &&
               queueSongsUrl.isNotEmpty
           ? await audioPlayer.setLoopMode(LoopMode.all)
