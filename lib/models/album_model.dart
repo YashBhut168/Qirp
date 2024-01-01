@@ -31,6 +31,7 @@ class Data {
   String? id;
   String? name;
   String? picture;
+  String? songCount;
 
   Data({this.id, this.name, this.picture});
 
@@ -38,6 +39,7 @@ class Data {
     id = json['id'];
     name = json['name'];
     picture = json['picture'];
+    songCount = json['songCount'];
   }
 
   Map<String, dynamic> toJson() {
@@ -45,6 +47,7 @@ class Data {
     data['id'] = id;
     data['name'] = name;
     data['picture'] = picture;
+    data['songCount'] = songCount;
     return data;
   }
 }

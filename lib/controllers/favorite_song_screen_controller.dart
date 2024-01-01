@@ -27,12 +27,30 @@ class FavoriteSongScreenController extends GetxController{
       
       isLoading.value = false;
     } catch (e) {
-      if (kDebugMode) {
-        print(e);
         isLoading.value = false;
-      }
+      // if (kDebugMode) {
+      //   print(e);
+      // }
     }
      isLoading.value = false;
+  }
+
+  Future<void> unlikSongs({
+    required String songId,
+    songsId,
+  }) async {
+    try {
+      final response = await apiHelper.unlikeSongs(songId);
+      if (kDebugMode) {
+        print(response);
+      }
+      // success = response['success'];
+      // message = response['message'];
+    } catch (e) {
+      if (kDebugMode) {
+        print('unlike song failed: $e');
+      }
+    }
   }
 
 }

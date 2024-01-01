@@ -58,12 +58,21 @@ class GlobVar {
   static String artistId = '';
 
 
+  // search screen
+  static String searchText = '';
+
+
+  // admin and user playlist song 
+  static String adminOrUserPlaylist = '';
+  static String adminPlaylistTapped = '';
+
 
   ///Array
   // reels screen
   static var reelVideoList = [];
   static var likeReelList = [];
   static var likeUnlikeMessage = [];
+
 
 
 }

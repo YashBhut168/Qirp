@@ -181,14 +181,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                                     : AppColors.white,
                                             textAlign: TextAlign.center,
                                           ),
-                                          // sizeBoxWidth(12),
-                                          // Icon(
-                                          //   Icons.login,
-                                          //   size: 24.0,
-                                          //   color: emailController.text == ''
-                                          //       ? const Color(0xFF605F5F)
-                                          //       : AppColors.white,
-                                          // ),
+                                          
                                         ],
                                       ),
                               ),

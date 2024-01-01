@@ -1,6 +1,7 @@
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
 import 'package:edpal_music_app_ui/models/artist_model.dart';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
@@ -50,7 +51,7 @@ class ArtistScreenController extends GetxController{
   Future<void> artistsSongsList({required String artistId}) async {
     try {
       isLoading.value = true;
-      final allSongsListModelJson = await apiHelper.artistSongsList(artistId);
+      final allSongsListModelJson = GlobVar.login == false ? await apiHelper.noAuthrtistSongsList(artistId) : await apiHelper.artistSongsList(artistId);
 
       allSongsListModel = AllSongsListModel.fromJson(allSongsListModelJson);
       artistSongsData.value = allSongsListModel!.data!;

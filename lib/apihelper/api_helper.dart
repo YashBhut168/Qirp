@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 // ignore: depend_on_referenced_packages
@@ -9,8 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiHelper {
   // static const String baseUrl = 'https://edpal.online/edpal.admin/public/api';
-  static const String baseUrl =
-      'https://theprimoapp.com/EdPalMusicApp/public/api';
+  static const String baseUrl = 'https://theprimoapp.com/qirp/public/api';
 
   /// API Paths
   static const String register = "$baseUrl/new_register";
@@ -19,7 +19,8 @@ class ApiHelper {
   static const String verifyOtp = "$baseUrl/verify-user";
   static const String socialLogin = "$baseUrl/social_login";
   static const String deviceToken = "$baseUrl/device_token";
-  static const String categories = "$baseUrl/categories";
+  // static const String categories = "$baseUrl/categories";
+  static const String homeSection = "$baseUrl/home_section";
   static const String addReels = "$baseUrl/add-reels";
   static const String getReels = "$baseUrl/get-reels";
   // static const String getReelsPost = "$baseUrl/get-reels";
@@ -32,6 +33,7 @@ class ApiHelper {
   static const String addSongInList = "$baseUrl/addSongInList";
   static const String addSongList = "$baseUrl/allSongsList";
   static const String playlistSongs = "$baseUrl/songInPlayList";
+  static const String adminSongsInPlaylist = "$baseUrl/admin-songIn-playList";
   static const String removeSongPlaylist = "$baseUrl/remove_songplaylist";
   static const String addDownloadSong = "$baseUrl/download_song";
   static const String downloadSongList = "$baseUrl/download_songlist";
@@ -47,10 +49,16 @@ class ApiHelper {
   static const String albumList = "$baseUrl/get-album";
   static const String albumSongList = "$baseUrl/get-album-song";
   static const String artistSongList = "$baseUrl/get-artist-song";
+  static const String unlikeSong = "$baseUrl/unlike-song";
+  static const String allSearch = "$baseUrl/all-search";
+  static const String getPlayList = "$baseUrl/get-playList";
 
   /// API Paths with no auth
-  static const String noAuthCateoriesList = "$baseUrl/no-auth-categories";
+  static const String noAuthHomeSection = "$baseUrl/no_auth_home_section";
   static const String noAuthAddSongList = "$baseUrl/noauthallSongsList";
+  static const String noAuthGetAlbumSong = "$baseUrl/no-auth-get-album-song";
+  static const String noAuthGetArtistSong = "$baseUrl/no-auth-get-artist-song";
+  static const String noAuthAdminSongInPlaylist = "$baseUrl/no-auth-admin-songIn-playList";
 
   Future<Map<String, dynamic>> fetchHomeCategoryData(String endpoint) async {
     // Future.delayed(const Duration(seconds: 5));
@@ -71,6 +79,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to load data');
       }
@@ -88,15 +99,18 @@ class ApiHelper {
         'Content-Type': 'application/json',
       };
       final response = await http.get(
-        Uri.parse(categories),
+        Uri.parse(homeSection),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        log( response.body, name: 'homeCategoryResponse');
+        log(response.body, name: 'homeCategoryResponse');
         return jsonData;
-      } else {
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      }  else {
         throw Exception('Failed to load category data');
       }
     } catch (e) {
@@ -107,11 +121,14 @@ class ApiHelper {
   Future<Map<String, dynamic>> noAuthHomeCategoriesList() async {
     try {
       final response = await http.get(
-        Uri.parse(noAuthCateoriesList),
+        Uri.parse(noAuthHomeSection),
       );
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to load category data');
@@ -167,6 +184,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to load data');
       }
@@ -201,7 +221,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to register user');
     }
   }
@@ -225,7 +248,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to login user');
     }
   }
@@ -250,7 +276,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to forgot password sent');
     }
   }
@@ -274,7 +303,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to forgot password sent');
     }
   }
@@ -303,7 +335,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to social login user');
     }
   }
@@ -324,6 +359,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonResponse = json.decode(response.body);
         return jsonResponse;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Request failed with status: ${response.statusCode}');
       }
@@ -355,7 +393,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to give device token');
     }
   }
@@ -375,7 +416,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to social login user');
     }
   }
@@ -415,6 +459,9 @@ class ApiHelper {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to fetch reels data');
@@ -466,7 +513,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to view reel count');
     }
   }
@@ -492,7 +542,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to like reel');
     }
   }
@@ -537,7 +590,10 @@ class ApiHelper {
         if (response.statusCode == 200) {
           final jsonResponse = jsonDecode(response.body);
           return jsonResponse;
-        } else {
+        } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
           throw Exception('Request failed with status: ${response.statusCode}');
         }
       } else {
@@ -593,6 +649,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to load data');
       }
@@ -621,7 +680,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to add playlist');
     }
   }
@@ -641,6 +703,9 @@ class ApiHelper {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to load data');
@@ -666,6 +731,9 @@ class ApiHelper {
       // print('$baseUrl/myPlayList?musicId=$musicid');
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to load data');
@@ -698,6 +766,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception(
             'Request failed with status code: ${response.statusCode}');
@@ -723,8 +794,11 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
-        throw Exception('Failed to load data');
+        throw Exception('Failed to load all song data');
       }
     } catch (e) {
       throw Exception('Error: $e');
@@ -741,7 +815,7 @@ class ApiHelper {
         final jsonData = json.decode(response.body);
         return jsonData;
       } else {
-        throw Exception('Failed to load data');
+        throw Exception('Failed to load no auth all song data');
       }
     } catch (e) {
       throw Exception('Error: $e');
@@ -761,7 +835,9 @@ class ApiHelper {
     });
 
     final response = await http.post(
-      Uri.parse(playlistSongs),
+      Uri.parse(GlobVar.adminOrUserPlaylist == 'user'
+          ? playlistSongs
+          : adminSongsInPlaylist),
       headers: headers,
       body: body,
     );
@@ -769,8 +845,39 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to fetch playlist songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> noAuthSongsInPlaylist(String playlistId) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'playList_id': playlistId,
+    });
+
+    final response = await http.post(
+      Uri.parse(GlobVar.adminOrUserPlaylist == 'user'
+          ? playlistSongs
+          : noAuthAdminSongInPlaylist),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+      throw Exception('Failed to fetch no auth playlist songs');
     }
   }
 
@@ -797,7 +904,10 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to remove songs from playlist');
     }
   }
@@ -824,6 +934,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to add song in download list');
       }
@@ -848,6 +961,9 @@ class ApiHelper {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to fetch download song list');
@@ -883,6 +999,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to like unlike song');
       }
@@ -915,6 +1034,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to add queue song');
       }
@@ -945,6 +1067,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to queue song list');
       }
@@ -969,6 +1094,9 @@ class ApiHelper {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to fetch favorite song list');
@@ -1000,6 +1128,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to add recent song');
       }
@@ -1025,6 +1156,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to fetch recent song list');
       }
@@ -1033,7 +1167,7 @@ class ApiHelper {
     }
   }
 
-  Future<Map<String, dynamic>> queueSongsListWithoutPlaylist() async {
+  queueSongsListWithoutPlaylist() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final authToken = prefs.getString('token') ?? '';
@@ -1048,6 +1182,9 @@ class ApiHelper {
       );
 
       if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
         final jsonData = json.decode(response.body);
         return jsonData;
       } else {
@@ -1067,6 +1204,9 @@ class ApiHelper {
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
         return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
       } else {
         throw Exception('Failed to load artist list');
       }
@@ -1083,6 +1223,9 @@ class ApiHelper {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
         return jsonData;
       } else {
         throw Exception('Failed to load album list');
@@ -1113,8 +1256,37 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to fetch album songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> noAuthlbumSongsList(String albumId) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'album_id': albumId,
+    });
+
+    final response = await http.post(
+      Uri.parse(noAuthGetAlbumSong),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+      throw Exception('Failed to fetch no auth album songs');
     }
   }
 
@@ -1139,8 +1311,122 @@ class ApiHelper {
     if (response.statusCode == 200) {
       final jsonResponse = jsonDecode(response.body);
       return jsonResponse;
-    } else {
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
       throw Exception('Failed to fetch artist songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> noAuthrtistSongsList(String artistId) async {
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'artist_id': artistId,
+    });
+
+    final response = await http.post(
+      Uri.parse(noAuthGetArtistSong),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+      throw Exception('Failed to fetch no auth artist songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> unlikeSongs(String songId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'song_id': songId,
+    });
+
+    final response = await http.post(
+      Uri.parse(unlikeSong),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+      throw Exception('Failed to unlike songs');
+    }
+  }
+
+  Future<Map<String, dynamic>> allSearches(String searchText) async {
+    // final prefs = await SharedPreferences.getInstance();
+    // final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      // 'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'all_search': searchText,
+    });
+
+    final response = await http.post(
+      Uri.parse(allSearch),
+      headers: headers,
+      body: body,
+    );
+
+    if (response.statusCode == 200) {
+      final jsonResponse = jsonDecode(response.body);
+      return jsonResponse;
+    } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+      throw Exception('Failed to all search');
+    }
+  }
+
+  Future<Map<String, dynamic>> adminPlaylistList() async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
+    final headers = {
+      'Authorization': 'Bearer $authToken',
+      'Content-Type': 'application/json',
+    };
+    try {
+      final response = await http.get(
+        Uri.parse(getPlayList),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(response.body);
+        return jsonData;
+      } else if (response.statusCode == 401) {
+       final jsonData = json.decode(response.body);
+        return jsonData;
+      } else {
+        throw Exception('Failed to load admin playlist');
+      }
+    } catch (e) {
+      throw Exception('Error: $e');
     }
   }
 }

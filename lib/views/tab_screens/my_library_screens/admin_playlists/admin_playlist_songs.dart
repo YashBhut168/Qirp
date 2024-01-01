@@ -1,10 +1,12 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:edpal_music_app_ui/controllers/admin_playlist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/album_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/all_song_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/artist_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/detail_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/download_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/favorite_song_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/home_screen_controller.dart';
@@ -12,7 +14,7 @@ import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/playlist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/queue_songs_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/search_screen_controller.dart';
-import 'package:edpal_music_app_ui/models/category_data_model.dart';
+import 'package:edpal_music_app_ui/utils/assets.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/common_method.dart';
@@ -23,159 +25,96 @@ import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/home_scree
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:lottie/lottie.dart';
 import 'package:miniplayer/miniplayer.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rxdart/rxdart.dart' as rxdart;
 import 'package:siri_wave/siri_wave.dart';
 
-// ignore: must_be_immutable
-class QueueSongsScreen extends StatefulWidget {
-  String? whichScreen;
-  QueueSongsScreen({super.key, this.whichScreen});
+class AdminPlaylistSongsScreen extends StatefulWidget {
+  const AdminPlaylistSongsScreen({super.key});
 
   @override
-  State<QueueSongsScreen> createState() => _QueueSongsScreenState();
+  State<AdminPlaylistSongsScreen> createState() =>
+      _AdminPlaylistSongsScreenState();
 }
 
-class _QueueSongsScreenState extends State<QueueSongsScreen> {
-  QueueSongsScreenController queueSongsScreenController =
-      Get.put(QueueSongsScreenController());
-  DownloadSongScreenController downloadSongScreenController =
-      Get.put(DownloadSongScreenController());
-  final MainScreenController controller =
-      Get.put(MainScreenController(initialIndex: 0));
+class _AdminPlaylistSongsScreenState extends State<AdminPlaylistSongsScreen> {
+  AdminPlaylistScreenController adminPlaylistScreenController =
+      Get.put(AdminPlaylistScreenController());
   PlaylistScreenController playlistScreenController =
       Get.put(PlaylistScreenController());
+  final MainScreenController controller =
+      Get.put(MainScreenController(initialIndex: 0));
+  HomeScreenController homeScreenController = Get.put(HomeScreenController());
+  DownloadSongScreenController downloadSongScreenController =
+      Get.put(DownloadSongScreenController());
+  DetailScreenController detailScreenController =
+      Get.put(DetailScreenController());
   AllSongsScreenController allSongsScreenController =
       Get.put(AllSongsScreenController());
+  QueueSongsScreenController queueSongsScreenController =
+      Get.put(QueueSongsScreenController());
   FavoriteSongScreenController favoriteSongScreenController =
       Get.put(FavoriteSongScreenController());
-  final HomeScreenController homeScreenController =
-      Get.put(HomeScreenController());
-  AlbumScreenController albumScreenController =
-      Get.put(AlbumScreenController());
   ArtistScreenController artistScreenController =
       Get.put(ArtistScreenController());
   SearchScreenController searchScreenController =
       Get.put(SearchScreenController());
-
-  @override
-  void initState() {
-    super.initState();
-    fetchData();
-    downloadSongScreenController.downloadSongsList();
-    //  WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   playlistScreenController.isPlaylistSongsEmpty.value == true ? controller.isMiniPlayerOpen.value = false : controller.isMiniPlayerOpen.value = true;
-    // });
-    setState(() {
-      (controller.isMiniPlayerOpenDownloadSongs.value == true ||
-                  controller.isMiniPlayerOpen.value == true ||
-                  controller.isMiniPlayerOpenAlbumSongs.value == true ||
-                  controller.isMiniPlayerOpenArtistSongs.value == true ||
-                  controller.isMiniPlayerOpenHome.value == true ||
-                  controller.isMiniPlayerOpenHome1.value == true ||
-                  controller.isMiniPlayerOpenHome2.value == true ||
-                  controller.isMiniPlayerOpenHome3.value == true ||
-                  controller.isMiniPlayerOpenAllSongs.value == true ||
-                  controller.isMiniPlayerOpenQueueSongs.value == true ||
-                  controller.isMiniPlayerOpenSearchSongs.value == true ||
-                  controller.isMiniPlayerOpenAdminPlaylistSongs.value == true ||
-                  controller.isMiniPlayerOpenFavoriteSongs.value == true) &&
-              controller.musicPlay.value == true
-          ? controller.audioPlayer.play()
-          : null;
-    });
-    downloadSongScreenController.downloadSongsList();
-    GlobVar.playlistId == ''
-        ? null
-        : playlistScreenController.songsInPlaylist(
-            playlistId: GlobVar.playlistId);
-  }
-
-  final apiHelper = ApiHelper();
-
-  bool isLoading = false;
-
-  CategoryData? categoryData1;
-  CategoryData? categoryData2;
-  CategoryData? categoryData3;
-
-  Future<void> fetchData() async {
-    setState(() {
-      isLoading = true;
-    });
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final login = prefs.getBool('isLoggedIn') ?? '';
-      if (kDebugMode) {
-        print(login);
-      }
-      final categoryData1Json = login == false
-          ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory1')
-          : await apiHelper.fetchHomeCategoryData('category1');
-      final categoryData2Json = login == false
-          ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory2')
-          : await apiHelper.fetchHomeCategoryData('category2');
-      final categoryData3Json = login == false
-          ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory3')
-          : await apiHelper.fetchHomeCategoryData('category3');
-
-      categoryData1 = CategoryData.fromJson(categoryData1Json);
-      categoryData2 = CategoryData.fromJson(categoryData2Json);
-      categoryData3 = CategoryData.fromJson(categoryData3Json);
-
-      setState(() {
-        isLoading = false;
-      });
-    } catch (e) {
-      if (kDebugMode) {
-        print(e);
-      }
-      isLoading = false;
-    }
-  }
+  AlbumScreenController albumScreenController =
+      Get.put(AlbumScreenController());
 
   @override
   Widget build(BuildContext context) {
-    controller.queueSongsUrl = [];
     return Scaffold(
       backgroundColor: AppColors.backgroundColor,
       appBar: AppBar(
         backgroundColor: AppColors.backgroundColor,
         leading: IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: Colors.white,
-            ),
-            onPressed: () {
-              if (widget.whichScreen == 'library') {
-                controller.currentIndex.value = 3;
-                Get.back();
-              } else {
-                Get.back();
-                Get.back();
-              }
-            }),
-        title: lable(
-          text: AppStrings.queueSongs,
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.5,
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.white,
+          ),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        title: Obx(
+          () => lable(
+            text: playlistScreenController.isLoading.value == true
+                ? 'PlayList Songs'
+                : playlistScreenController.adminPlaylistSongModel!.message!,
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
         ),
         automaticallyImplyLeading: false,
       ),
       body: Obx(
-        () => queueSongsScreenController.isLoading.value == true
+        () => playlistScreenController.isLoading.value == true
             ? Center(
                 child: CircularProgressIndicator(
                   color: AppColors.white,
                 ),
               )
-            : queueSongsScreenController.allSongsListModel == null ||
-                    queueSongsScreenController.isLikeQueueData.isEmpty ||
-                    queueSongsScreenController.allSongsListModel!.data == null
+            : playlistScreenController.isLikePlaylistData.isEmpty
                 ? Center(
-                    child: lable(text: '${queueSongsScreenController.allSongsListModel!.message}'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 150,
+                          width: 150,
+                          child: Lottie.asset(
+                            AppAsstes.animation.downloadPlaylistAnimation,
+                            fit: BoxFit.fill,
+                          ),
+                        ),
+                        lable(
+                            text:
+                                "Sorry, the list of playlisgt songs is currently unavailable."),
+                      ],
+                    ),
                   )
                 : SingleChildScrollView(
                     physics: const BouncingScrollPhysics(),
@@ -185,338 +124,351 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                         children: [
                           sizeBoxHeight(10),
                           ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              physics: const BouncingScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: queueSongsScreenController
-                                  .allSongsListModel!.data!.length,
-                              itemBuilder: (context, index) {
-                                var queueSongListData =
-                                    queueSongsScreenController
-                                        .allSongsListModel!.data![index];
-
-                                final localFilePath =
-                                    '${AppStrings.localPathMusic}/${queueSongsScreenController.allSongsListModel!.data![index].id}.mp3';
-                                final file = File(localFilePath);
-                                controller.addQueueSongsAudioUrlToList(
-                                    file.existsSync()
-                                        ? localFilePath
-                                        : (queueSongsScreenController
-                                            .allSongsListModel!
-                                            .data![index]
-                                            .audio)!);
-                                controller.queueSongsUrl =
-                                    controller.queueSongsUrl.toSet().toList();
-                                log("${controller.queueSongsUrl}");
-
-                                return ListTile(
-                                  onTap: () async {
-                                    setState(() {
-                                      controller.isMiniPlayerOpenQueueSongs
-                                          .value = true;
-                                      log("${controller.isMiniPlayerOpenFavoriteSongs.value}",
-                                          name:
-                                              "isMiniPlayerOpenFavoriteSongs");
-                                      log("${controller.isMiniPlayerOpenQueueSongs.value}",
-                                          name: "isMiniPlayerOpenQueueSongs");
-                                      log("${controller.isMiniPlayerOpenDownloadSongs.value}",
-                                          name:
-                                              "isMiniPlayerOpenDownloadSongs");
-                                      log("${controller.isMiniPlayerOpen.value}",
-                                          name: "isMiniPlayerOpen");
-                                      log("${controller.isMiniPlayerOpenHome1.value}",
-                                          name: "isMiniPlayerOpenHome1");
-                                      log("${controller.isMiniPlayerOpenHome2.value}",
-                                          name: "isMiniPlayerOpenHome2");
-                                      log("${controller.isMiniPlayerOpenHome3.value}",
-                                          name: "isMiniPlayerOpenHome3");
-                                      log("${controller.isMiniPlayerOpenAllSongs.value}",
-                                          name: "isMiniPlayerOpenAllSongs");
-                                      controller.isMiniPlayerOpenDownloadSongs
-                                          .value = false;
-                                      controller.isMiniPlayerOpenFavoriteSongs
-                                          .value = false;
-                                      controller.isMiniPlayerOpenArtistSongs
-                                          .value = false;
-                                      controller.isMiniPlayerOpen.value = false;
-                                      controller.isMiniPlayerOpenAdminPlaylistSongs.value = false;
-                                      controller.isMiniPlayerOpenAlbumSongs
-                                          .value = false;
-                                      controller.isMiniPlayerOpenHome.value =
-                                          false;
-                                      controller.isMiniPlayerOpenHome1.value =
-                                          false;
-                                      controller.isMiniPlayerOpenHome2.value =
-                                          false;
-                                      controller.isMiniPlayerOpenSearchSongs.value =
+                            scrollDirection: Axis.vertical,
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: playlistScreenController
+                                .adminPlaylistSongModel!.data!.length,
+                            itemBuilder: (context, index) {
+                              var playlistSongsData = playlistScreenController
+                                  .isLikePlaylistData[index];
+                              final localFilePath =
+                                  '${AppStrings.localPathMusic}/${playlistScreenController.adminPlaylistSongModel!.data![index].id}.mp3';
+                              final file = File(localFilePath);
+                              controller.addAdminPlaylistSongsAudioUrlToList(
+                                  file.existsSync()
+                                      ? localFilePath
+                                      : (playlistScreenController
+                                          .adminPlaylistSongModel!
+                                          .data![index]
+                                          .audio)!);
+                              controller.adminPlaylistSongsUrl = controller
+                                  .adminPlaylistSongsUrl
+                                  .toSet()
+                                  .toList();
+                              // log("albumSongsUrl---> ${controller.albumSongsUrl}");
+                              return Column(
+                                children: [
+                                  ListTile(
+                                    onTap: () async {
+                                      setState(() {
+                                        controller.isMiniPlayerOpenArtistSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenAlbumSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenDownloadSongs
+                                            .value = false;
+                                        controller
+                                            .isMiniPlayerOpenAdminPlaylistSongs
+                                            .value = true;
+                                        log("${controller.isMiniPlayerOpenAdminPlaylistSongs.value}",
+                                            name:
+                                                "isMiniPlayerOpenAdminPlaylistSongs");
+                                        controller.isMiniPlayerOpenQueueSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenFavoriteSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpen.value =
                                             false;
-                                      controller.isMiniPlayerOpenHome3.value =
-                                          false;
-                                      controller.isMiniPlayerOpenAllSongs
-                                          .value = false;
-                                      controller.currentListTileIndexQueueSongs
-                                          .value = index;
-                                      controller
-                                          .updateCurrentListTileIndexQueueSongs(
-                                              index);
-                                      controller.initAudioPlayer();
-                                      log(
-                                          controller
-                                              .currentListTileIndexQueueSongs
-                                              .value
-                                              .toString(),
-                                          name:
-                                              'currentListTileIndexQueueSongs queue log');
-                                    });
-                                    homeScreenController.addRecentSongs(
-                                        musicId: queueSongListData.id!);
-                                    homeScreenController.recentSongsList();
-                                  },
-                                  visualDensity: const VisualDensity(
-                                      horizontal: -4, vertical: -1),
-                                  leading: Stack(
-                                    children: [
-                                      Obx(
-                                        () => ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(11),
-                                          child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
-                                                  controller.isMiniPlayerOpen.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenArtistSongs.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenAlbumSongs.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenFavoriteSongs.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenHome.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenHome1.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenHome2.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenHome3.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenAllSongs.value ==
-                                                      false &&
-                                                  controller.isMiniPlayerOpenQueueSongs.value ==
-                                                      false)
-                                              ? Image.network(
-                                                  (queueSongListData.image) ??
-                                                      'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-                                                  height: 70,
-                                                  width: 70,
-                                                  filterQuality:
-                                                      FilterQuality.high,
-                                                )
-                                              : (queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title &&
-                                                          controller.isMiniPlayerOpenQueueSongs.value ==
-                                                              true &&
-                                                          queueSongsScreenController.allSongsListModel !=
-                                                              null) ||
-                                                      (GlobVar.playlistId != '' &&
-                                                          controller.isMiniPlayerOpen.value ==
-                                                              true &&
-                                                          playlistScreenController.allSongsListModel !=
-                                                              null &&
-                                                          playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title ==
-                                                              queueSongsScreenController
-                                                                  .allSongsListModel!
-                                                                  .data![index]
-                                                                  .title) ||
-                                                      (controller.isMiniPlayerOpenHome1.value == true &&
-                                                          categoryData1 != null &&
-                                                          categoryData1!.data![controller.currentListTileIndexCategory1.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.adminPlaylistSongModel != null && playlistScreenController.currentPlayingAdminTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == queueSongsScreenController.allSongsListModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
-                                                      (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel != null && albumScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                      (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title)
-                                                  ? Opacity(
-                                                      opacity: 0.4,
-                                                      child: Image.network(
-                                                        (queueSongListData
-                                                                .image) ??
-                                                            'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
+                                        controller.isMiniPlayerOpenHome.value =
+                                            false;
+                                        controller.isMiniPlayerOpenSearchSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenHome1.value =
+                                            false;
+                                        controller.isMiniPlayerOpenHome2.value =
+                                            false;
+                                        controller.isMiniPlayerOpenHome3.value =
+                                            false;
+                                        controller.isMiniPlayerOpenAllSongs
+                                            .value = false;
+                                        controller
+                                            .currentListTileIndexAdminPlaylistSongs
+                                            .value = index;
+                                        controller
+                                            .updateCurrentListTileIndexAdminPlaylistSongs(
+                                                index);
+
+                                        controller.initAudioPlayer();
+
+                                        log(
+                                            controller
+                                                .currentListTileIndexAdminPlaylistSongs
+                                                .value
+                                                .toString(),
+                                            name:
+                                                'currentListTileIndexAlbumSongs');
+                                      });
+                                      homeScreenController.addRecentSongs(
+                                          musicId: playlistSongsData.id!);
+                                      homeScreenController.recentSongsList();
+                                    },
+                                    visualDensity: const VisualDensity(
+                                        horizontal: -3, vertical: -0),
+                                    leading: Stack(
+                                      children: [
+                                        Obx(
+                                          () => ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                            child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                                    controller.isMiniPlayerOpenAlbumSongs.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpenArtistSongs.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpen.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpenFavoriteSongs.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpenSearchSongs.value ==
+                                                        false &&
+                                                    controller.isMiniPlayerOpenHome.value ==
+                                                        false &&
+                                                    controller
+                                                            .isMiniPlayerOpenHome1
+                                                            .value ==
+                                                        false &&
+                                                    controller
+                                                            .isMiniPlayerOpenHome2
+                                                            .value ==
+                                                        false &&
+                                                    controller
+                                                            .isMiniPlayerOpenHome3
+                                                            .value ==
+                                                        false &&
+                                                    controller
+                                                            .isMiniPlayerOpenAllSongs
+                                                            .value ==
+                                                        false &&
+                                                    controller
+                                                            .isMiniPlayerOpenQueueSongs
+                                                            .value ==
+                                                        false)
+                                                ? CachedNetworkImage(
+                                                    imageUrl: (playlistSongsData
+                                                        .image!),
+                                                    placeholder:
+                                                        (context, url) {
+                                                      return const SizedBox();
+                                                    },
+                                                    height: 70,
+                                                    width: 70,
+                                                    filterQuality:
+                                                        FilterQuality.high,
+                                                    fit: BoxFit.fill,
+                                                  )
+                                                : (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.currentPlayingAdminTitle.value == playlistScreenController.adminPlaylistSongModel!.data![index].title && playlistScreenController.adminPlaylistSongModel != null) ||
+                                                        (controller.isMiniPlayerOpenAlbumSongs.value == true &&
+                                                            albumScreenController
+                                                                    .currentPlayingTitle
+                                                                    .value ==
+                                                                playlistScreenController
+                                                                    .adminPlaylistSongModel!
+                                                                    .data![index]
+                                                                    .title &&
+                                                            albumScreenController.allSongsListModel != null) ||
+                                                        (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.currentPlayingTitle.value == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                        (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                        (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && playlistScreenController.allSongsListModel != null) ||
+                                                        (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
+                                                        (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title) ||
+                                                        (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && queueSongsScreenController.allSongsListModel != null) ||
+                                                        (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && searchScreenController.allSearchModel != null) ||
+                                                        (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title)
+                                                    ? Opacity(
+                                                        opacity: 0.4,
+                                                        child: CachedNetworkImage(
+                                                          imageUrl:
+                                                              (playlistSongsData
+                                                                  .image!),
+                                                          placeholder:
+                                                              (context, url) {
+                                                            return const SizedBox();
+                                                          },
+                                                          height: 70,
+                                                          width: 70,
+                                                          filterQuality:
+                                                              FilterQuality
+                                                                  .high,
+                                                          fit: BoxFit.fill,
+                                                        ))
+                                                    : CachedNetworkImage(
+                                                        imageUrl:
+                                                            (playlistSongsData
+                                                                .image!),
+                                                        placeholder:
+                                                            (context, url) {
+                                                          return const SizedBox();
+                                                        },
                                                         height: 70,
                                                         width: 70,
                                                         filterQuality:
                                                             FilterQuality.high,
+                                                        fit: BoxFit.fill,
                                                       ),
-                                                    )
-                                                  : Image.network(
-                                                      (queueSongListData
-                                                              .image) ??
-                                                          'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-                                                      height: 70,
-                                                      width: 70,
-                                                      filterQuality:
-                                                          FilterQuality.high,
-                                                    ),
-                                        ),
-                                      ),
-                                      Obx(
-                                        () => Positioned.fill(
-                                          child: Center(
-                                            child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
-                                                    controller.isMiniPlayerOpen.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenArtistSongs.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenAlbumSongs.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenHome.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
-                                                      false &&
-                                                    controller.isMiniPlayerOpenHome1.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenHome2.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenHome3.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenFavoriteSongs.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenAllSongs.value ==
-                                                        false &&
-                                                    controller.isMiniPlayerOpenQueueSongs.value ==
-                                                        false)
-                                                ? const SizedBox()
-                                                : (((queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title &&
-                                                                controller
-                                                                        .isMiniPlayerOpenQueueSongs
-                                                                        .value ==
-                                                                    true &&
-                                                                queueSongsScreenController.allSongsListModel !=
-                                                                    null) ||
-                                                            (GlobVar.playlistId != '' &&
-                                                                controller
-                                                                        .isMiniPlayerOpen
-                                                                        .value ==
-                                                                    true &&
-                                                                playlistScreenController.allSongsListModel !=
-                                                                    null &&
-                                                                playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title ==
-                                                                    queueSongsScreenController
-                                                                        .allSongsListModel!
-                                                                        .data![index]
-                                                                        .title) ||
-                                                            (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == queueSongsScreenController.allSongsListModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
-                                                            (controller.isMiniPlayerOpenHome1.value == true && categoryData1 != null && categoryData1!.data![controller.currentListTileIndexCategory1.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.adminPlaylistSongModel != null && playlistScreenController.currentPlayingAdminTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel != null && albumScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                            (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title)) &&
-                                                        controller.musicPlay.value == true)
-                                                    ? ColorFiltered(
-                                                        // filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 9.0),
-                                                        colorFilter:
-                                                            const ColorFilter
-                                                                .mode(
-                                                                Colors.grey,
-                                                                BlendMode
-                                                                    .modulate),
-                                                        child: Transform.scale(
-                                                          scale: 2.2,
-                                                          child:
-                                                              SiriWaveform.ios9(
-                                                            controller: controller
-                                                                .siriWaveController,
-                                                            options:
-                                                                const IOS9SiriWaveformOptions(
-                                                              height: 130,
-                                                              width: 25,
-                                                              showSupportBar:
-                                                                  false,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      )
-                                                    : const SizedBox(),
                                           ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  title: Obx(
-                                    () => lable(
-                                      text: (queueSongListData.title)!,
-                                      fontSize: 12,
-                                      color: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
-                                              controller.isMiniPlayerOpen.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenArtistSongs.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
-                                                      false &&
-                                              controller.isMiniPlayerOpenAlbumSongs.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenHome.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenHome1.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenHome2.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenHome3.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenAllSongs.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenFavoriteSongs.value ==
-                                                  false &&
-                                              controller.isMiniPlayerOpenQueueSongs.value ==
-                                                  false)
-                                          ? Colors.white
-                                          : (queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title && controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null) ||
-                                                  (GlobVar.playlistId != '' &&
+                                        Obx(
+                                          () => Positioned.fill(
+                                            child: Center(
+                                              child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                                      controller.isMiniPlayerOpenAlbumSongs.value ==
+                                                          false &&
+                                                      controller.isMiniPlayerOpenArtistSongs.value ==
+                                                          false &&
+                                                      controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
+                                                          false &&
                                                       controller.isMiniPlayerOpen.value ==
-                                                          true &&
-                                                      playlistScreenController.allSongsListModel !=
-                                                          null &&
-                                                      playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title ==
-                                                          queueSongsScreenController
-                                                              .allSongsListModel!
-                                                              .data![index]
-                                                              .title) ||
-                                                  (controller.isMiniPlayerOpenHome1.value == true &&
-                                                      categoryData1 != null &&
-                                                      categoryData1!.data![controller.currentListTileIndexCategory1.value].title ==
-                                                          queueSongsScreenController
-                                                              .allSongsListModel!
-                                                              .data![index]
-                                                              .title) ||
-                                                  (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == queueSongsScreenController.allSongsListModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
-                                                  (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel != null && albumScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.adminPlaylistSongModel != null && playlistScreenController.currentPlayingAdminTitle.value == queueSongsScreenController.allSongsListModel!.data![index].title) ||
-                                                  (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == queueSongsScreenController.allSongsListModel!.data![index].title)
-                                              ? const Color(0xFF2ac5b3)
-                                              // ignore: unrelated_type_equality_checks
-                                              // : controller.isMiniPlayerOpenQueueSongs == false
-                                              //     ? Colors.white
-                                              : Colors.white,
+                                                          false &&
+                                                      controller.isMiniPlayerOpenFavoriteSongs.value ==
+                                                          false &&
+                                                      controller.isMiniPlayerOpenSearchSongs.value ==
+                                                          false &&
+                                                      controller.isMiniPlayerOpenHome.value ==
+                                                          false &&
+                                                      controller
+                                                              .isMiniPlayerOpenHome1
+                                                              .value ==
+                                                          false &&
+                                                      controller
+                                                              .isMiniPlayerOpenHome2
+                                                              .value ==
+                                                          false &&
+                                                      controller
+                                                              .isMiniPlayerOpenHome3
+                                                              .value ==
+                                                          false &&
+                                                      controller
+                                                              .isMiniPlayerOpenAllSongs
+                                                              .value ==
+                                                          false &&
+                                                      controller
+                                                              .isMiniPlayerOpenQueueSongs
+                                                              .value ==
+                                                          false)
+                                                  ? const SizedBox()
+                                                  : (((controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.currentPlayingAdminTitle.value == playlistScreenController.adminPlaylistSongModel!.data![index].title && playlistScreenController.adminPlaylistSongModel != null) ||
+                                                              (controller.isMiniPlayerOpenAlbumSongs.value == true &&
+                                                                  albumScreenController
+                                                                          .currentPlayingTitle
+                                                                          .value ==
+                                                                      playlistScreenController
+                                                                          .adminPlaylistSongModel!
+                                                                          .data![index]
+                                                                          .title &&
+                                                                  albumScreenController.allSongsListModel != null) ||
+                                                              (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.currentPlayingTitle.value == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                              (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                              (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && playlistScreenController.allSongsListModel != null) ||
+                                                              (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
+                                                              (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title) ||
+                                                              (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && queueSongsScreenController.allSongsListModel != null) ||
+                                                              (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && searchScreenController.allSearchModel != null) ||
+                                                              (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title)) &&
+                                                          controller.musicPlay.value == true)
+                                                      ? ColorFiltered(
+                                                          // filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 9.0),
+                                                          colorFilter:
+                                                              const ColorFilter
+                                                                  .mode(
+                                                                  Colors.grey,
+                                                                  BlendMode
+                                                                      .modulate),
+                                                          child:
+                                                              Transform.scale(
+                                                            scale: 2.2,
+                                                            child: SiriWaveform
+                                                                .ios9(
+                                                              controller: controller
+                                                                  .siriWaveController,
+                                                              options:
+                                                                  const IOS9SiriWaveformOptions(
+                                                                height: 130,
+                                                                width: 25,
+                                                                showSupportBar:
+                                                                    false,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        )
+                                                      : const SizedBox(),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    title: Obx(
+                                      () => lable(
+                                        text: (playlistSongsData.title)!,
+                                        fontSize: 12,
+                                        color: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                                controller.isMiniPlayerOpenAlbumSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenArtistSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpen.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenFavoriteSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenSearchSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenHome.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenHome1.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenHome2.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenHome3.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenAllSongs.value ==
+                                                    false &&
+                                                controller.isMiniPlayerOpenQueueSongs.value ==
+                                                    false)
+                                            ? AppColors.white
+                                            : ((controller.isMiniPlayerOpenAdminPlaylistSongs.value == true &&
+                                                        playlistScreenController
+                                                                .currentPlayingAdminTitle
+                                                                .value ==
+                                                            playlistScreenController
+                                                                .adminPlaylistSongModel!
+                                                                .data![index]
+                                                                .title &&
+                                                        playlistScreenController.adminPlaylistSongModel !=
+                                                            null) ||
+                                                    (controller.isMiniPlayerOpenAlbumSongs.value == true &&
+                                                        albumScreenController.currentPlayingTitle.value ==
+                                                            playlistScreenController
+                                                                .adminPlaylistSongModel!
+                                                                .data![index]
+                                                                .title &&
+                                                        albumScreenController.allSongsListModel != null) ||
+                                                    (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.currentPlayingTitle.value == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                    (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && downloadSongScreenController.allSongsListModel != null) ||
+                                                    (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && playlistScreenController.allSongsListModel != null) ||
+                                                    (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[controller.currentListTileIndexCategoryData.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && homeScreenController.homeCategoryData.isNotEmpty) ||
+                                                    (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title) ||
+                                                    (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && queueSongsScreenController.allSongsListModel != null) ||
+                                                    (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title && searchScreenController.allSearchModel != null) ||
+                                                    (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == playlistScreenController.adminPlaylistSongModel!.data![index].title))
+                                                ? const Color(0xFF2ac5b3)
+                                                : AppColors.white,
+                                      ),
+                                    ),
+                                    subtitle: lable(
+                                      text: (playlistSongsData.description)!,
+                                      fontSize: 11,
+                                      color: Colors.grey,
                                     ),
                                   ),
-                                  subtitle: lable(
-                                    text: (queueSongListData.description)!,
-                                    fontSize: 11,
-                                    color: Colors.grey,
-                                  ),
-                                );
-                              }),
+                                  sizeBoxHeight(10),
+                                ],
+                              );
+                            },
+                          )
                         ],
                       ),
                     ),
@@ -777,9 +729,9 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(5),
                       child: Image.network(
-                                (controller.isMiniPlayerOpenAdminPlaylistSongs.value) ==
-                                    true &&
-                        playlistScreenController.adminPlaylistSongModel != null &&
+                        (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == true &&
+                                playlistScreenController.adminPlaylistSongModel !=
+                                    null &&
                                 (controller.isMiniPlayerOpenSearchSongs.value) ==
                                     false &&
                                 (controller.isMiniPlayerOpenFavoriteSongs.value) ==
@@ -803,13 +755,15 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                                     false &&
                                 (controller.isMiniPlayerOpenQueueSongs.value) ==
                                     false
-                            ? playlistScreenController.currentPlayingAdminImage.value
+                            ? playlistScreenController
+                                .currentPlayingAdminImage.value
                             // playlistScreenController.adminPlaylistSongModel!.data![controller.currentListTileIndexAdminPlaylistSongs.value].image ??
-                                // 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
+                            // 'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png'
                             : searchScreenController.allSearchModel != null &&
                                     (controller.isMiniPlayerOpenSearchSongs.value) ==
                                         true &&
-                                    (controller.isMiniPlayerOpenAdminPlaylistSongs.value) ==
+                                    (controller.isMiniPlayerOpenAdminPlaylistSongs
+                                            .value) ==
                                         false &&
                                     (controller.isMiniPlayerOpenFavoriteSongs.value) ==
                                         false &&
@@ -847,10 +801,18 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                                                 .isMiniPlayerOpenAdminPlaylistSongs
                                                 .value) ==
                                             false &&
-                                        (controller.isMiniPlayerOpenAlbumSongs.value) == false &&
-                                        (controller.isMiniPlayerOpenFavoriteSongs.value) == false &&
-                                        (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
-                                        (controller.isMiniPlayerOpen.value) == false &&
+                                        (controller.isMiniPlayerOpenAlbumSongs.value) ==
+                                            false &&
+                                        (controller
+                                                .isMiniPlayerOpenFavoriteSongs
+                                                .value) ==
+                                            false &&
+                                        (controller
+                                                .isMiniPlayerOpenDownloadSongs
+                                                .value) ==
+                                            false &&
+                                        (controller.isMiniPlayerOpen.value) ==
+                                            false &&
                                         (controller.isMiniPlayerOpenHome.value) == false &&
                                         (controller.isMiniPlayerOpenHome1.value) == false &&
                                         (controller.isMiniPlayerOpenHome2.value) == false &&
@@ -907,8 +869,7 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                           text: (controller.isMiniPlayerOpenAlbumSongs.value) == false &&
                                   (controller.isMiniPlayerOpenArtistSongs.value) ==
                                       false &&
-                                  (controller.isMiniPlayerOpenAdminPlaylistSongs
-                                          .value) ==
+                                  (controller.isMiniPlayerOpenAdminPlaylistSongs.value) ==
                                       true &&
                                   (controller.isMiniPlayerOpenQueueSongs.value) ==
                                       false &&
@@ -930,7 +891,8 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                                       false &&
                                   (controller.isMiniPlayerOpenDownloadSongs.value) ==
                                       false
-                              ? playlistScreenController.currentPlayingAdminTitle.value
+                              ? playlistScreenController
+                                  .currentPlayingAdminTitle.value
                               // (playlistScreenController
                               //     .adminPlaylistSongModel!
                               //     .data![controller
@@ -939,27 +901,47 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                               : (controller.isMiniPlayerOpenAlbumSongs.value) == false &&
                                       (controller.isMiniPlayerOpenArtistSongs.value) ==
                                           false &&
-                                      (controller
-                                              .isMiniPlayerOpenAdminPlaylistSongs
-                                              .value) ==
+                                      (controller.isMiniPlayerOpenAdminPlaylistSongs.value) ==
                                           false &&
                                       (controller.isMiniPlayerOpenQueueSongs.value) ==
                                           false &&
-                                      (controller.isMiniPlayerOpenSearchSongs
-                                              .value) ==
+                                      (controller.isMiniPlayerOpenSearchSongs.value) ==
                                           true &&
-                                      (controller.isMiniPlayerOpenFavoriteSongs
-                                              .value) ==
+                                      (controller.isMiniPlayerOpenFavoriteSongs.value) ==
                                           false &&
-                                      (controller.isMiniPlayerOpen.value) == false &&
-                                      (controller.isMiniPlayerOpenHome.value) == false &&
-                                      (controller.isMiniPlayerOpenHome1.value) == false &&
-                                      (controller.isMiniPlayerOpenHome2.value) == false &&
-                                      (controller.isMiniPlayerOpenHome3.value) == false &&
-                                      (controller.isMiniPlayerOpenAllSongs.value) == false &&
-                                      (controller.isMiniPlayerOpenDownloadSongs.value) == false
-                                  ? (searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title)!
-                                  : (controller.isMiniPlayerOpenArtistSongs.value) == true && (controller.isMiniPlayerOpenAlbumSongs.value) == false && (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false && (controller.isMiniPlayerOpenSearchSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenFavoriteSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false
+                                      (controller.isMiniPlayerOpen.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenHome.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenHome1.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenHome2.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenHome3.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenAllSongs.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenDownloadSongs.value) ==
+                                          false
+                                  ? (searchScreenController
+                                      .allSearchModel!
+                                      .data![controller
+                                          .currentListTileIndexSearchSongs
+                                          .value]
+                                      .title)!
+                                  : (controller.isMiniPlayerOpenArtistSongs.value) == true &&
+                                          (controller.isMiniPlayerOpenAlbumSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenSearchSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenQueueSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenFavoriteSongs.value) == false &&
+                                          (controller.isMiniPlayerOpen.value) == false &&
+                                          (controller.isMiniPlayerOpenHome.value) == false &&
+                                          (controller.isMiniPlayerOpenHome1.value) == false &&
+                                          (controller.isMiniPlayerOpenHome2.value) == false &&
+                                          (controller.isMiniPlayerOpenHome3.value) == false &&
+                                          (controller.isMiniPlayerOpenAllSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenDownloadSongs.value) == false
                                       ? artistScreenController.currentPlayingTitle.value
                                       : (controller.isMiniPlayerOpenAlbumSongs.value) == true && (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false && (controller.isMiniPlayerOpenArtistSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenSearchSongs.value) == false && (controller.isMiniPlayerOpenFavoriteSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false
                                           ? albumScreenController.currentPlayingTitle.value
@@ -992,8 +974,7 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                           text: (controller.isMiniPlayerOpenFavoriteSongs.value) == false &&
                                   (controller.isMiniPlayerOpenSearchSongs.value) ==
                                       false &&
-                                  (controller.isMiniPlayerOpenAdminPlaylistSongs
-                                          .value) ==
+                                  (controller.isMiniPlayerOpenAdminPlaylistSongs.value) ==
                                       true &&
                                   (controller.isMiniPlayerOpenArtistSongs.value) ==
                                       false &&
@@ -1015,7 +996,8 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                                       false &&
                                   (controller.isMiniPlayerOpenAllSongs.value) ==
                                       false
-                              ? playlistScreenController.currentPlayingAdminDesc.value
+                              ? playlistScreenController
+                                  .currentPlayingAdminDesc.value
                               // (playlistScreenController
                               //     .adminPlaylistSongModel!
                               //     .data![controller
@@ -1044,10 +1026,30 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                                           false &&
                                       (controller.isMiniPlayerOpenHome2.value) ==
                                           false &&
-                                      (controller.isMiniPlayerOpenHome3.value) == false &&
-                                      (controller.isMiniPlayerOpenAllSongs.value) == false
-                                  ? (searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].description)!
-                                  : homeScreenController.homeCategoryData.isNotEmpty && (controller.isMiniPlayerOpenHome.value) == true && (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false && (controller.isMiniPlayerOpenArtistSongs.value) == false && (controller.isMiniPlayerOpenSearchSongs.value) == false && (controller.isMiniPlayerOpenAlbumSongs.value) == false && (controller.isMiniPlayerOpenFavoriteSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false
+                                      (controller.isMiniPlayerOpenHome3.value) ==
+                                          false &&
+                                      (controller.isMiniPlayerOpenAllSongs.value) ==
+                                          false
+                                  ? (searchScreenController
+                                      .allSearchModel!
+                                      .data![controller
+                                          .currentListTileIndexSearchSongs
+                                          .value]
+                                      .description)!
+                                  : homeScreenController.homeCategoryData.isNotEmpty &&
+                                          (controller.isMiniPlayerOpenHome.value) == true &&
+                                          (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenArtistSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenSearchSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenAlbumSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenFavoriteSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenDownloadSongs.value) == false &&
+                                          (controller.isMiniPlayerOpen.value) == false &&
+                                          (controller.isMiniPlayerOpenHome1.value) == false &&
+                                          (controller.isMiniPlayerOpenHome2.value) == false &&
+                                          (controller.isMiniPlayerOpenHome3.value) == false &&
+                                          (controller.isMiniPlayerOpenAllSongs.value) == false &&
+                                          (controller.isMiniPlayerOpenQueueSongs.value) == false
                                       ? (homeScreenController.homeCategoryModel!.data![controller.currentListTileIndexCategory.value].categoryData![controller.currentListTileIndexCategoryData.value].description)!
                                       : (controller.isMiniPlayerOpenFavoriteSongs.value) == false && (controller.isMiniPlayerOpenAdminPlaylistSongs.value) == false && (controller.isMiniPlayerOpenArtistSongs.value) == true && (controller.isMiniPlayerOpenSearchSongs.value) == false && (controller.isMiniPlayerOpenAlbumSongs.value) == false && (controller.isMiniPlayerOpenQueueSongs.value) == false && (controller.isMiniPlayerOpenDownloadSongs.value) == false && (controller.isMiniPlayerOpen.value) == false && (controller.isMiniPlayerOpenHome.value) == false && (controller.isMiniPlayerOpenHome1.value) == false && (controller.isMiniPlayerOpenHome2.value) == false && (controller.isMiniPlayerOpenHome3.value) == false && (controller.isMiniPlayerOpenAllSongs.value) == false
                                           ? artistScreenController.currentPlayingDesc.value
@@ -1108,7 +1110,8 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
                         : controller.audioPlayer,
                     size: 45),
               ],
-            ),),
+            ),
+          ),
         );
       },
     );
@@ -1179,4 +1182,3 @@ class _QueueSongsScreenState extends State<QueueSongsScreen> {
         ),
       );
 }
-

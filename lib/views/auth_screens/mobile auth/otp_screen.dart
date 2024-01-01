@@ -88,8 +88,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        border: Border.all(
-            color: const Color(0xFF333333)),
+        border: Border.all(color: const Color(0xFF333333)),
         borderRadius: BorderRadius.circular(20),
       ),
     );
@@ -102,8 +101,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        border: Border.all(
-            color: AppColors.themeBlueColor),
+        border: Border.all(color: AppColors.themeBlueColor),
         borderRadius: BorderRadius.circular(20),
       ),
     );
@@ -116,8 +114,7 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
-        border: Border.all(
-            color: AppColors.themeBlueColor),
+        border: Border.all(color: AppColors.themeBlueColor),
         borderRadius: BorderRadius.circular(20),
       ),
     );
@@ -281,6 +278,16 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
             (value) => snackBar(AppStrings.loginSuccessfully),
           )
           .then((value) {
+        controller.isMiniPlayerOpenQueueSongs.value = false;
+        controller.isMiniPlayerOpenDownloadSongs.value = false;
+        controller.isMiniPlayerOpen.value = false;
+        controller.isMiniPlayerOpenAllSongs.value = false;
+        controller.isMiniPlayerOpenAlbumSongs.value = false;
+        controller.isMiniPlayerOpenArtistSongs.value = false;
+        controller.isMiniPlayerOpenHome.value = false;
+        controller.isMiniPlayerOpenFavoriteSongs.value = false;
+        controller.isMiniPlayerOpenSearchSongs.value = false;
+        controller.isMiniPlayerOpenAdminPlaylistSongs.value = false;
         Get.offAll(MainScreen(), transition: Transition.upToDown);
       });
       final prefs = await SharedPreferences.getInstance();
@@ -320,6 +327,16 @@ class _OtpMobileAuthScreenState extends State<OtpMobileAuthScreen> {
         setState(() {
           isLoding = false;
         });
+        controller.isMiniPlayerOpenQueueSongs.value = false;
+        controller.isMiniPlayerOpenDownloadSongs.value = false;
+        controller.isMiniPlayerOpen.value = false;
+        controller.isMiniPlayerOpenAllSongs.value = false;
+        controller.isMiniPlayerOpenAlbumSongs.value = false;
+        controller.isMiniPlayerOpenArtistSongs.value = false;
+        controller.isMiniPlayerOpenHome.value = false;
+        controller.isMiniPlayerOpenFavoriteSongs.value = false;
+        controller.isMiniPlayerOpenSearchSongs.value = false;
+        controller.isMiniPlayerOpenAdminPlaylistSongs.value = false;
         Get.offAll(
           MainScreen(),
           transition: Transition.upToDown,

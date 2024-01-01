@@ -48,14 +48,13 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
     super.initState();
     countrycode.text = "+91";
     FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-    firebaseMessaging.getToken().then((token){
+    firebaseMessaging.getToken().then((token) {
       if (kDebugMode) {
         GlobVar.deviceToken = token!;
         print("Device token---> $token");
         print("Device token Glob---> ${GlobVar.deviceToken}");
-
       }
-  });
+    });
   }
 
   @override
@@ -85,9 +84,13 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
                 sizeBoxHeight(64),
                 InkWell(
                   onTap: () async {
+                    setState(() {
+                      GlobVar.login = false;
+                    });
                     final prefs = await SharedPreferences.getInstance();
                     await prefs.setBool('isLoggedIn', false);
                     await prefs.setString('token', '');
+                    controller.currentIndex.value = 0;
                     Get.offAll(MainScreen());
                   },
                   child: Align(
@@ -212,8 +215,9 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
                                         fontSize: 18,
                                         color: Colors.grey.shade400),
                                     cursorColor: Colors.grey.shade400,
-                                    decoration:  InputDecoration(
-                                      contentPadding: const EdgeInsets.symmetric(
+                                    decoration: InputDecoration(
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
                                         vertical: 12.0,
                                         horizontal: 10,
                                       ),
@@ -420,6 +424,19 @@ class _InitialLoginScreenState extends State<InitialLoginScreen> {
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('loginType', AppStrings.googleLogin);
             snackBar(AppStrings.loginSuccessfully);
+            setState(() {
+              GlobVar.login = true;
+            });
+            controller.isMiniPlayerOpenQueueSongs.value = false;
+            controller.isMiniPlayerOpenDownloadSongs.value = false;
+            controller.isMiniPlayerOpen.value = false;
+            controller.isMiniPlayerOpenAllSongs.value = false;
+            controller.isMiniPlayerOpenAlbumSongs.value = false;
+            controller.isMiniPlayerOpenArtistSongs.value = false;
+            controller.isMiniPlayerOpenHome.value = false;
+            controller.isMiniPlayerOpenFavoriteSongs.value = false;
+            controller.isMiniPlayerOpenSearchSongs.value = false;
+            controller.isMiniPlayerOpenAdminPlaylistSongs.value = false;
             Get.offAll(MainScreen(), transition: Transition.upToDown);
             controller.currentIndex.value = 0;
           });

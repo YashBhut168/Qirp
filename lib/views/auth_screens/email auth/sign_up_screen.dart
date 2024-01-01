@@ -1,4 +1,3 @@
-// import 'package:edpal_music_app_ui/main.dart';
 import 'package:edpal_music_app_ui/controllers/auth_controller.dart';
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/utils/assets.dart';
@@ -41,8 +40,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // var h = MediaQuery.of(context).size.height;
-
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
@@ -149,6 +146,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         .then((value) {
                                       controller.currentIndex.value = 0;
                                       snackBar(AppStrings.registerSuccessfully);
+                                      controller.isMiniPlayerOpenQueueSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpenDownloadSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpen.value = false;
+                                      controller.isMiniPlayerOpenAllSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpenAlbumSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpenArtistSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpenHome.value =
+                                          false;
+                                      controller.isMiniPlayerOpenFavoriteSongs
+                                          .value = false;
+                                      controller.isMiniPlayerOpenSearchSongs
+                                          .value = false;
+                                      controller
+                                          .isMiniPlayerOpenAdminPlaylistSongs
+                                          .value = false;
                                       Get.offAll(MainScreen());
                                     });
                                   } else {
@@ -167,13 +184,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color:
-                                      //  phoneNumber.text == '' &&
-                                      (emailController.text == '' ||
-                                              passwordController.text == '' ||
-                                              fullNameController.text == '')
-                                          ? const Color(0xFF262626)
-                                          : const Color(0xFF005FF7),
+                                  color: (emailController.text == '' ||
+                                          passwordController.text == '' ||
+                                          fullNameController.text == '')
+                                      ? const Color(0xFF262626)
+                                      : const Color(0xFF005FF7),
                                   borderRadius: const BorderRadius.all(
                                     Radius.circular(10),
                                   ),
@@ -196,17 +211,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           children: [
                                             lable(
                                               text: AppStrings.signUpS,
-                                              color:
-                                                  // phoneNumber.text == '' &&
-                                                  emailController.text == '' ||
-                                                          passwordController
-                                                                  .text ==
-                                                              '' ||
-                                                          fullNameController
-                                                                  .text ==
-                                                              ''
-                                                      ? const Color(0xFF605F5F)
-                                                      : AppColors.white,
+                                              color: emailController.text ==
+                                                          '' ||
+                                                      passwordController.text ==
+                                                          '' ||
+                                                      fullNameController.text ==
+                                                          ''
+                                                  ? const Color(0xFF605F5F)
+                                                  : AppColors.white,
                                               textAlign: TextAlign.center,
                                             ),
                                             sizeBoxWidth(12),
@@ -233,64 +245,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       ),
                     ),
                   ),
-                  // lable(
-                  //     text: AppStrings.signUpC,
-                  //     fontSize: 23,
-                  //     fontWeight: FontWeight.w600,
-                  //     letterSpacing: 0.45),
-                  // SizedBox(
-                  //   height: h * 0.09,
-                  // ),
-                  // commonTextField(
-                  //   hintText: AppStrings.fullName,
-                  //   controller: fullNameController,
-                  //   validator: (value) => AppValidation.validateName(value!),
-                  // ),
-                  // sizeBoxHeight(15),
-                  // commonTextField(
-                  //   hintText: AppStrings.email,
-                  //   controller: emailController,
-                  //   validator: (value) => AppValidation.validateEmail(value!),
-                  // ),
-                  // sizeBoxHeight(15),
-                  // commonTextField(
-                  //   hintText: AppStrings.password,
-                  //   controller: passwordController,
-                  //   validator: (value) =>
-                  //       AppValidation.validatePassword(value!),
-                  //   notShowText: true,
-                  // ),
-                  // sizeBoxHeight(20),
-                  // Obx(
-                  //   () => authController.isLoading.value == true
-                  //       ? Align(
-                  //           alignment: Alignment.center,
-                  //           child: CircularProgressIndicator(
-                  //             color: AppColors.white,
-                  //           ),
-                  //         )
-                  //       : Align(
-                  //           alignment: Alignment.center,
-                  //           child: customElevatedButton(
-                  //             text: AppStrings.signUpS,
-                  //             onPressed: () {
-                  //               if (myKey1.currentState!.validate()) {
-                  //                 authController
-                  //                     .registerUser(
-                  //                   userName: fullNameController.text,
-                  //                   email: emailController.text,
-                  //                   password: passwordController.text,
-                  //                 )
-                  //                     .then((value) {
-                  //                   controller.currentIndex.value = 0;
-                  //                   snackBar(AppStrings.registerSuccessfully);
-                  //                   Get.offAll(MainScreen());
-                  //                 });
-                  //               }
-                  //             },
-                  //           ),
-                  //         ),
-                  // ),
                   sizeBoxHeight(140),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

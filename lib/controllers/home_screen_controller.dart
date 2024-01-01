@@ -1,9 +1,12 @@
+
+import 'dart:developer';
+
 import 'package:edpal_music_app_ui/apihelper/api_helper.dart';
 import 'package:edpal_music_app_ui/models/all_songs_list_model.dart';
 import 'package:edpal_music_app_ui/models/category_model.dart';
-import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/category_data_model.dart';
 
@@ -62,6 +65,7 @@ class HomeScreenController extends GetxController{
 
 
   Future<void> recentSongsList() async {
+    
     try {
     isLoadingRecent.value = true;
       final recentSongListDataModelJson = await apiHelper.recentSongsList();
@@ -82,13 +86,17 @@ class HomeScreenController extends GetxController{
   HomeCategoryModel? homeCategoryModel;
 
   Future<void> homeCategories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final authToken = prefs.getString('token') ?? '';
     try {
     isLoadingHome.value = true;
-      final homeCategoryModelJson = GlobVar.login == false ? await apiHelper.noAuthHomeCategoriesList() :  await apiHelper.homeCategories();
+    // log('${GlobVar.login}',name: 'GlobVar.login home section');
+      final homeCategoryModelJson = authToken.isEmpty ? await apiHelper.noAuthHomeCategoriesList() :  await apiHelper.homeCategories();
 
       homeCategoryModel =
           HomeCategoryModel.fromJson(homeCategoryModelJson);
 
+      log("$homeCategoryModelJson",name: 'homeCategoryModelJson');
       homeCategoryData.value = homeCategoryModel!.data!;
       isLoadingHome.value = false;
     } catch (e) {

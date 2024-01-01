@@ -44,20 +44,6 @@ class _LogInScreenState extends State<LogInScreen> {
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor,
-        // appBar: AppBar(
-        //   backgroundColor: AppColors.backgroundColor,
-        //   automaticallyImplyLeading: true,
-        //   leading: IconButton(
-        //     icon: Icon(
-        //       Icons.arrow_back,
-        //       color: AppColors.white,
-        //       size: 26,
-        //     ),
-        //     onPressed: () {
-        //       Get.offAll(const InitialLoginScreen());
-        //     },
-        //   ),
-        // ),
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 18),
@@ -85,11 +71,6 @@ class _LogInScreenState extends State<LogInScreen> {
                           AppAsstes.qirpLogo,
                           scale: 7.5,
                         ),
-                        // lable(
-                        //     text: AppStrings.qirp,
-                        //     fontSize: 33,
-                        //     fontWeight: FontWeight.w800,
-                        //     letterSpacing: 1.9),
                       ],
                     ),
                   ),
@@ -164,6 +145,27 @@ class _LogInScreenState extends State<LogInScreen> {
                                       if (GlobVar.login == true) {
                                         controller.currentIndex.value = 0;
                                         snackBar(AppStrings.loginSuccessfully);
+                                        controller.isMiniPlayerOpenQueueSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenDownloadSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpen.value =
+                                            false;
+                                        controller.isMiniPlayerOpenAllSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenAlbumSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenArtistSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenHome.value =
+                                            false;
+                                        controller.isMiniPlayerOpenFavoriteSongs
+                                            .value = false;
+                                        controller.isMiniPlayerOpenSearchSongs
+                                            .value = false;
+                                        controller
+                                            .isMiniPlayerOpenAdminPlaylistSongs
+                                            .value = false;
                                         Get.offAll(MainScreen());
                                       } else {
                                         snackBar('Unauthorised User');
@@ -185,12 +187,10 @@ class _LogInScreenState extends State<LogInScreen> {
                                 ),
                                 width: double.infinity,
                                 decoration: BoxDecoration(
-                                  color:
-                                      //  phoneNumber.text == '' &&
-                                      (emailController.text == '' ||
-                                              passwordController.text == '')
-                                          ? const Color(0xFF262626)
-                                          : const Color(0xFF005FF7),
+                                  color: (emailController.text == '' ||
+                                          passwordController.text == '')
+                                      ? const Color(0xFF262626)
+                                      : const Color(0xFF005FF7),
                                   borderRadius: const BorderRadius.all(
                                     Radius.circular(10),
                                   ),
@@ -213,14 +213,12 @@ class _LogInScreenState extends State<LogInScreen> {
                                           children: [
                                             lable(
                                               text: 'Login',
-                                              color:
-                                                  // phoneNumber.text == '' &&
-                                                  emailController.text == '' ||
-                                                          passwordController
-                                                                  .text ==
-                                                              ''
-                                                      ? const Color(0xFF605F5F)
-                                                      : AppColors.white,
+                                              color: emailController.text ==
+                                                          '' ||
+                                                      passwordController.text ==
+                                                          ''
+                                                  ? const Color(0xFF605F5F)
+                                                  : AppColors.white,
                                               textAlign: TextAlign.center,
                                             ),
                                             sizeBoxWidth(12),
@@ -246,39 +244,6 @@ class _LogInScreenState extends State<LogInScreen> {
                     ),
                   ),
                   sizeBoxHeight(15),
-                  // lable(
-                  //   text: AppStrings.loginC,
-                  //   fontWeight: FontWeight.w700,
-                  //   fontSize: 23,
-                  // ),
-                  // sizeBoxHeight(45),
-                  // commonTextField(
-                  //   hintText: AppStrings.email,
-                  //   controller: emailController,
-                  //   backgroundColor: const Color(0xFF141414),
-                  //   borderColor: const Color(0xFF141414),
-                  //   validator: (value) => AppValidation.validateEmail(value!),
-                  // ),
-                  // sizeBoxHeight(15),
-                  // commonTextField(
-                  //   hintText: AppStrings.password,
-                  //   controller: passwordController,
-                  //   backgroundColor: const Color(0xFF141414),
-                  //   borderColor: const Color(0xFF141414),
-                  //   validator: (value) =>
-                  //       AppValidation.validatePassword(value!),
-                  //   notShowText: true,
-                  // ),
-                  // sizeBoxHeight(15),
-                  // Obx(
-                  //   () => authController.isLoading.value == true
-                  //       ? Align(
-                  //           alignment: Alignment.center,
-                  //           child: CircularProgressIndicator(
-                  //             color: AppColors.white,
-                  //           ),
-                  //         )
-                  //       :
                   Align(
                     alignment: Alignment.centerRight,
                     child: Column(
@@ -292,32 +257,6 @@ class _LogInScreenState extends State<LogInScreen> {
                             },
                             child: lable(text: AppStrings.forgotPassword)),
                         sizeBoxHeight(20),
-                        // customElevatedButton(
-                        //   text: AppStrings.loginS,
-                        //   onPressed: () async {
-                        //     if (myKey2.currentState!.validate()) {
-                        //       authController
-                        //           .loginUser(
-                        //         email: emailController.text,
-                        //         password: passwordController.text,
-                        //       )
-                        //           .then((value) {
-                        //         if (GlobVar.login == true) {
-                        //           controller.currentIndex.value = 0;
-                        //           snackBar(
-                        //               AppStrings.loginSuccessfully);
-                        //           Get.offAll(MainScreen());
-                        //         } else {
-                        //           snackBar('Unauthorised User');
-                        //         }
-                        //       });
-                        //     } else {
-                        //       if (kDebugMode) {
-                        //         print('enter valid user');
-                        //       }
-                        //     }
-                        //   },
-                        // ),
                       ],
                     ),
                   ),

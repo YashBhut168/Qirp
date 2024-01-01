@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/profile_controller.dart';
+import 'package:edpal_music_app_ui/controllers/queue_songs_screen_controller.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/globVar.dart';
@@ -12,6 +13,7 @@ import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/initial_login_screen.dart';
 import 'package:edpal_music_app_ui/views/auth_screens/without_login_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/main_screen.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/admin_playlists/admin_playlist_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/album_screen/album_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/artist_screen/artist_screen.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/download_screen/download_screen.dart';
@@ -37,54 +39,28 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
   ProfileController profileController = Get.put(ProfileController());
   final MainScreenController controller =
       Get.put(MainScreenController(initialIndex: 0));
+  QueueSongsScreenController queueSongsScreenController =
+      Get.put(QueueSongsScreenController());
 
-  // final TextEditingController countrycode = TextEditingController();
   bool isLoding = false;
-  // String encryptPhonnumber = '';
-  // bool isLoggedIn = false;
-  // String? token;
 
   @override
   void initState() {
     super.initState();
-
-    // sharedPref();
-    // SharedPreferences.getInstance().then((prefs) {
-    //   bool login = prefs.getBool('isLoggedIn') ?? false;
-    //   setState(() {
-    //     isLoggedIn = login;
-    //   });
-    // });
     log("${GlobVar.login}", name: 'library login');
-    // countrycode.text = "+91";
-    // if (mounted) {
-    //   setState(() {
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-
     profileController.fetchProfile();
-
-    // var phoneNumber = profileController.mobile_no;
-    // encryptPhonnumber = formatPhoneNumber(phoneNumber.value);
-    // });
-    // profileController.fetchProfile();
-    // setState(() {
-    // controller.isMiniPlayerOpenQueueSongs.value == true ||
-    //         controller.isMiniPlayerOpenDownloadSongs.value == true ||
-    //         controller.isMiniPlayerOpen.value == true ||
-    //         controller.isMiniPlayerOpenHome1.value == true ||
-    //         controller.isMiniPlayerOpenHome2.value == true ||
-    //         controller.isMiniPlayerOpenHome3.value == true ||
-    //         controller.isMiniPlayerOpenAllSongs.value == true
-    //     ? controller.audioPlayer.play()
-    //     : controller.audioPlayer.dispose();
-    //   controller.currentListTileIndexQueueSongs.value;
-    //   controller.currentListTileIndexDownloadSongs.value;
-    //   controller.currentListTileIndex.value;
-    //   controller.currentListTileIndexAllSongs.value;
-    //   controller.currentListTileIndexCategory1.value;
-    //   controller.currentListTileIndexCategory2.value;
-    //   controller.currentListTileIndexCategory3.value;
-    // });
+    controller.isMiniPlayerOpenQueueSongs.value == true ||
+            controller.isMiniPlayerOpenDownloadSongs.value == true ||
+            controller.isMiniPlayerOpen.value == true ||
+            controller.isMiniPlayerOpenAllSongs.value == true ||
+            controller.isMiniPlayerOpenAlbumSongs.value == true ||
+            controller.isMiniPlayerOpenArtistSongs.value == true ||
+            controller.isMiniPlayerOpenHome.value == true ||
+            controller.isMiniPlayerOpenFavoriteSongs.value == true ||
+            controller.isMiniPlayerOpenSearchSongs.value == true ||
+            controller.isMiniPlayerOpenAdminPlaylistSongs.value == true
+        ? controller.audioPlayer.play()
+        : controller.audioPlayer.stop();
     log("${controller.isMiniPlayerOpenQueueSongs.value}",
         name: "isMiniPlayerOpenQueueSongs");
     log("${controller.isMiniPlayerOpenDownloadSongs.value}",
@@ -100,482 +76,305 @@ class _LibraryScreenState extends State<MyLibraryScreen> {
     log("${controller.queueSongsUrl}", name: "queueSongsUrl");
     log("${controller.isMiniPlayerOpenDownloadSongs.value}",
         name: "isMiniPlayerOpenDownloadSongs");
-
-    //   });
-    // }
   }
-
-  // String formatPhoneNumber(String phoneNumber) {
-  //   if (phoneNumber.length < 10) {
-  //     return phoneNumber;
-  //   }
-
-  //   String lastFourDigits = phoneNumber.substring(phoneNumber.length - 4);
-
-  //   String maskedPhoneNumber = '+XXXXXXXX$lastFourDigits';
-
-  //   return maskedPhoneNumber;
-  // }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Scaffold(
-          backgroundColor: AppColors.backgroundColor,
-          // appBar: AppBar(
-          //   backgroundColor: AppColors.backgroundColor,
-          //   title: Padding(
-          //     padding: const EdgeInsets.only(left: 7),
-          //     child: lable(
-          //       text: AppStrings.myLibrary,
-          //       fontSize: 19,
-          //       fontWeight: FontWeight.w700,
-          //       letterSpacing: 0.6,
-          //     ),
-          //   ),
-          //   automaticallyImplyLeading: false,
-          //   centerTitle: false,
-          //   actions: [
-          //     GlobVar.login == true
-          //         ? commonIconButton(
-          //             icon: const Icon(
-          //               Icons.logout,
-          //             ),
-          //             onPressed: () async {
-          //               controller.audioPlayer.stop();
-          //               final prefs = await SharedPreferences.getInstance();
-          //               // ignore: unused_local_variable
-          //               final login = prefs.getBool('isLoggedIn');
-          //               GlobVar.login = false;
-          //               await prefs.setString('imagePath', '');
-          //               await prefs.setString('token', '');
-          //               await prefs.setBool('isLoggedIn', false);
-          //               var loginType = prefs.getString('loginType');
-          //               if (kDebugMode) {
-          //                 print(loginType);
-          //               }
-          //               if (loginType == AppStrings.googleLogin) {
-          //                 await GoogleSignIn().disconnect();
-          //                 FirebaseAuth.instance.signOut();
-          //                 await prefs.setString('loginType', '');
-          //               } else {}
-          //               snackBar('Logout successfully');
-          //               Get.offAll(
-          //                 const InitialLoginScreen(),
-          //                 transition: Transition.downToUp,
-          //               );
-          //             },
-          //           )
-          //         : const SizedBox(),
-          //     sizeBoxWidth(15),
-          //   ],
-          // ),
-          body: Obx(
-            () {
-              if (profileController.isLoading.value == true) {
-                return Center(
-                  heightFactor: 14,
-                  child: CircularProgressIndicator(
-                    color: AppColors.white,
+        backgroundColor: AppColors.backgroundColor,
+        body: Obx(
+          () {
+            if (profileController.isLoading.value == true) {
+              return Center(
+                heightFactor: 14,
+                child: CircularProgressIndicator(
+                  color: AppColors.white,
+                ),
+              );
+            } else {
+              return Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 40, 15, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        lable(
+                          text: AppStrings.myLibrary,
+                          fontSize: 19,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                        ),
+                        GlobVar.login == true
+                            ? commonIconButton(
+                                icon: const Icon(
+                                  Icons.logout,
+                                ),
+                                onPressed: () async {
+                                  controller.audioPlayer.stop();
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  // ignore: unused_local_variable
+                                  final login = prefs.getBool('isLoggedIn');
+                                  GlobVar.login = false;
+                                  await prefs.setString('imagePath', '');
+                                  await prefs.setString('token', '');
+                                  await prefs.setBool('isLoggedIn', false);
+                                  var loginType = prefs.getString('loginType');
+                                  GlobVar.userId = '';
+                                  if (kDebugMode) {
+                                    print(loginType);
+                                  }
+                                  if (loginType == AppStrings.googleLogin) {
+                                    await GoogleSignIn().disconnect();
+                                    FirebaseAuth.instance.signOut();
+                                    await prefs.setString('loginType', '');
+                                  } else {}
+                                  snackBar('Logout successfully');
+                                  Get.offAll(
+                                    const InitialLoginScreen(),
+                                    transition: Transition.downToUp,
+                                  );
+                                  controller.isMiniPlayerOpenQueueSongs.value =
+                                      false;
+                                  controller.isMiniPlayerOpenDownloadSongs
+                                      .value = false;
+                                  controller.isMiniPlayerOpen.value = false;
+                                  controller.isMiniPlayerOpenAllSongs.value =
+                                      false;
+                                  controller.isMiniPlayerOpenAlbumSongs.value =
+                                      false;
+                                  controller.isMiniPlayerOpenArtistSongs.value =
+                                      false;
+                                  controller.isMiniPlayerOpenHome.value = false;
+                                  controller.isMiniPlayerOpenFavoriteSongs
+                                      .value = false;
+                                  controller.isMiniPlayerOpenSearchSongs.value =
+                                      false;
+                                  controller.isMiniPlayerOpenAdminPlaylistSongs
+                                      .value = false;
+                                },
+                              )
+                            : const SizedBox(),
+                      ],
+                    ),
                   ),
-                );
-              } else {
-                return Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 40, 15, 0),
+                  // sizeBoxWidth(15),
+
+                  sizeBoxHeight(22),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(18, 0, 0, 0),
+                    child: GestureDetector(
+                      onTap: () {
+                        GlobVar.login == false
+                            ? Get.to(
+                                const WitoutLogginScreen(),
+                                transition: Transition.downToUp,
+                              )
+                            : null;
+                      },
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          lable(
-                            text: AppStrings.myLibrary,
-                            fontSize: 19,
-                            fontWeight: FontWeight.w700,
-                            letterSpacing: 0.6,
+                          containerIcon(
+                            icon: Icons.person_2_outlined,
+                            borderRadius: 20,
+                            height: 35,
+                            width: 35,
+                            containerColor: Colors.grey,
                           ),
+                          sizeBoxWidth(12),
                           GlobVar.login == true
-                              ? commonIconButton(
-                                  icon: const Icon(
-                                    Icons.logout,
+                              ? Obx(
+                                  () => lable(
+                                    text:
+
+                                        // profileController.profileModel!.profile!.email!.isNotEmpty ?
+                                        //  profileController.profileModel!.profile!.email! :
+                                        //  profileController.profileModel!.profile!.mobileNo!,
+                                        // GlobVar.emailProfile.isNotEmpty ?
+                                        // GlobVar.emailProfile :
+                                        // GlobVar.encryptPhonnumber,
+                                        profileController
+                                                .emailProfile.isNotEmpty
+                                            ? profileController.email.value
+                                            : profileController
+                                                .encryptPhonnumber.value,
+                                    fontWeight: FontWeight.w600,
                                   ),
-                                  onPressed: () async {
-                                    controller.audioPlayer.stop();
-                                    final prefs =
-                                        await SharedPreferences.getInstance();
-                                    // ignore: unused_local_variable
-                                    final login = prefs.getBool('isLoggedIn');
-                                    GlobVar.login = false;
-                                    await prefs.setString('imagePath', '');
-                                    await prefs.setString('token', '');
-                                    await prefs.setBool('isLoggedIn', false);
-                                    var loginType = prefs.getString('loginType');
-                                    GlobVar.userId = '';
-                                    if (kDebugMode) {
-                                      print(loginType);
-                                    }
-                                    if (loginType == AppStrings.googleLogin) {
-                                      await GoogleSignIn().disconnect();
-                                      FirebaseAuth.instance.signOut();
-                                      await prefs.setString('loginType', '');
-                                    } else {}
-                                    snackBar('Logout successfully');
-                                    Get.offAll(
-                                      const InitialLoginScreen(),
-                                      transition: Transition.downToUp,
+                                )
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    lable(
+                                      text: 'Guest',
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                    lable(
+                                      text: 'Not logged in',
+                                      color: Colors.grey,
+                                      fontSize: 13,
+                                    ),
+                                  ],
+                                ),
+                          const Spacer(),
+                          GlobVar.login == true
+                              ? TextButton(
+                                  onPressed: () {
+                                    Get.to(
+                                      EditProfileScreen(
+                                        encryptPhonnumber: profileController
+                                            .encryptPhonnumber.value,
+                                      ),
+                                      transition: Transition.leftToRight,
                                     );
                                   },
+                                  child: lable(
+                                    text: 'Edit',
+                                    color: Colors.grey,
+                                    fontSize: 11,
+                                  ),
                                 )
                               : const SizedBox(),
                         ],
                       ),
                     ),
-              // sizeBoxWidth(15),
-
-                    sizeBoxHeight(22),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(18, 0, 0, 0),
-                      child: GestureDetector(
-                        onTap: () {
-                          GlobVar.login == false
-                              ? Get.to(
-                                  const WitoutLogginScreen(),
-                                  transition: Transition.downToUp,
-                                )
-                              : null;
-                        },
-                        child: Row(
-                          children: [
-                            containerIcon(
-                              icon: Icons.person_2_outlined,
-                              borderRadius: 20,
-                              height: 35,
-                              width: 35,
-                              containerColor: Colors.grey,
-                            ),
-                            sizeBoxWidth(12),
-                            GlobVar.login == true
-                                ? Obx(
-                                    () => lable(
-                                      text:
-
-                                          // profileController.profileModel!.profile!.email!.isNotEmpty ?
-                                          //  profileController.profileModel!.profile!.email! :
-                                          //  profileController.profileModel!.profile!.mobileNo!,
-                                          // GlobVar.emailProfile.isNotEmpty ?
-                                          // GlobVar.emailProfile :
-                                          // GlobVar.encryptPhonnumber,
-                                          profileController
-                                                  .emailProfile.isNotEmpty
-                                              ? profileController.email.value
-                                              : profileController
-                                                  .encryptPhonnumber.value,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  )
-                                : Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      lable(
-                                        text: 'Guest',
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 16,
-                                      ),
-                                      lable(
-                                        text: 'Not logged in',
-                                        color: Colors.grey,
-                                        fontSize: 13,
-                                      ),
-                                    ],
-                                  ),
-                            const Spacer(),
-                            GlobVar.login == true
-                                ? TextButton(
-                                    onPressed: () {
-                                      Get.to(
-                                        EditProfileScreen(
-                                          encryptPhonnumber: profileController
-                                              .encryptPhonnumber.value,
-                                        ),
-                                        transition: Transition.leftToRight,
-                                      );
-                                    },
-                                    child: lable(
-                                      text: 'Edit',
-                                      color: Colors.grey,
-                                      fontSize: 11,
-                                    ),
-                                  )
-                                : const SizedBox(),
-                          ],
-                        ),
-                      ),
-                    ),
-                    sizeBoxHeight(20),
-                    commonListTile(
-                      onTap: () {
-                              controller.currentIndex.value = 1;
-                        GlobVar.login == true
-                            ? Get.to(
-                                 MainScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.music_note_outlined,
-                      text: 'Songs',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const AlbumScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.album_outlined,
-                      text: 'Albums',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const ArtistScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.mic_external_on_outlined,
-                      text: 'Artist',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const DownloadScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.download,
-                      text: 'Downloads',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const QueueSongsScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.queue_music,
-                      text: 'Queue Songs',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const FavoriteSongsScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                      },
-                      icon: Icons.favorite_border_outlined,
-                      text: 'Favorite',
-                    ),
-                    commonListTile(
-                      onTap: () {
-                        GlobVar.login == true
-                            ? Get.to(
-                                const PlylistScreen(),
-                                transition: Transition.leftToRight,
-                              )
-                            : Get.to(
-                                const WitoutLogginScreen(),
-                                transition: Transition.downToUp,
-                              );
-                        // Navigator.pushNamed(context, '/playlist');
-                      },
-                      icon: Icons.queue_music_outlined,
-                      text: 'Playlists',
-                    ),
-                  ],
-                );
-              }
-            },
-          )
-          // : isLoding == true && isLoggedIn == false
-          //     ? Center(
-          //         child: CircularProgressIndicator(
-          //         color: AppColors.white,
-          //       ))
-          //     : Column(
-          //         mainAxisAlignment: MainAxisAlignment.center,
-          //         children: [
-          //           Row(
-          //             mainAxisAlignment: MainAxisAlignment.center,
-          //             children: [
-          //               Image.asset(
-          //                 AppAsstes.appIconTeal,
-          //                 height: 40,
-          //               ),
-          //               sizeBoxWidth(3),
-          //               lable(
-          //                 text: AppStrings.edpal,
-          //                 fontSize: 25,
-          //                 fontWeight: FontWeight.bold,
-          //               ),
-          //             ],
-          //           ),
-          //           sizeBoxHeight(65),
-          //           Padding(
-          //             padding: const EdgeInsets.symmetric(
-          //                 horizontal: 13, vertical: 13),
-          //             child: lable(
-          //                 text: AppStrings.loginAndEnjoyMoreThen80MillonSongs,
-          //                 color: Colors.grey.shade600,
-          //                 fontSize: 16,
-          //                 fontWeight: FontWeight.w600),
-          //           ),
-          //           sizeBoxHeight(15),
-          //           InkWell(
-          //             onTap: () {
-          //               Get.offAll(
-          //                 const MobileLoginScreen(),
-          //                 transition: Transition.downToUp,
-          //               );
-          //             },
-          //             child: Padding(
-          //               padding: const EdgeInsets.symmetric(horizontal: 13),
-          //               child: Container(
-          //                 height: 50,
-          //                 decoration: BoxDecoration(
-          //                   color: AppColors.white,
-          //                   borderRadius: BorderRadius.circular(10),
-          //                 ),
-          //                 child: Row(
-          //                   children: [
-          //                     const SizedBox(
-          //                       width: 10,
-          //                     ),
-          //                     SizedBox(
-          //                       width: 43,
-          //                       child: TextField(
-          //                         maxLength: 4,
-          //                         keyboardType: TextInputType.phone,
-          //                         controller: countrycode,
-          //                         enabled: false,
-          //                         style: const TextStyle(
-          //                             fontSize: 18, color: Colors.grey),
-          //                         decoration: const InputDecoration(
-          //                           border: InputBorder.none,
-          //                           counterText: "",
-          //                         ),
-          //                       ),
-          //                     ),
-          //                     sizeBoxWidth(15),
-          //                     const Expanded(
-          //                       child: TextField(
-          //                         maxLength: 10,
-          //                         keyboardType: TextInputType.phone,
-          //                         enabled: false,
-          //                         style: TextStyle(fontSize: 18),
-          //                         decoration: InputDecoration(
-          //                           hintText: "Continue with phone number",
-          //                           counterText: "",
-          //                           hintStyle: TextStyle(
-          //                             color: Colors.grey,
-          //                             fontWeight: FontWeight.normal,
-          //                             fontSize: 16,
-          //                           ),
-          //                           border: InputBorder.none,
-          //                         ),
-          //                       ),
-          //                     ),
-          //                   ],
-          //                 ),
-          //               ),
-          //             ),
-          //           ),
-          //           sizeBoxHeight(50),
-          //           Row(
-          //             children: [
-          //               Expanded(
-          //                 child: Divider(
-          //                   height: 3,
-          //                   color: Colors.grey.shade600,
-          //                 ),
-          //               ),
-          //               lable(
-          //                 text: '  Or  ',
-          //                 color: Colors.grey.shade400,
-          //                 fontWeight: FontWeight.w500,
-          //               ),
-          //               Expanded(
-          //                   child: Divider(
-          //                 height: 3,
-          //                 color: Colors.grey.shade600,
-          //               )),
-          //             ],
-          //           ),
-          //           sizeBoxHeight(40),
-          //           Row(
-          //             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          //             children: [
-          //               containerIcon(
-          //                 onTap: () {
-          //                   googleSignIn();
-          //                 },
-          //                 image: Image.asset(
-          //                   AppAsstes.google,
-          //                   height: 45,
-          //                 ),
-          //                 border: Border.all(color: Colors.orange),
-          //                 containerColor: AppColors.backgroundColor,
-          //                 iconColor: AppColors.white,
-          //                 height: 70,
-          //                 width: 70,
-          //                 borderRadius: 35,
-          //               ),
-          //               containerIcon(
-          //                 onTap: () {
-          //                   Get.offAll(const LogInScreen());
-          //                 },
-          //                 icon: Icons.mail_outline_outlined,
-          //                 iconSize: 35,
-          //                 border: Border.all(color: Colors.white),
-          //                 containerColor: AppColors.backgroundColor,
-          //                 iconColor: AppColors.white,
-          //                 height: 70,
-          //                 width: 70,
-          //                 borderRadius: 35,
-          //               )
-          //             ],
-          //           ),
-          //         ],
-          //       ),
-          ),
+                  ),
+                  sizeBoxHeight(20),
+                  commonListTile(
+                    onTap: () {
+                      controller.currentIndex.value = 1;
+                      GlobVar.login == true
+                          ? Get.to(
+                              MainScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.music_note_outlined,
+                    text: 'Songs',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const AlbumScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.album_outlined,
+                    text: 'Albums',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const ArtistScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.mic_external_on_outlined,
+                    text: 'Artists',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const AdminPlaylistScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.playlist_play_rounded,
+                    text: 'Playlists',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const DownloadScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.download,
+                    text: 'Downloads',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      if (GlobVar.login == true) {
+                        queueSongsScreenController
+                            .queueSongsListWithoutPlaylist();
+                        Get.to(
+                          QueueSongsScreen(whichScreen: 'library'),
+                          transition: Transition.leftToRight,
+                        );
+                      } else {
+                        Get.to(
+                          const WitoutLogginScreen(),
+                          transition: Transition.downToUp,
+                        );
+                      }
+                    },
+                    icon: Icons.queue_music,
+                    text: 'Queue Songs',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const FavoriteSongsScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                    },
+                    icon: Icons.favorite_border_outlined,
+                    text: 'Favorite',
+                  ),
+                  commonListTile(
+                    onTap: () {
+                      GlobVar.login == true
+                          ? Get.to(
+                              const PlylistScreen(),
+                              transition: Transition.leftToRight,
+                            )
+                          : Get.to(
+                              const WitoutLogginScreen(),
+                              transition: Transition.downToUp,
+                            );
+                      // Navigator.pushNamed(context, '/playlist');
+                    },
+                    icon: Icons.queue_music_outlined,
+                    text: 'My Playlists',
+                  ),
+                ],
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 

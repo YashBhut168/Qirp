@@ -14,6 +14,7 @@ import 'package:edpal_music_app_ui/controllers/home_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/main_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/playlist_screen_controller.dart';
 import 'package:edpal_music_app_ui/controllers/queue_songs_screen_controller.dart';
+import 'package:edpal_music_app_ui/controllers/search_screen_controller.dart';
 import 'package:edpal_music_app_ui/utils/colors.dart';
 import 'package:edpal_music_app_ui/utils/common_Widgets.dart';
 import 'package:edpal_music_app_ui/utils/extenstions.dart';
@@ -21,6 +22,9 @@ import 'package:edpal_music_app_ui/utils/globVar.dart';
 import 'package:edpal_music_app_ui/utils/size_config.dart';
 import 'package:edpal_music_app_ui/utils/strings.dart';
 import 'package:edpal_music_app_ui/views/tab_screens/home_tab_screens/home_screen/see_all_songs/see_all_songs.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/album_screen/album_song_screen.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/artist_screen/artist_song_screen.dart';
+import 'package:edpal_music_app_ui/views/tab_screens/my_library_screens/playlist_screens/playlist_songs_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -53,7 +57,10 @@ class _HomeScreenState extends State<HomeScreen> {
   AlbumScreenController albumScreenController =
       Get.put(AlbumScreenController());
   final apiHelper = ApiHelper();
-  ArtistScreenController artistScreenController = Get.put(ArtistScreenController());
+  ArtistScreenController artistScreenController =
+      Get.put(ArtistScreenController());
+  SearchScreenController searchScreenController =
+      Get.put(SearchScreenController());
 
   @override
   void initState() {
@@ -99,51 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
     controller.updateCurrentListTileIndex(currentListTileIndex);
   }
 
-  // bool isLoading = false;
-  // CategoryData? categoryData1;
-  // CategoryData? categoryData2;
-  // CategoryData? categoryData3;
-
-  // Future<void> fetchData() async {
-  //   setState(() {
-  //     if (mounted) {
-  //       isLoading = true;
-  //     }
-  //   });
-
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final login = prefs.getBool('isLoggedIn') ?? '';
-  //     if (kDebugMode) {
-  //       print(login);
-  //     }
-  //     final categoryData1Json = login == false
-  //         ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory1')
-  //         : await apiHelper.fetchHomeCategoryData('category1');
-  //     final categoryData2Json = login == false
-  //         ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory2')
-  //         : await apiHelper.fetchHomeCategoryData('category2');
-  //     final categoryData3Json = login == false
-  //         ? await apiHelper.noAuthFetchHomeCategoryData('noauthcategory3')
-  //         : await apiHelper.fetchHomeCategoryData('category3');
-
-  //     categoryData1 = CategoryData.fromJson(categoryData1Json);
-  //     categoryData2 = CategoryData.fromJson(categoryData2Json);
-  //     categoryData3 = CategoryData.fromJson(categoryData3Json);
-
-  //     setState(() {
-  //       if (mounted) {
-  //         isLoading = false;
-  //       }
-  //     });
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print(e);
-  //       isLoading = false;
-  //     }
-  //   }
-  // }
-
   @override
   Widget build(BuildContext context) {
     log("${controller.category1AudioUrl.toList()}");
@@ -172,9 +134,6 @@ class _HomeScreenState extends State<HomeScreen> {
             //     // ||
             Obx(
           () => homeScreenController.isLoadingHome.value == true
-              // ||
-              // // ignore: unnecessary_null_comparison
-              // homeScreenController.allSongsListModel == null
               ? Center(
                   child: CircularProgressIndicator(
                   color: AppColors.white,
@@ -270,17 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               filterQuality:
                                                                   FilterQuality
                                                                       .high,
-                                                            )
-                                                            //  Image.network(
-                                                            //   (homeScreenController
-                                                            //           .data[index].image) ??
-                                                            //       'https://storage.googleapis.com/proudcity/mebanenc/uploads/2021/03/placeholder-image.png',
-                                                            //   height: 110,
-                                                            //   width: 110,
-                                                            //   filterQuality:
-                                                            //       FilterQuality.high,
-                                                            // ),
-                                                            ),
+                                                            )),
                                                         SizedBox(
                                                           height: h * 0.01,
                                                         ),
@@ -296,7 +245,26 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           index]
                                                                       .title)!,
                                                               fontSize: 12,
-                                                              maxLines: 2,
+                                                              maxLines: 1,
+                                                              textAlign:
+                                                                  TextAlign
+                                                                      .center,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        SizedBox(
+                                                          width: w * 0.28,
+                                                          child: Align(
+                                                            alignment: Alignment
+                                                                .center,
+                                                            child: lable(
+                                                              text: (homeScreenController
+                                                                  .data[index]
+                                                                  .description)!,
+                                                              fontSize: 9,
+                                                              maxLines: 1,
+                                                              color:
+                                                                  Colors.grey,
                                                               textAlign:
                                                                   TextAlign
                                                                       .center,
@@ -351,11 +319,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Row(
                                       children: [
                                         SizedBox(
-                                          height: h * 0.20,
+                                          height: homeScreenController
+                                                      .homeCategoryData[
+                                                          categoryIndex]
+                                                      .type ==
+                                                  'song'
+                                              ? h * 0.22
+                                              : h * 0.20,
                                           child: ListView.builder(
                                             scrollDirection: Axis.horizontal,
                                             padding: const EdgeInsets.symmetric(
-                                                horizontal: 2),
+                                              horizontal: 2,
+                                            ),
                                             physics:
                                                 const NeverScrollableScrollPhysics(),
                                             shrinkWrap: true,
@@ -364,179 +339,268 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 .categoryData
                                                 .length,
                                             itemBuilder: (context, index) {
+
+                                              
                                               return GestureDetector(
                                                 onTap: () async {
-                                                  controller.categoryAudioUrl =
-                                                      [];
-                                                  controller
-                                                      .currentListTileIndexCategory
-                                                      .value = categoryIndex;
-                                                  controller
-                                                      .currentListTileIndexCategoryData
-                                                      .value = index;
-                                                  if (kDebugMode) {
-                                                    print(
-                                                        'current ListTile Index Category----> ${controller.currentListTileIndexCategory.value}');
-                                                    print(
-                                                        "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
-                                                  }
-                                                  setState(() {
-                                                    Future.delayed(
-                                                        const Duration(
-                                                            milliseconds: 600));
+                                                  if (homeScreenController
+                                                          .homeCategoryData[
+                                                              categoryIndex]
+                                                          .type ==
+                                                      'song') {
+                                                    controller
+                                                        .categoryAudioUrl = [];
+                                                    controller
+                                                          .currentListTileIndexCategory
+                                                          .value = categoryIndex;
+                                                      controller
+                                                          .currentListTileIndexCategoryData
+                                                          .value = index;
 
-                                                    // ignore: unused_local_variable
-                                                    var categorySongIds =
-                                                        List.generate(
+                                                    setState(() {
+                                                      Future.delayed(
+                                                          const Duration(
+                                                              milliseconds:
+                                                                  600));
+
+                                                      // ignore: unused_local_variable
+                                                      var categorySongIds = List.generate(
+                                                          homeScreenController
+                                                              .homeCategoryData[
+                                                                  controller
+                                                                      .currentListTileIndexCategory
+                                                                      .value]
+                                                              .categoryData
+                                                              .length, (index) {
+                                                        // ignore: unused_local_variable
+                                                        var categoyIdUrl =
                                                             homeScreenController
                                                                 .homeCategoryData[
                                                                     controller
                                                                         .currentListTileIndexCategory
                                                                         .value]
-                                                                .categoryData
-                                                                .length,
-                                                            (index) {
-                                                      // ignore: unused_local_variable
-                                                      var categoyIdUrl =
-                                                          homeScreenController
-                                                              .homeCategoryData[
-                                                                  controller
-                                                                      .currentListTileIndexCategory
-                                                                      .value]
-                                                              .categoryData[
-                                                                  index]
-                                                              .id!;
-                                                      final localFilePath =
-                                                          '${AppStrings.localPathMusic}/${homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[index].id!}.mp3';
-                                                      final file =
-                                                          File(localFilePath);
-                                                      controller.addCategoryAudioUrlToList(file
-                                                              .existsSync()
-                                                          ? localFilePath
-                                                          : (homeScreenController
-                                                              .homeCategoryData[
-                                                                  controller
-                                                                      .currentListTileIndexCategory
-                                                                      .value]
-                                                              .categoryData[
-                                                                  index]
-                                                              .audio)!);
-                                                      // print(
-                                                      // 'allsongaudios-----> ${allSongAudios}');
-                                                      controller
-                                                              .categoryAudioUrl =
-                                                          controller
-                                                              .categoryAudioUrl
-                                                              .toSet()
-                                                              .toList();
-                                                      log("${controller.categoryAudioUrl}",
-                                                          name:
-                                                              'category list');
-                                                    });
-                                                    controller
-                                                        .isMiniPlayerOpenHome
-                                                        .value = true;
-                                                    controller
-                                                        .isMiniPlayerOpenArtistSongs
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenFavoriteSongs
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenDownloadSongs
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenAlbumSongs
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenQueueSongs
-                                                        .value = false;
-                                                    controller.isMiniPlayerOpen
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenHome1
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenHome2
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenHome3
-                                                        .value = false;
-                                                    controller
-                                                        .isMiniPlayerOpenAllSongs
-                                                        .value = false;
-                                                    // controller
-                                                    //     .currentListTileIndexCategoryData
-                                                    //     .value = index;
-                                                    log("${controller.isMiniPlayerOpenFavoriteSongs.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenFavoriteSongs");
-                                                    log("${controller.isMiniPlayerOpenQueueSongs.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenQueueSongs");
-                                                    log("${controller.isMiniPlayerOpenDownloadSongs.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenDownloadSongs");
-                                                    log("${controller.isMiniPlayerOpen.value}",
-                                                        name:
-                                                            "isMiniPlayerOpen");
-                                                    log("${controller.isMiniPlayerOpenHome.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenHome");
-                                                    log("${controller.isMiniPlayerOpenHome1.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenHome1");
-                                                    log("${controller.isMiniPlayerOpenHome2.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenHome2");
-                                                    log("${controller.isMiniPlayerOpenHome3.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenHome3");
-                                                    log("${controller.isMiniPlayerOpenAllSongs.value}",
-                                                        name:
-                                                            "isMiniPlayerOpenAllSongs");
-                                                    // controller
-                                                    //     .currentListTileIndexCategory
-                                                    //     .value = categoryIndex;
-                                                    // controller
-                                                    //     .currentListTileIndexCategoryData
-                                                    //     .value = index;
-                                                    // if (kDebugMode) {
-                                                    //   print(
-                                                    //       'current ListTileIndex Category----> ${controller.currentListTileIndexCategory.value}');
-                                                    //   print(
-                                                    //       "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
-                                                    // }
-                                                    // controller
-                                                    //     .updateCurrentListTileIndexCategory(
-                                                    //         index);
-                                                    controller
-                                                        .initAudioPlayer();
-                                                    log(
+                                                                .categoryData[
+                                                                    index]
+                                                                .id!;
+                                                        final localFilePath =
+                                                            '${AppStrings.localPathMusic}/${homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[index].id!}.mp3';
+                                                        final file =
+                                                            File(localFilePath);
+                                                        controller.addCategoryAudioUrlToList(file
+                                                                .existsSync()
+                                                            ? localFilePath
+                                                            : (homeScreenController
+                                                                .homeCategoryData[
+                                                                    controller
+                                                                        .currentListTileIndexCategory
+                                                                        .value]
+                                                                .categoryData[
+                                                                    index]
+                                                                .audio)!);
+                                                        // print(
+                                                        // 'allsongaudios-----> ${allSongAudios}');
                                                         controller
-                                                            .currentListTileIndexCategoryData
-                                                            .value
-                                                            .toString(),
-                                                        name:
-                                                            'current ListTileIndex CategoryData home log');
-                                                  });
-                                                  homeScreenController
-                                                      .addRecentSongs(
-                                                          musicId: homeScreenController
+                                                                .categoryAudioUrl =
+                                                            controller
+                                                                .categoryAudioUrl
+                                                                .toSet()
+                                                                .toList();
+                                                        log("${controller.categoryAudioUrl}",
+                                                            name:
+                                                                'category list');
+                                                      });
+                                                      controller
+                                                          .isMiniPlayerOpenHome
+                                                          .value = true;
+                                                      controller
+                                                          .isMiniPlayerOpenAdminPlaylistSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenArtistSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenFavoriteSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenDownloadSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenAlbumSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenQueueSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpen
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenHome1
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenSearchSongs
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenHome2
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenHome3
+                                                          .value = false;
+                                                      controller
+                                                          .isMiniPlayerOpenAllSongs
+                                                          .value = false;
+                                                      
+
+                                                      if (kDebugMode) {
+                                                        print(
+                                                            'current ListTile Index Category----> ${controller.currentListTileIndexCategory.value}');
+                                                        print(
+                                                            "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
+                                                      }
+                                                      // controller
+                                                      //     .currentListTileIndexCategoryData
+                                                      //     .value = index;
+                                                      log("${controller.isMiniPlayerOpenFavoriteSongs.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenFavoriteSongs");
+                                                      log("${controller.isMiniPlayerOpenQueueSongs.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenQueueSongs");
+                                                      log("${controller.isMiniPlayerOpenDownloadSongs.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenDownloadSongs");
+                                                      log("${controller.isMiniPlayerOpen.value}",
+                                                          name:
+                                                              "isMiniPlayerOpen");
+                                                      log("${controller.isMiniPlayerOpenHome.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenHome");
+                                                      log("${controller.isMiniPlayerOpenHome1.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenHome1");
+                                                      log("${controller.isMiniPlayerOpenHome2.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenHome2");
+                                                      log("${controller.isMiniPlayerOpenHome3.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenHome3");
+                                                      log("${controller.isMiniPlayerOpenAllSongs.value}",
+                                                          name:
+                                                              "isMiniPlayerOpenAllSongs");
+                                                      controller
+                                                          .initAudioPlayer();
+                                                      log(
+                                                          controller
+                                                              .currentListTileIndexCategoryData
+                                                              .value
+                                                              .toString(),
+                                                          name:
+                                                              'current ListTileIndex CategoryData home log');
+                                                    });
+                                                    homeScreenController
+                                                        .addRecentSongs(
+                                                            musicId: homeScreenController
+                                                                .homeCategoryData[
+                                                                    controller
+                                                                        .currentListTileIndexCategory
+                                                                        .value]
+                                                                .categoryData[
+                                                                    index]
+                                                                .id!)
+                                                        .then((value) =>
+                                                            homeScreenController
+                                                                .recentSongsList());
+                                                  } else if (homeScreenController
+                                                          .homeCategoryData[
+                                                              categoryIndex]
+                                                          .type ==
+                                                      'artist') {
+                                                    artistScreenController
+                                                        .artistsSongsList(
+                                                            artistId: homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[
+                                                                    index]
+                                                                .artistId);
+                                                    Get.to(
+                                                      const ArtistSongsScreen(),
+                                                      transition: Transition
+                                                          .leftToRight,
+                                                    );
+                                                  } else if (homeScreenController
+                                                          .homeCategoryData[
+                                                              categoryIndex]
+                                                          .type ==
+                                                      'album') {
+                                                    albumScreenController
+                                                        .albumsSongsList(
+                                                            albumId: homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[
+                                                                    index]
+                                                                .albumId);
+                                                    Get.to(
+                                                      const AlbumSongsScreen(),
+                                                      transition: Transition
+                                                          .leftToRight,
+                                                    );
+                                                  } else if (homeScreenController
+                                                          .homeCategoryData[
+                                                              categoryIndex]
+                                                          .type ==
+                                                      'playlist') {
+                                                    setState(() {
+                                                      GlobVar.playlistId =
+                                                          homeScreenController
                                                               .homeCategoryData[
-                                                                  controller
-                                                                      .currentListTileIndexCategory
-                                                                      .value]
+                                                                  categoryIndex]
                                                               .categoryData[
                                                                   index]
-                                                              .id!)
-                                                      .then((value) =>
-                                                          homeScreenController
-                                                              .recentSongsList());
+                                                              .playlistId;
+                                                      GlobVar.adminOrUserPlaylist =
+                                                          'admin';
+                                                      GlobVar.adminPlaylistTapped =
+                                                          'false';
+                                                    });
+                                                    log('${homeScreenController.homeCategoryData[categoryIndex].categoryData[index].playlistId}',
+                                                        name: 'playlistId');
+                                                    Get.to(
+                                                      PlaylistSongsScreen(
+                                                        screen: 'home',
+                                                        playlistTitle:
+                                                            homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[
+                                                                    index]
+                                                                .title,
+                                                        myPlaylistData:
+                                                            homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[index],
+                                                        myPlaylistId:
+                                                            homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[
+                                                                    index]
+                                                                .playlistId,
+                                                        myPlaylistImage:
+                                                            homeScreenController
+                                                                .homeCategoryData[
+                                                                    categoryIndex]
+                                                                .categoryData[
+                                                                    index]
+                                                                .image,
+                                                      ),
+                                                    );
+                                                  } else {
+                                                    null;
+                                                  }
                                                 },
                                                 child: Padding(
-                                                  // padding: const EdgeInsets.symmetric(
-                                                  //     horizontal: 8),
                                                   padding:
                                                       const EdgeInsets.fromLTRB(
                                                           0, 0, 13, 0),
@@ -552,14 +616,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                                         children: [
                                                           Obx(
                                                             () => ClipRRect(
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          3),
+                                                              borderRadius: BorderRadius.circular(
+                                                                  homeScreenController
+                                                                              .homeCategoryData[categoryIndex]
+                                                                              .type ==
+                                                                          'artist'
+                                                                      ? 80
+                                                                      : 3),
                                                               child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
                                                                       controller.isMiniPlayerOpen.value ==
                                                                           false &&
                                                                       controller.isMiniPlayerOpenArtistSongs.value ==
+                                                                          false &&
+                                                                      controller.isMiniPlayerOpenSearchSongs.value ==
+                                                                          false &&
+                                                                      controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
                                                                           false &&
                                                                       controller.isMiniPlayerOpenAlbumSongs.value ==
                                                                           false &&
@@ -589,6 +660,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           110,
                                                                       width:
                                                                           110,
+                                                                      // fit: BoxFit.fill,
                                                                       filterQuality:
                                                                           FilterQuality
                                                                               .high,
@@ -598,11 +670,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                           // (controller.isMiniPlayerOpenHome1.value == true && categoryData1 != null && categoryData1!.data![controller.currentListTileIndexCategory1.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           // (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           // (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                          (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel != null && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                          (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.adminPlaylistSongModel != null && playlistScreenController.currentPlayingAdminTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
-                                                                          (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                          (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                           (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null))
                                                                       ? Opacity(
@@ -651,7 +725,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                             false &&
                                                                         controller.isMiniPlayerOpenAlbumSongs.value ==
                                                                             false &&
+                                                                        controller.isMiniPlayerOpenSearchSongs.value ==
+                                                                            false &&
                                                                         controller.isMiniPlayerOpenArtistSongs.value ==
+                                                                            false &&
+                                                                        controller.isMiniPlayerOpenAdminPlaylistSongs.value ==
                                                                             false &&
                                                                         controller.isMiniPlayerOpenHome.value ==
                                                                             false &&
@@ -675,9 +753,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                                 // (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 // (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                                (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel != null && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                                (controller.isMiniPlayerOpenAdminPlaylistSongs.value == true && playlistScreenController.adminPlaylistSongModel != null && playlistScreenController.currentPlayingAdminTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
-                                                                                (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                                                                (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
                                                                                 (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null)) &&
                                                                             controller.musicPlay.value == true)
@@ -726,6 +806,30 @@ class _HomeScreenState extends State<HomeScreen> {
                                                               TextAlign.center,
                                                         ),
                                                       ),
+                                                      homeScreenController
+                                                                  .homeCategoryData[
+                                                                      categoryIndex]
+                                                                  .type ==
+                                                              'song'
+                                                          ? SizedBox(
+                                                              width: w * 0.28,
+                                                              child: lable(
+                                                                  text: (homeScreenController
+                                                                          .homeCategoryModel!
+                                                                          .data![
+                                                                              categoryIndex]
+                                                                          .categoryData![
+                                                                              index]
+                                                                          .description)!
+                                                                      .capitalizeFirstLetter(),
+                                                                  fontSize: 9,
+                                                                  textAlign:
+                                                                      TextAlign
+                                                                          .center,
+                                                                  color: Colors
+                                                                      .grey),
+                                                            )
+                                                          : const SizedBox(),
                                                     ],
                                                   ),
                                                 ),
@@ -758,6 +862,443 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ],
                                     ),
                                   ),
+                                  // Align(
+                                  //   alignment: Alignment.centerLeft,
+                                  //   child: lable(
+                                  //     text: homeScreenController
+                                  //         .homeCategoryData[categoryIndex]
+                                  //         .category,
+                                  //     fontSize: 18,
+                                  //     fontWeight: FontWeight.w500,
+                                  //     letterSpacing: 0.35,
+                                  //   ),
+                                  // ),
+                                  // SizedBox(
+                                  //   height: h * 0.005,
+                                  // ),
+                                  // SingleChildScrollView(
+                                  //   scrollDirection: Axis.horizontal,
+                                  //   physics: const BouncingScrollPhysics(),
+                                  //   child: Row(
+                                  //     children: [
+                                  //       SizedBox(
+                                  //         height: h * 0.20,
+                                  //         child: ListView.builder(
+                                  //           scrollDirection: Axis.horizontal,
+                                  //           padding: const EdgeInsets.symmetric(
+                                  //             horizontal: 2,
+                                  //           ),
+                                  //           physics:
+                                  //               const NeverScrollableScrollPhysics(),
+                                  //           shrinkWrap: true,
+                                  //           itemCount: homeScreenController
+                                  //               .homeCategoryData[categoryIndex]
+                                  //               .categoryData
+                                  //               .length,
+                                  //           itemBuilder: (context, index) {
+                                  //             return GestureDetector(
+                                  //               onTap: () async {
+                                  //                 controller.categoryAudioUrl =
+                                  //                     [];
+                                  //                 controller
+                                  //                     .currentListTileIndexCategory
+                                  //                     .value = categoryIndex;
+                                  //                 controller
+                                  //                     .currentListTileIndexCategoryData
+                                  //                     .value = index;
+                                  //                 if (kDebugMode) {
+                                  //                   print(
+                                  //                       'current ListTile Index Category----> ${controller.currentListTileIndexCategory.value}');
+                                  //                   print(
+                                  //                       "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
+                                  //                 }
+                                  //                 setState(() {
+                                  //                   Future.delayed(
+                                  //                       const Duration(
+                                  //                           milliseconds: 600));
+
+                                  //                   // ignore: unused_local_variable
+                                  //                   var categorySongIds =
+                                  //                       List.generate(
+                                  //                           homeScreenController
+                                  //                               .homeCategoryData[
+                                  //                                   controller
+                                  //                                       .currentListTileIndexCategory
+                                  //                                       .value]
+                                  //                               .categoryData
+                                  //                               .length,
+                                  //                           (index) {
+                                  //                     // ignore: unused_local_variable
+                                  //                     var categoyIdUrl =
+                                  //                         homeScreenController
+                                  //                             .homeCategoryData[
+                                  //                                 controller
+                                  //                                     .currentListTileIndexCategory
+                                  //                                     .value]
+                                  //                             .categoryData[
+                                  //                                 index]
+                                  //                             .id!;
+                                  //                     final localFilePath =
+                                  //                         '${AppStrings.localPathMusic}/${homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData[index].id!}.mp3';
+                                  //                     final file =
+                                  //                         File(localFilePath);
+                                  //                     controller.addCategoryAudioUrlToList(file
+                                  //                             .existsSync()
+                                  //                         ? localFilePath
+                                  //                         : (homeScreenController
+                                  //                             .homeCategoryData[
+                                  //                                 controller
+                                  //                                     .currentListTileIndexCategory
+                                  //                                     .value]
+                                  //                             .categoryData[
+                                  //                                 index]
+                                  //                             .audio)!);
+                                  //                     // print(
+                                  //                     // 'allsongaudios-----> ${allSongAudios}');
+                                  //                     controller
+                                  //                             .categoryAudioUrl =
+                                  //                         controller
+                                  //                             .categoryAudioUrl
+                                  //                             .toSet()
+                                  //                             .toList();
+                                  //                     log("${controller.categoryAudioUrl}",
+                                  //                         name:
+                                  //                             'category list');
+                                  //                   });
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenHome
+                                  //                       .value = true;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenArtistSongs
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenFavoriteSongs
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenDownloadSongs
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenAlbumSongs
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenQueueSongs
+                                  //                       .value = false;
+                                  //                   controller.isMiniPlayerOpen
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenHome1
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenSearchSongs
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenHome2
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenHome3
+                                  //                       .value = false;
+                                  //                   controller
+                                  //                       .isMiniPlayerOpenAllSongs
+                                  //                       .value = false;
+                                  //                   // controller
+                                  //                   //     .currentListTileIndexCategoryData
+                                  //                   //     .value = index;
+                                  //                   log("${controller.isMiniPlayerOpenFavoriteSongs.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenFavoriteSongs");
+                                  //                   log("${controller.isMiniPlayerOpenQueueSongs.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenQueueSongs");
+                                  //                   log("${controller.isMiniPlayerOpenDownloadSongs.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenDownloadSongs");
+                                  //                   log("${controller.isMiniPlayerOpen.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpen");
+                                  //                   log("${controller.isMiniPlayerOpenHome.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenHome");
+                                  //                   log("${controller.isMiniPlayerOpenHome1.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenHome1");
+                                  //                   log("${controller.isMiniPlayerOpenHome2.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenHome2");
+                                  //                   log("${controller.isMiniPlayerOpenHome3.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenHome3");
+                                  //                   log("${controller.isMiniPlayerOpenAllSongs.value}",
+                                  //                       name:
+                                  //                           "isMiniPlayerOpenAllSongs");
+                                  //                   // controller
+                                  //                   //     .currentListTileIndexCategory
+                                  //                   //     .value = categoryIndex;
+                                  //                   // controller
+                                  //                   //     .currentListTileIndexCategoryData
+                                  //                   //     .value = index;
+                                  //                   // if (kDebugMode) {
+                                  //                   //   print(
+                                  //                   //       'current ListTileIndex Category----> ${controller.currentListTileIndexCategory.value}');
+                                  //                   //   print(
+                                  //                   //       "current music index ------> ${controller.currentListTileIndexCategoryData.value}");
+                                  //                   // }
+                                  //                   // controller
+                                  //                   //     .updateCurrentListTileIndexCategory(
+                                  //                   //         index);
+                                  //                   controller
+                                  //                       .initAudioPlayer();
+                                  //                   log(
+                                  //                       controller
+                                  //                           .currentListTileIndexCategoryData
+                                  //                           .value
+                                  //                           .toString(),
+                                  //                       name:
+                                  //                           'current ListTileIndex CategoryData home log');
+                                  //                 });
+                                  //                 homeScreenController
+                                  //                     .addRecentSongs(
+                                  //                         musicId: homeScreenController
+                                  //                             .homeCategoryData[
+                                  //                                 controller
+                                  //                                     .currentListTileIndexCategory
+                                  //                                     .value]
+                                  //                             .categoryData[
+                                  //                                 index]
+                                  //                             .id!)
+                                  //                     .then((value) =>
+                                  //                         homeScreenController
+                                  //                             .recentSongsList());
+                                  //               },
+                                  //               child: Padding(
+                                  //                 // padding: const EdgeInsets.symmetric(
+                                  //                 //     horizontal: 8),
+                                  //                 padding:
+                                  //                     const EdgeInsets.fromLTRB(
+                                  //                         0, 0, 13, 0),
+                                  //                 child: Column(
+                                  //                   crossAxisAlignment:
+                                  //                       CrossAxisAlignment
+                                  //                           .start,
+                                  //                   children: [
+                                  //                     SizedBox(
+                                  //                       height: h * 0.02,
+                                  //                     ),
+                                  //                     Stack(
+                                  //                       children: [
+                                  //                         Obx(
+                                  //                           () => ClipRRect(
+                                  //                             borderRadius:
+                                  //                                 BorderRadius
+                                  //                                     .circular(
+                                  //                                         3),
+                                  //                             child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                  //                                     controller.isMiniPlayerOpen.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenArtistSongs.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenSearchSongs.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenAlbumSongs.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenFavoriteSongs.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenHome.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenHome1.value ==
+                                  //                                         false &&
+                                  //                                     controller.isMiniPlayerOpenHome2.value == false &&
+                                  //                                     controller.isMiniPlayerOpenHome3.value == false &&
+                                  //                                     controller.isMiniPlayerOpenAllSongs.value == false &&
+                                  //                                     controller.isMiniPlayerOpenQueueSongs.value == false)
+                                  //                                 ? CachedNetworkImage(
+                                  //                                     imageUrl: (homeScreenController
+                                  //                                         .homeCategoryData[
+                                  //                                             categoryIndex]
+                                  //                                         .categoryData[
+                                  //                                             index]
+                                  //                                         .image!),
+                                  //                                     placeholder:
+                                  //                                         (context,
+                                  //                                             url) {
+                                  //                                       return const SizedBox();
+                                  //                                     },
+                                  //                                     height:
+                                  //                                         110,
+                                  //                                     width:
+                                  //                                         110,
+                                  //                                     filterQuality:
+                                  //                                         FilterQuality
+                                  //                                             .high,
+                                  //                                   )
+                                  //                                 : ((controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongAudios[controller.currentListTileIndexAllSongs.value] == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].audio!) && allSongsScreenController.allSongsListModel != null) ||
+                                  //                                         (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData.isNotEmpty && (homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData![controller.currentListTileIndexCategoryData.value].title!) == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         // (controller.isMiniPlayerOpenHome1.value == true && categoryData1 != null && categoryData1!.data![controller.currentListTileIndexCategory1.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         // (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         // (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel != null && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                         (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null))
+                                  //                                     ? Opacity(
+                                  //                                         opacity:
+                                  //                                             0.4,
+                                  //                                         child:
+                                  //                                             CachedNetworkImage(
+                                  //                                           imageUrl:
+                                  //                                               (homeScreenController.homeCategoryData[categoryIndex].categoryData[index].image!),
+                                  //                                           placeholder:
+                                  //                                               (context, url) {
+                                  //                                             return const SizedBox();
+                                  //                                           },
+                                  //                                           height:
+                                  //                                               110,
+                                  //                                           width:
+                                  //                                               110,
+                                  //                                           filterQuality:
+                                  //                                               FilterQuality.high,
+                                  //                                         ),
+                                  //                                       )
+                                  //                                     : CachedNetworkImage(
+                                  //                                         imageUrl: (homeScreenController
+                                  //                                             .homeCategoryData[categoryIndex]
+                                  //                                             .categoryData[index]
+                                  //                                             .image!),
+                                  //                                         placeholder:
+                                  //                                             (context, url) {
+                                  //                                           return const SizedBox();
+                                  //                                         },
+                                  //                                         height:
+                                  //                                             110,
+                                  //                                         width:
+                                  //                                             110,
+                                  //                                         filterQuality:
+                                  //                                             FilterQuality.high,
+                                  //                                       ),
+                                  //                           ),
+                                  //                         ),
+                                  //                         Obx(
+                                  //                           () =>
+                                  //                               Positioned.fill(
+                                  //                             child: Center(
+                                  //                               child: (controller.isMiniPlayerOpenDownloadSongs.value == false &&
+                                  //                                       controller.isMiniPlayerOpen.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenAlbumSongs.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenSearchSongs.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenArtistSongs.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenHome.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenHome1.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenHome2.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenHome3.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenAllSongs.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenFavoriteSongs.value ==
+                                  //                                           false &&
+                                  //                                       controller.isMiniPlayerOpenQueueSongs.value ==
+                                  //                                           false)
+                                  //                                   ? const SizedBox()
+                                  //                                   : (((controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongAudios[controller.currentListTileIndexAllSongs.value] == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].audio!) && allSongsScreenController.allSongsListModel != null) ||
+                                  //                                               (controller.isMiniPlayerOpenHome.value == true && homeScreenController.homeCategoryData.isNotEmpty && (homeScreenController.homeCategoryData[controller.currentListTileIndexCategory.value].categoryData![controller.currentListTileIndexCategoryData.value].title!) == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenArtistSongs.value == true && artistScreenController.allSongsListModel != null && artistScreenController.currentPlayingTitle.value == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               // (controller.isMiniPlayerOpenHome1.value == true && categoryData1 != null && categoryData1!.data![controller.currentListTileIndexCategory1.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               // (controller.isMiniPlayerOpenHome2.value == true && categoryData2 != null && categoryData2!.data![controller.currentListTileIndexCategory2.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               // (controller.isMiniPlayerOpenHome3.value == true && categoryData3 != null && categoryData3!.data![controller.currentListTileIndexCategory3.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenQueueSongs.value == true && queueSongsScreenController.allSongsListModel != null && queueSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexQueueSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenSearchSongs.value == true && searchScreenController.allSearchModel != null && searchScreenController.allSearchModel!.data![controller.currentListTileIndexSearchSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenAllSongs.value == true && allSongsScreenController.allSongsListModel != null && allSongsScreenController.allSongsListModel!.data![controller.currentListTileIndexAllSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenDownloadSongs.value == true && downloadSongScreenController.allSongsListModel!.data!.isNotEmpty && downloadSongScreenController.allSongsListModel != null && downloadSongScreenController.allSongsListModel!.data![controller.currentListTileIndexDownloadSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenAlbumSongs.value == true && albumScreenController.allSongsListModel!.data!.isNotEmpty && albumScreenController.allSongsListModel != null && albumScreenController.allSongsListModel!.data![controller.currentListTileIndexAlbumSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpenFavoriteSongs.value == true && favoriteSongScreenController.allSongsListModel!.data!.isNotEmpty && favoriteSongScreenController.allSongsListModel != null && favoriteSongScreenController.allSongsListModel!.data![controller.currentListTileIndexFavoriteSongs.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!)) ||
+                                  //                                               (controller.isMiniPlayerOpen.value == true && GlobVar.playlistId != '' && playlistScreenController.allSongsListModel!.data![controller.currentListTileIndex.value].title == (homeScreenController.homeCategoryData[categoryIndex].categoryData![index].title!) && playlistScreenController.allSongsListModel != null)) &&
+                                  //                                           controller.musicPlay.value == true)
+                                  //                                       ? ColorFiltered(
+                                  //                                           // filter: ImageFilter.blur(sigmaX: 0.0, sigmaY: 9.0),
+                                  //                                           colorFilter:
+                                  //                                               const ColorFilter.mode(
+                                  //                                             Colors.grey,
+                                  //                                             BlendMode.modulate,
+                                  //                                           ),
+                                  //                                           child:
+                                  //                                               Transform.scale(
+                                  //                                             scale: 2.2,
+                                  //                                             child: SiriWaveform.ios9(
+                                  //                                               controller: controller.siriWaveController,
+                                  //                                               options: const IOS9SiriWaveformOptions(
+                                  //                                                 height: 110,
+                                  //                                                 width: 35,
+                                  //                                                 showSupportBar: false,
+                                  //                                               ),
+                                  //                                             ),
+                                  //                                           ),
+                                  //                                         )
+                                  //                                       : const SizedBox(),
+                                  //                             ),
+                                  //                           ),
+                                  //                         ),
+                                  //                       ],
+                                  //                     ),
+                                  //                     SizedBox(
+                                  //                       height: h * 0.01,
+                                  //                     ),
+                                  //                     SizedBox(
+                                  //                       width: w * 0.28,
+                                  //                       child: lable(
+                                  //                         text: (homeScreenController
+                                  //                                 .homeCategoryModel!
+                                  //                                 .data![
+                                  //                                     categoryIndex]
+                                  //                                 .categoryData![
+                                  //                                     index]
+                                  //                                 .title)!
+                                  //                             .capitalizeFirstLetter(),
+                                  //                         fontSize: 10,
+                                  //                         textAlign:
+                                  //                             TextAlign.center,
+                                  //                       ),
+                                  //                     ),
+                                  //                   ],
+                                  //                 ),
+                                  //               ),
+                                  //             );
+                                  //           },
+                                  //         ),
+                                  //       ),
+                                  //       sizeBoxWidth(15),
+                                  //       commonViewAll(
+                                  //         onTap: () {
+                                  //           GlobVar.currentCategoryIndex =
+                                  //               categoryIndex;
+                                  //           // controller
+                                  //           //     .currentListTileIndexCategory
+                                  //           //     .value = categoryIndex;
+
+                                  //           Get.to(
+                                  //             SeeAllSongScreen(
+                                  //               homeCategoryData:
+                                  //                   (homeScreenController
+                                  //                       .homeCategoryModel!
+                                  //                       .data![categoryIndex]),
+                                  //             ),
+                                  //           );
+                                  //         },
+                                  //         // onTapData: (homeScreenController
+                                  //         //     .homeCategoryModel!
+                                  //         //     .data![categoryIndex]),
+                                  //       ),
+                                  //     ],
+                                  //   ),
+                                  // ),
                                   SizedBox(
                                     height: h * 0.035,
                                   ),

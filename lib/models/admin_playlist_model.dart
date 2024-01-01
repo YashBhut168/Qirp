@@ -1,17 +1,17 @@
-class ArtistsModel {
+class AdminPlaylistModel {
   bool? status;
   String? message;
-  List<PopularArtitst>? popularArtitst;
+  List<Data>? data;
 
-  ArtistsModel({this.status, this.message, this.popularArtitst});
+  AdminPlaylistModel({this.status, this.message, this.data});
 
-  ArtistsModel.fromJson(Map<String, dynamic> json) {
+  AdminPlaylistModel.fromJson(Map<String, dynamic> json) {
     status = json['status'];
     message = json['message'];
-    if (json['popularArtitst'] != null) {
-      popularArtitst = <PopularArtitst>[];
-      json['popularArtitst'].forEach((v) {
-        popularArtitst!.add(PopularArtitst.fromJson(v));
+    if (json['data'] != null) {
+      data = <Data>[];
+      json['data'].forEach((v) {
+        data!.add(Data.fromJson(v));
       });
     }
   }
@@ -20,23 +20,22 @@ class ArtistsModel {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['status'] = status;
     data['message'] = message;
-    if (popularArtitst != null) {
-      data['popularArtitst'] =
-          popularArtitst!.map((v) => v.toJson()).toList();
+    if (this.data != null) {
+      data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
-class PopularArtitst {
+class Data {
   String? id;
   String? name;
   String? picture;
   String? songCount;
 
-  PopularArtitst({this.id, this.name, this.picture});
+  Data({this.id, this.name, this.picture});
 
-  PopularArtitst.fromJson(Map<String, dynamic> json) {
+  Data.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
     picture = json['picture'];

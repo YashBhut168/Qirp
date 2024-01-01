@@ -110,7 +110,7 @@ class AppStrings {
 
 
   // playlists screen
-  static const String playlists = "Playlists";
+  static const String myPlaylists = "My Playlists";
   static const String nameYourPlaylist = "Name Your Playlist";
   static const String myNewPlaylist = "My New Playlist";
   static const String saveC = "Save";
@@ -149,5 +149,10 @@ class AppStrings {
 
   // queue song screen
   static const String queueSongs = "Queue Songs";
+
+
+  // admin playlist screen
+  static const String playlists = "Playlists";
+
 
 }

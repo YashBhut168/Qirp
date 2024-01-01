@@ -35,39 +35,10 @@ class AllSongsScreenController extends GetxController {
     super.onInit();
     allSongsList();
     log("$filteredAllSongsTitles", name: 'filteredAllSongsTitles');
-    // if (isLikeAllSongData.isEmpty) {
-    //   filteredAllSongsTitles = List.generate(
-    //     isLikeAllSongData.length,
-    //     (index) => (isLikeAllSongData[index].title) ?? '',
-    //   );
-    //   filteredAllSongsIds = List.generate(
-    //     isLikeAllSongData.length,
-    //     (index) => (isLikeAllSongData[index].id) ?? '',
-    //   );
-    //   filteredAllSongsAudios = List.generate(
-    //     isLikeAllSongData.length,
-    //     (index) => (isLikeAllSongData[index].audio) ?? '',
-    //   );
-    //   filteredAllSongsDesc = List.generate(
-    //     isLikeAllSongData.length,
-    //     (index) => (isLikeAllSongData[index].description) ?? '',
-    //   );
-    //   filteredAllSongsImage = List.generate(
-    //     isLikeAllSongData.length,
-    //     (index) => (isLikeAllSongData[index].image) ?? '',
-    //   );
-    // } else {
-    //   filteredAllSongsTitles = [];
-    // }
-
-    // filterAllSonglistTitles('');
   }
 
   AllSongsListModel? allSongsListModel;
-  // final allSongsListModel = AllSongsListModel().obs;
   Future<void> allSongsList({checkedIds}) async {
-    // final prefs = await SharedPreferences.getInstance();
-    // final login = prefs.getBool('isLoggedIn') ?? '';
     try {
       isLoading.value = true;
       final myPlaylistDataModelJson = GlobVar.login == false
@@ -75,6 +46,9 @@ class AllSongsScreenController extends GetxController {
           : await apiHelper.allSongsList();
 
       allSongsListModel = AllSongsListModel.fromJson(myPlaylistDataModelJson);
+      if (kDebugMode) {
+        print('myPlaylistDataModelJson---->$myPlaylistDataModelJson');
+      }
 
       isLikeAllSongData.value = allSongsListModel!.data!;
 
